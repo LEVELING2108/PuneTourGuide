@@ -5,8 +5,23 @@ const prisma = new PrismaClient();
 
 export const getAllPlaces = async (req: Request, res: Response) => {
   try {
-    const { category } = req.query;
-    const where = category && category !== 'All' ? { category: String(category) } : {};
+    const { category, q, isSaved } = req.query;
+    let where: any = {};
+    
+    if (category && category !== 'All') {
+      where.category = String(category);
+    }
+    
+    if (q) {
+      where.OR = [
+        { name: { contains: String(q), mode: 'insensitive' } },
+        { description: { contains: String(q), mode: 'insensitive' } }
+      ];
+    }
+    
+    if (isSaved === 'true') {
+      where.isSaved = true;
+    }
     
     const places = await prisma.place.findMany({
       where,
@@ -28,5 +43,19 @@ export const getPlaceById = async (req: Request, res: Response) => {
     res.json(place);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch place' });
+  }
+};
+
+export const toggleSavePlace = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { isSaved } = req.body;
+    const updatedPlace = await prisma.place.update({
+      where: { id: Number(id) },
+      data: { isSaved: Boolean(isSaved) }
+    });
+    res.json(updatedPlace);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to toggle save status' });
   }
 };

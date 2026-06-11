@@ -3,6 +3,7 @@ import HomeScreen from "./screens/HomeScreen";
 import ExploreScreen from "./screens/ExploreScreen";
 import MapScreen from "./screens/MapScreen";
 import PlanScreen from "./screens/PlanScreen";
+import ProfileScreen from "./screens/ProfileScreen";
 import PlaceDetailScreen from "./screens/PlaceDetailScreen";
 import BottomNav from "./components/BottomNav";
 
@@ -30,12 +31,15 @@ export default function App() {
         return <MapScreen />;
       case "plan":
         return <PlanScreen />;
+      case "profile":
+        return <ProfileScreen onPlaceSelect={handlePlaceSelect} />;
       case "detail":
         return <PlaceDetailScreen place={selectedPlace} onBack={handleBack} />;
       default:
-        return <HomeScreen onPlaceSelect={handlePlaceSelect} />;
+        return <HomeScreen onPlaceSelect={handlePlaceSelect} onSearchClick={() => setActiveTab("explore")} />;
     }
   };
+
 
   return (
     <div className="flex justify-center items-start min-h-screen bg-gray-100 py-8">

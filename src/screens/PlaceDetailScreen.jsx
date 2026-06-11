@@ -1,8 +1,20 @@
+import { useState } from "react";
 import StatusBar from "../components/StatusBar";
-import { addStopToItinerary } from "../data/api";
+import { addStopToItinerary, toggleSavePlace } from "../data/api";
 
 export default function PlaceDetailScreen({ place, onBack }) {
+  const [isSaved, setIsSaved] = useState(place?.isSaved || false);
+
   if (!place) return null;
+
+  const handleToggleSave = async () => {
+    try {
+      const updated = await toggleSavePlace(place.id, !isSaved);
+      setIsSaved(updated.isSaved);
+    } catch (error) {
+      console.error("Failed to toggle save:", error);
+    }
+  };
 
   const handleAddToItinerary = async () => {
     try {
@@ -56,6 +68,7 @@ export default function PlaceDetailScreen({ place, onBack }) {
         </button>
         {/* Bookmark */}
         <button
+          onClick={handleToggleSave}
           style={{
             position: "absolute",
             top: 12, right: 12,
@@ -69,7 +82,7 @@ export default function PlaceDetailScreen({ place, onBack }) {
             display: "flex", alignItems: "center", justifyContent: "center",
           }}
         >
-          🤍
+          {isSaved ? "❤️" : "🤍"}
         </button>
         <span style={{ fontSize: 64 }}>{place.emoji}</span>
       </div>

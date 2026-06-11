@@ -14,7 +14,7 @@ export default function ExploreScreen({ onPlaceSelect }) {
     const loadPlaces = async () => {
       setLoading(true);
       try {
-        const data = await fetchPlaces(activeFilter);
+        const data = await fetchPlaces({ category: activeFilter, q: search });
         setPlaces(data);
       } catch (error) {
         console.error("Failed to load explore data:", error);
@@ -22,18 +22,11 @@ export default function ExploreScreen({ onPlaceSelect }) {
         setLoading(false);
       }
     };
-    loadPlaces();
-  }, [activeFilter]);
+    const timeoutId = setTimeout(loadPlaces, 300); // Debounce search
+    return () => clearTimeout(timeoutId);
+  }, [activeFilter, search]);
 
-  const filtered = places.filter((p) => {
-    const matchSearch =
-      search === "" ||
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.description.toLowerCase().includes(search.toLowerCase());
-    return matchSearch;
-  });
-
-  if (loading) {
+  if (loading && places.length === 0) {
     return (
       <div style={{ background: "#FBF8F3", minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ color: "#8B3A2A", fontWeight: 600 }}>Searching Pune...</div>
@@ -119,12 +112,12 @@ export default function ExploreScreen({ onPlaceSelect }) {
 
       {/* Place list */}
       <div style={{ background: "#fff" }}>
-        {filtered.length === 0 ? (
+        {places.length === 0 ? (
           <div style={{ padding: "32px 16px", textAlign: "center", color: "#6B5B52", fontSize: 13 }}>
             No places found. Try a different search.
           </div>
         ) : (
-          filtered.map((place) => (
+          places.map((place) => (
             <PlaceListItem key={place.id} place={place} onClick={onPlaceSelect} />
           ))
         )}

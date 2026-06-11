@@ -15,7 +15,7 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick }) {
       setLoading(true);
       try {
         const [placesData, eventsData] = await Promise.all([
-          fetchPlaces(activeCategory),
+          fetchPlaces({ category: activeCategory }),
           fetchEvents()
         ]);
         setPlaces(placesData.slice(0, 4));

@@ -1,7 +1,12 @@
 const API_BASE_URL = 'http://localhost:3000/api';
 
-export const fetchPlaces = async (category = 'All') => {
-  const url = category === 'All' ? `${API_BASE_URL}/places` : `${API_BASE_URL}/places?category=${category}`;
+export const fetchPlaces = async (params = {}) => {
+  const query = new URLSearchParams();
+  if (params.category && params.category !== 'All') query.append('category', params.category);
+  if (params.q) query.append('q', params.q);
+  if (params.isSaved) query.append('isSaved', 'true');
+  
+  const url = `${API_BASE_URL}/places?${query.toString()}`;
   const response = await fetch(url);
   if (!response.ok) throw new Error('Failed to fetch places');
   return response.json();
@@ -36,5 +41,15 @@ export const addStopToItinerary = async (stopData) => {
     body: JSON.stringify(stopData)
   });
   if (!response.ok) throw new Error('Failed to add stop');
+  return response.json();
+};
+
+export const toggleSavePlace = async (id, isSaved) => {
+  const response = await fetch(`${API_BASE_URL}/places/${id}/save`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ isSaved })
+  });
+  if (!response.ok) throw new Error('Failed to toggle save status');
   return response.json();
 };
