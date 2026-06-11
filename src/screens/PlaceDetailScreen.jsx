@@ -1,7 +1,25 @@
 import StatusBar from "../components/StatusBar";
+import { addStopToItinerary } from "../data/api";
 
 export default function PlaceDetailScreen({ place, onBack }) {
   if (!place) return null;
+
+  const handleAddToItinerary = async () => {
+    try {
+      await addStopToItinerary({
+        itineraryDayId: 1, // Defaulting to Day 1 for now
+        name: place.name,
+        time: "TBD",
+        desc: place.description,
+        dotColor: "#8B3A2A",
+        tags: [{ label: place.category, type: place.category.toLowerCase() }]
+      });
+      alert(`${place.name} added to your Day 1 itinerary!`);
+    } catch (error) {
+      console.error("Failed to add to itinerary:", error);
+      alert("Failed to add to itinerary.");
+    }
+  };
 
   return (
     <div style={{ background: "#fff", minHeight: "100%" }}>
@@ -109,38 +127,80 @@ export default function PlaceDetailScreen({ place, onBack }) {
 
         {/* Info rows */}
         <InfoRow icon="🕐" text={place.hours} />
-        {place.phone !== "—" && <InfoRow icon="📞" text={place.phone} />}
+        {place.phone !== "—" && (
+          <a href={`tel:${place.phone}`} style={{ textDecoration: 'none' }}>
+            <InfoRow icon="📞" text={place.phone} />
+          </a>
+        )}
         {place.accessible && <InfoRow icon="♿" text="Wheelchair accessible" />}
         {place.guidedTours && <InfoRow icon="🎙️" text="Guided tours available" />}
 
         {/* Quick actions */}
         <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-          {[
-            { icon: "🗺️", label: "Directions", color: "#8B3A2A" },
-            { icon: "📤", label: "Share", color: "#3D3680" },
-            { icon: "🔖", label: "Save", color: "#B87318" },
-          ].map((action) => (
-            <div
-              key={action.label}
-              style={{
-                flex: 1,
-                background: "#FBF8F3",
-                borderRadius: 12,
-                padding: 10,
-                textAlign: "center",
-                cursor: "pointer",
-              }}
-            >
-              <div style={{ fontSize: 20 }}>{action.icon}</div>
-              <div style={{ fontSize: 11, fontWeight: 500, color: "#1C1412", marginTop: 3 }}>
-                {action.label}
-              </div>
+          <div
+            onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + " " + place.address + " Pune")}`, '_blank')}
+            style={{
+              flex: 1,
+              background: "#FBF8F3",
+              borderRadius: 12,
+              padding: 10,
+              textAlign: "center",
+              cursor: "pointer",
+            }}
+          >
+            <div style={{ fontSize: 20 }}>🗺️</div>
+            <div style={{ fontSize: 11, fontWeight: 500, color: "#1C1412", marginTop: 3 }}>
+              Directions
             </div>
-          ))}
+          </div>
+
+          <div
+            onClick={() => {
+              if (navigator.share) {
+                navigator.share({
+                  title: place.name,
+                  text: `Check out ${place.name} in Pune!`,
+                  url: window.location.href,
+                }).catch(console.error);
+              } else {
+                alert("Sharing not supported on this browser.");
+              }
+            }}
+            style={{
+              flex: 1,
+              background: "#FBF8F3",
+              borderRadius: 12,
+              padding: 10,
+              textAlign: "center",
+              cursor: "pointer",
+            }}
+          >
+            <div style={{ fontSize: 20 }}>📤</div>
+            <div style={{ fontSize: 11, fontWeight: 500, color: "#1C1412", marginTop: 3 }}>
+              Share
+            </div>
+          </div>
+
+          <div
+            style={{
+              flex: 1,
+              background: "#FBF8F3",
+              borderRadius: 12,
+              padding: 10,
+              textAlign: "center",
+              cursor: "pointer",
+            }}
+          >
+            <div style={{ fontSize: 20 }}>🔖</div>
+            <div style={{ fontSize: 11, fontWeight: 500, color: "#1C1412", marginTop: 3 }}>
+              Save
+            </div>
+          </div>
         </div>
 
         {/* CTA */}
         <button
+          onClick={handleAddToItinerary}
           style={{
             width: "100%",
             background: "#8B3A2A",

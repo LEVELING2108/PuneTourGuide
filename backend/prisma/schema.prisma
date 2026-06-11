@@ -55,6 +55,7 @@ model ItineraryStop {
   name           String
   desc           String
   dotColor       String
+  done           Boolean      @default(false)
   itineraryDayId Int
   itineraryDay   ItineraryDay @relation(fields: [itineraryDayId], references: [id])
   tags           Json         // Store tags as JSON array for simplicity

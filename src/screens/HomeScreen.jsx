@@ -4,7 +4,7 @@ import PlaceCard from "../components/PlaceCard";
 import { categories } from "../data/puneData";
 import { fetchPlaces, fetchEvents } from "../data/api";
 
-export default function HomeScreen({ onPlaceSelect }) {
+export default function HomeScreen({ onPlaceSelect, onSearchClick }) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [places, setPlaces] = useState([]);
   const [events, setEvents] = useState([]);
@@ -97,6 +97,7 @@ export default function HomeScreen({ onPlaceSelect }) {
       {/* Search bar */}
       <div style={{ background: "#FBF8F3", paddingBottom: 10 }}>
         <div
+          onClick={onSearchClick}
           style={{
             margin: "-16px 16px 0",
             background: "#fff",

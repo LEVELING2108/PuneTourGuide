@@ -18,3 +18,23 @@ export const fetchItinerary = async () => {
   if (!response.ok) throw new Error('Failed to fetch itinerary');
   return response.json();
 };
+
+export const updateStopStatus = async (id, done) => {
+  const response = await fetch(`${API_BASE_URL}/itinerary/stops/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ done })
+  });
+  if (!response.ok) throw new Error('Failed to update stop status');
+  return response.json();
+};
+
+export const addStopToItinerary = async (stopData) => {
+  const response = await fetch(`${API_BASE_URL}/itinerary/stops`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(stopData)
+  });
+  if (!response.ok) throw new Error('Failed to add stop');
+  return response.json();
+};

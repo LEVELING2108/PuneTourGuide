@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import StatusBar from "../components/StatusBar";
-import { fetchItinerary } from "../data/api";
+import { fetchItinerary, updateStopStatus } from "../data/api";
 
 const TRAVEL_MODES = ["Walking", "Auto", "Driving"];
 
@@ -27,10 +27,18 @@ export default function MapScreen() {
     loadStops();
   }, []);
 
-  const toggleStop = (id) => {
-    setStops((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, done: !s.done } : s))
-    );
+  const toggleStop = async (id) => {
+    const stop = stops.find((s) => s.id === id);
+    if (!stop) return;
+
+    try {
+      const updated = await updateStopStatus(id, !stop.done);
+      setStops((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, done: updated.done } : s))
+      );
+    } catch (error) {
+      console.error("Failed to toggle stop:", error);
+    }
   };
 
   if (loading) {

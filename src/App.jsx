@@ -23,7 +23,7 @@ export default function App() {
   const renderScreen = () => {
     switch (activeTab) {
       case "home":
-        return <HomeScreen onPlaceSelect={handlePlaceSelect} />;
+        return <HomeScreen onPlaceSelect={handlePlaceSelect} onSearchClick={() => setActiveTab("explore")} />;
       case "explore":
         return <ExploreScreen onPlaceSelect={handlePlaceSelect} />;
       case "map":
