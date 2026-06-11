@@ -1,0 +1,205 @@
+import { useState } from "react";
+import StatusBar from "../components/StatusBar";
+import { itineraryDays } from "../data/puneData";
+import { tagStyles } from "../data/tokens";
+
+export default function PlanScreen() {
+  const [activeDay, setActiveDay] = useState(0);
+
+  const day = itineraryDays[activeDay];
+
+  return (
+    <div style={{ background: "#FBF8F3", minHeight: "100%" }}>
+      <StatusBar light />
+
+      {/* Header */}
+      <div
+        style={{
+          background: "#8B3A2A",
+          padding: "16px 16px 20px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>
+              Pune Heritage Weekend
+            </div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginTop: 3 }}>
+              Jun 14–15 · 2 days · 9 stops
+            </div>
+          </div>
+          <button
+            style={{
+              background: "rgba(255,255,255,0.2)",
+              border: "none",
+              borderRadius: 10,
+              padding: "6px 10px",
+              fontSize: 11,
+              color: "#fff",
+              fontWeight: 500,
+              cursor: "pointer",
+            }}
+          >
+            Share ↗
+          </button>
+        </div>
+
+        {/* Day tabs */}
+        <div style={{ display: "flex", gap: 6, marginTop: 14 }}>
+          {itineraryDays.map((d, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveDay(i)}
+              style={{
+                padding: "5px 14px",
+                borderRadius: 16,
+                fontSize: 11,
+                fontWeight: 500,
+                flexShrink: 0,
+                border: "none",
+                cursor: "pointer",
+                background: activeDay === i ? "#fff" : "rgba(255,255,255,0.2)",
+                color: activeDay === i ? "#8B3A2A" : "rgba(255,255,255,0.85)",
+              }}
+            >
+              {d.label}
+            </button>
+          ))}
+          <button
+            style={{
+              padding: "5px 14px",
+              borderRadius: 16,
+              fontSize: 11,
+              fontWeight: 500,
+              border: "none",
+              cursor: "pointer",
+              background: "rgba(255,255,255,0.2)",
+              color: "rgba(255,255,255,0.85)",
+            }}
+          >
+            Overview
+          </button>
+        </div>
+      </div>
+
+      {/* Timeline */}
+      <div style={{ padding: 16, background: "#fff" }}>
+        {day.stops.map((stop, idx) => (
+          <div
+            key={idx}
+            style={{ display: "flex", gap: 12, marginBottom: idx < day.stops.length - 1 ? 14 : 0 }}
+          >
+            {/* Left: time + dot + line */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                width: 36,
+                flexShrink: 0,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#6B5B52",
+                  textAlign: "center",
+                  lineHeight: 1.2,
+                  minHeight: 20,
+                }}
+              >
+                {stop.time}
+              </div>
+              <div
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
+                  background: stop.dotColor,
+                  margin: "4px 0",
+                  flexShrink: 0,
+                }}
+              />
+              {idx < day.stops.length - 1 && (
+                <div
+                  style={{
+                    width: 1.5,
+                    flex: 1,
+                    background: "#EDE8DF",
+                    minHeight: 20,
+                  }}
+                />
+              )}
+            </div>
+
+            {/* Right: card */}
+            <div
+              style={{
+                flex: 1,
+                background: "#FBF8F3",
+                borderRadius: 12,
+                padding: "10px 12px",
+                minWidth: 0,
+              }}
+            >
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1412" }}>{stop.name}</div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#6B5B52",
+                  marginTop: 2,
+                  lineHeight: 1.4,
+                }}
+              >
+                {stop.desc}
+              </div>
+              <div style={{ display: "flex", gap: 5, marginTop: 6, flexWrap: "wrap" }}>
+                {stop.tags.map((tag) => {
+                  const style = tagStyles[tag.type] || tagStyles.neutral;
+                  return (
+                    <span
+                      key={tag.label}
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 600,
+                        padding: "2px 7px",
+                        borderRadius: 8,
+                        background: style.bg,
+                        color: style.color,
+                      }}
+                    >
+                      {tag.label}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Add stop button */}
+      <div style={{ padding: "16px 16px 8px", background: "#fff" }}>
+        <button
+          style={{
+            width: "100%",
+            background: "#FBF8F3",
+            color: "#8B3A2A",
+            border: "1.5px dashed #C46348",
+            borderRadius: 14,
+            padding: 12,
+            fontSize: 13,
+            fontWeight: 500,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+          }}
+        >
+          + Add a stop
+        </button>
+      </div>
+    </div>
+  );
+}

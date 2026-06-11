@@ -1,0 +1,86 @@
+import { tagColorMap, categoryColors } from "../data/tokens";
+
+export default function PlaceListItem({ place, onClick }) {
+  const catStyle = categoryColors[place.category] || categoryColors.default;
+  const tagStyle = tagColorMap[place.tagColor] || tagColorMap.terracotta;
+
+  return (
+    <div
+      onClick={() => onClick(place)}
+      style={{
+        display: "flex",
+        gap: 12,
+        padding: "12px 16px",
+        borderBottom: "1px solid #EDE8DF",
+        background: "#fff",
+        cursor: "pointer",
+      }}
+    >
+      {/* Thumbnail */}
+      <div
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: 12,
+          flexShrink: 0,
+          background: place.bgColor,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 28,
+        }}
+      >
+        {place.emoji}
+      </div>
+
+      {/* Body */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1412" }}>{place.name}</div>
+        <div
+          style={{
+            fontSize: 11,
+            color: "#6B5B52",
+            marginTop: 2,
+            lineHeight: 1.4,
+            overflow: "hidden",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+          }}
+        >
+          {place.description}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 600, color: "#B87318" }}>
+            ⭐ {place.rating}
+          </div>
+          <div
+            style={{
+              fontSize: 10,
+              color: "#6B5B52",
+              padding: "2px 7px",
+              background: "#EDE8DF",
+              borderRadius: 8,
+            }}
+          >
+            {place.distance}
+          </div>
+          {place.tag === "Open Now" && (
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 600,
+                padding: "2px 7px",
+                background: tagStyle.bg,
+                color: tagStyle.color,
+                borderRadius: 8,
+              }}
+            >
+              Open now
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
