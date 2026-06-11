@@ -1,10 +1,43 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import StatusBar from "../components/StatusBar";
-import { itineraryDays } from "../data/puneData";
 import { tagStyles } from "../data/tokens";
+import { fetchItinerary } from "../data/api";
 
 export default function PlanScreen() {
   const [activeDay, setActiveDay] = useState(0);
+  const [itineraryDays, setItineraryDays] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadItinerary = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchItinerary();
+        setItineraryDays(data);
+      } catch (error) {
+        console.error("Failed to load itinerary data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadItinerary();
+  }, []);
+
+  if (loading) {
+    return (
+      <div style={{ background: "#FBF8F3", minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ color: "#8B3A2A", fontWeight: 600 }}>Planning your trip...</div>
+      </div>
+    );
+  }
+
+  if (itineraryDays.length === 0) {
+    return (
+      <div style={{ background: "#FBF8F3", minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ color: "#8B3A2A", fontWeight: 600 }}>No itinerary found.</div>
+      </div>
+    );
+  }
 
   const day = itineraryDays[activeDay];
 

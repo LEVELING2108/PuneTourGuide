@@ -1,18 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import StatusBar from "../components/StatusBar";
-import { routeStops } from "../data/puneData";
+import { fetchItinerary } from "../data/api";
 
 const TRAVEL_MODES = ["Walking", "Auto", "Driving"];
 
 export default function MapScreen() {
   const [mode, setMode] = useState("Walking");
-  const [stops, setStops] = useState(routeStops);
+  const [stops, setStops] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadStops = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchItinerary();
+        // Just take the stops from the first day for the map demo
+        if (data.length > 0) {
+          setStops(data[0].stops);
+        }
+      } catch (error) {
+        console.error("Failed to load map data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadStops();
+  }, []);
 
   const toggleStop = (id) => {
     setStops((prev) =>
       prev.map((s) => (s.id === id ? { ...s, done: !s.done } : s))
     );
   };
+
+  if (loading) {
+    return (
+      <div style={{ background: "#FBF8F3", minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ color: "#8B3A2A", fontWeight: 600 }}>Loading map...</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: "#FBF8F3", minHeight: "100%" }}>

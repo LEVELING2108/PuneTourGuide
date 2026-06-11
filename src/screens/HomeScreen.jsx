@@ -1,15 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import StatusBar from "../components/StatusBar";
 import PlaceCard from "../components/PlaceCard";
-import { places, categories, events } from "../data/puneData";
+import { categories } from "../data/puneData";
+import { fetchPlaces, fetchEvents } from "../data/api";
 
 export default function HomeScreen({ onPlaceSelect }) {
   const [activeCategory, setActiveCategory] = useState("All");
+  const [places, setPlaces] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered =
-    activeCategory === "All"
-      ? places.slice(0, 4)
-      : places.filter((p) => p.category === activeCategory).slice(0, 4);
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const [placesData, eventsData] = await Promise.all([
+          fetchPlaces(activeCategory),
+          fetchEvents()
+        ]);
+        setPlaces(placesData.slice(0, 4));
+        setEvents(eventsData);
+      } catch (error) {
+        console.error("Failed to load home data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [activeCategory]);
+
+  if (loading) {
+    return (
+      <div style={{ background: "#FBF8F3", minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ color: "#8B3A2A", fontWeight: 600 }}>Loading Pune...</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: "#FBF8F3", minHeight: "100%" }}>
@@ -135,7 +161,7 @@ export default function HomeScreen({ onPlaceSelect }) {
         </div>
 
         <div style={{ display: "flex", gap: 10, padding: "0 16px 16px", overflowX: "auto" }}>
-          {filtered.map((place) => (
+          {places.map((place) => (
             <PlaceCard key={place.id} place={place} onClick={onPlaceSelect} />
           ))}
         </div>

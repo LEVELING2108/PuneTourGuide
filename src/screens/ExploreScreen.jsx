@@ -1,20 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import StatusBar from "../components/StatusBar";
 import PlaceListItem from "../components/PlaceListItem";
-import { places, categories } from "../data/puneData";
+import { categories } from "../data/puneData";
+import { fetchPlaces } from "../data/api";
 
 export default function ExploreScreen({ onPlaceSelect }) {
   const [activeFilter, setActiveFilter] = useState("All");
   const [search, setSearch] = useState("");
+  const [places, setPlaces] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadPlaces = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchPlaces(activeFilter);
+        setPlaces(data);
+      } catch (error) {
+        console.error("Failed to load explore data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadPlaces();
+  }, [activeFilter]);
 
   const filtered = places.filter((p) => {
-    const matchCat = activeFilter === "All" || p.category === activeFilter;
     const matchSearch =
       search === "" ||
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.description.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
+    return matchSearch;
   });
+
+  if (loading) {
+    return (
+      <div style={{ background: "#FBF8F3", minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ color: "#8B3A2A", fontWeight: 600 }}>Searching Pune...</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: "#FBF8F3", minHeight: "100%" }}>

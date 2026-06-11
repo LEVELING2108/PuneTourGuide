@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Place {
+  id          Int      @id @default(autoincrement())
+  name        String
+  emoji       String
+  category    String
+  rating      Float
+  distance    String
+  entryFee    String
+  estYear     String
+  visitTime   String
+  hours       String
+  phone       String
+  address     String
+  accessible  Boolean
+  guidedTours Boolean
+  tag         String
+  tagColor    String
+  bgColor     String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  date        String
+  name        String
+  desc        String
+  color       String
+  createdAt   DateTime @default(now())
+}
+
+model ItineraryDay {
+  id        Int      @id @default(autoincrement())
+  day       Int
+  label     String
+  stops     ItineraryStop[]
+}
+
+model ItineraryStop {
+  id             Int          @id @default(autoincrement())
+  time           String
+  name           String
+  desc           String
+  dotColor       String
+  itineraryDayId Int
+  itineraryDay   ItineraryDay @relation(fields: [itineraryDayId], references: [id])
+  tags           Json         // Store tags as JSON array for simplicity
+}
