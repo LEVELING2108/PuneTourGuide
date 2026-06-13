@@ -102,6 +102,7 @@ npm run dev
 ---
 
 ## 🗺️ Key Features
+- **Automatic Place Discovery:** Uses the **OpenStreetMap (Overpass API)** to automatically find and ingest new places in Pune. If you search for a cafe or monument not in the database, the app finds it and saves it for everyone!
 - **Dynamic Explore:** Search and filter Pune's top spots by category (Heritage, Food, Nature, etc.) fetched directly from the DB.
 - **Interactive Itineraries:** Multi-day travel plans with specific timings and location details.
 - **Schematic Map:** A custom-designed SVG heritage trail map showing live route stops.
