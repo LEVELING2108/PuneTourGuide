@@ -71,6 +71,7 @@ export default function ExploreScreen({ onPlaceSelect }) {
             />
           </div>
           <div
+            onClick={() => alert("Advanced Filters: Coming soon!")}
             style={{
               width: 36,
               height: 36,
@@ -82,7 +83,7 @@ export default function ExploreScreen({ onPlaceSelect }) {
               cursor: "pointer",
             }}
           >
-            <span style={{ fontSize: 16 }}>☰</span>
+            <span style={{ fontSize: 16, color: "#fff" }}>☰</span>
           </div>
         </div>
       </div>

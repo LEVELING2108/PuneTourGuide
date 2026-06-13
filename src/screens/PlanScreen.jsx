@@ -62,6 +62,17 @@ export default function PlanScreen() {
             </div>
           </div>
           <button
+            onClick={() => {
+              if (navigator.share) {
+                navigator.share({
+                  title: "Pune Heritage Weekend",
+                  text: "Check out my Pune travel plan!",
+                  url: window.location.href,
+                }).catch(console.error);
+              } else {
+                alert("Sharing is not supported on this browser.");
+              }
+            }}
             style={{
               background: "rgba(255,255,255,0.2)",
               border: "none",
@@ -99,6 +110,7 @@ export default function PlanScreen() {
             </button>
           ))}
           <button
+            onClick={() => alert("Itinerary Overview: Map and highlights coming soon!")}
             style={{
               padding: "5px 14px",
               borderRadius: 16,
@@ -214,6 +226,7 @@ export default function PlanScreen() {
       {/* Add stop button */}
       <div style={{ padding: "16px 16px 8px", background: "#fff" }}>
         <button
+          onClick={() => alert("Directly add stops coming soon! For now, find a place in 'Explore' and click 'Add to Itinerary'.")}
           style={{
             width: "100%",
             background: "#FBF8F3",

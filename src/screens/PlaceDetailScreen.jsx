@@ -195,6 +195,7 @@ export default function PlaceDetailScreen({ place, onBack }) {
           </div>
 
           <div
+            onClick={handleToggleSave}
             style={{
               flex: 1,
               background: "#FBF8F3",
@@ -204,9 +205,9 @@ export default function PlaceDetailScreen({ place, onBack }) {
               cursor: "pointer",
             }}
           >
-            <div style={{ fontSize: 20 }}>🔖</div>
-            <div style={{ fontSize: 11, fontWeight: 500, color: "#1C1412", marginTop: 3 }}>
-              Save
+            <div style={{ fontSize: 20 }}>{isSaved ? "🔖" : "🔖"}</div>
+            <div style={{ fontSize: 11, fontWeight: 500, color: isSaved ? "#8B3A2A" : "#1C1412", marginTop: 3 }}>
+              {isSaved ? "Saved" : "Save"}
             </div>
           </div>
         </div>

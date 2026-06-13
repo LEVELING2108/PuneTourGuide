@@ -116,7 +116,15 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick }) {
           <span style={{ fontSize: 13, color: "#6B5B52", flex: 1 }}>
             Search places, food, events…
           </span>
-          <span style={{ fontSize: 16, color: "#8B3A2A" }}>⚙️</span>
+          <span 
+            onClick={(e) => {
+              e.stopPropagation();
+              alert("Search settings: Advanced filters coming soon!");
+            }}
+            style={{ fontSize: 16, color: "#8B3A2A" }}
+          >
+            ⚙️
+          </span>
         </div>
       </div>
 
@@ -158,7 +166,7 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick }) {
           }}
         >
           <div style={{ fontSize: 14, fontWeight: 600, color: "#1C1412" }}>Popular Spots</div>
-          <div style={{ fontSize: 12, color: "#8B3A2A", cursor: "pointer" }}>See all</div>
+          <div onClick={onSearchClick} style={{ fontSize: 12, color: "#8B3A2A", cursor: "pointer" }}>See all</div>
         </div>
 
         <div style={{ display: "flex", gap: 10, padding: "0 16px 16px", overflowX: "auto" }}>
@@ -179,13 +187,19 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick }) {
           }}
         >
           <div style={{ fontSize: 14, fontWeight: 600, color: "#1C1412" }}>Nearby Events</div>
-          <div style={{ fontSize: 12, color: "#8B3A2A", cursor: "pointer" }}>More</div>
+          <div 
+            onClick={() => alert("Exploring more events in Pune...")}
+            style={{ fontSize: 12, color: "#8B3A2A", cursor: "pointer" }}
+          >
+            More
+          </div>
         </div>
 
         <div style={{ display: "flex", gap: 8, padding: "0 16px 20px" }}>
           {events.map((ev) => (
             <div
               key={ev.id}
+              onClick={() => alert(`Event: ${ev.name}\nDate: ${ev.date}\nDescription: ${ev.desc}`)}
               style={{
                 flex: 1,
                 background: "#fff",

@@ -152,7 +152,10 @@ export default function MapScreen() {
         {TRAVEL_MODES.map((m) => (
           <button
             key={m}
-            onClick={() => setMode(m)}
+            onClick={() => {
+              setMode(m);
+              alert(`Recalculating route for ${m} mode...`);
+            }}
             style={{
               padding: "6px 12px",
               borderRadius: 8,
