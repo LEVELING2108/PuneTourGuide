@@ -8,6 +8,7 @@ export default function ProfileScreen({ onPlaceSelect }) {
   // User Personalization State
   const [userName, setUserName] = useState(() => localStorage.getItem("pune_user_name") || "Sourav Paul");
   const [userBio, setUserBio] = useState(() => localStorage.getItem("pune_user_bio") || "Local Guide · Pune Explorer");
+  const [userAvatar, setUserAvatar] = useState(() => localStorage.getItem("pune_user_avatar") || null);
   
   const [savedPlaces, setSavedPlaces] = useState([]);
   const [discoveredPlaces, setDiscoveredPlaces] = useState([]);
@@ -18,6 +19,7 @@ export default function ProfileScreen({ onPlaceSelect }) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [tempName, setTempName] = useState(userName);
   const [tempBio, setTempBio] = useState(userBio);
+  const [tempAvatar, setTempAvatar] = useState(userAvatar);
 
   useEffect(() => {
     const loadProfileData = async () => {
@@ -52,9 +54,26 @@ export default function ProfileScreen({ onPlaceSelect }) {
   const handleSaveProfile = () => {
     setUserName(tempName);
     setUserBio(tempBio);
+    setUserAvatar(tempAvatar);
     localStorage.setItem("pune_user_name", tempName);
     localStorage.setItem("pune_user_bio", tempBio);
+    if (tempAvatar) {
+      localStorage.setItem("pune_user_avatar", tempAvatar);
+    } else {
+      localStorage.removeItem("pune_user_avatar");
+    }
     setIsEditModalOpen(false);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setTempAvatar(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   if (loading) {
