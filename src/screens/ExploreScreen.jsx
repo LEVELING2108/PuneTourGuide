@@ -11,6 +11,11 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {} }) {
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(initialParams.showFilters || false);
   const [sortBy, setSortBy] = useState("rating"); // 'rating' or 'name'
+  
+  // Advanced Filters
+  const [onlyAccessible, setOnlyAccessible] = useState(false);
+  const [priceFilter, setPriceFilter] = useState("All"); // 'All', 'Free', 'Paid'
+  const [onlyTopRated, setOnlyTopRated] = useState(false);
 
   useEffect(() => {
     const loadPlaces = async () => {
@@ -28,11 +33,19 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {} }) {
     return () => clearTimeout(timeoutId);
   }, [activeFilter, search]);
 
-  const sortedPlaces = [...places].sort((a, b) => {
-    if (sortBy === "rating") return b.rating - a.rating;
-    if (sortBy === "name") return a.name.localeCompare(b.name);
-    return 0;
-  });
+  const filteredAndSortedPlaces = [...places]
+    .filter(p => {
+      if (onlyAccessible && !p.accessible) return false;
+      if (onlyTopRated && p.rating < 4.5) return false;
+      if (priceFilter === "Free" && p.entryFee !== "Free" && p.entryFee !== "—") return false;
+      if (priceFilter === "Paid" && (p.entryFee === "Free" || p.entryFee === "—")) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === "rating") return b.rating - a.rating;
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      return 0;
+    });
 
   if (loading && places.length === 0) {
     return (
@@ -59,7 +72,8 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {} }) {
             onClick={e => e.stopPropagation()}
             style={{ 
               width: "100%", background: "#fff", borderRadius: "24px 24px 0 0", 
-              padding: "24px 20px 40px", boxShadow: "0 -4px 20px rgba(0,0,0,0.1)" 
+              padding: "24px 20px 40px", boxShadow: "0 -4px 20px rgba(0,0,0,0.1)",
+              maxHeight: "80%", overflowY: "auto"
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
@@ -67,7 +81,8 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {} }) {
               <button onClick={() => setShowFilters(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer" }}>✕</button>
             </div>
             
-            <div style={{ marginBottom: 20 }}>
+            {/* Sort Section */}
+            <div style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#6B5B52", marginBottom: 12 }}>Sort By</div>
               <div style={{ display: "flex", gap: 10 }}>
                 {["rating", "name"].map(s => (
@@ -85,6 +100,67 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {} }) {
                     {s}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Price Section */}
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#6B5B52", marginBottom: 12 }}>Price Range</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                {["All", "Free", "Paid"].map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setPriceFilter(p)}
+                    style={{
+                      flex: 1, padding: "10px", borderRadius: 12, border: "1.5px solid",
+                      borderColor: priceFilter === p ? "#8B3A2A" : "#EDE8DF",
+                      background: priceFilter === p ? "#F2EAE7" : "#fff",
+                      color: priceFilter === p ? "#8B3A2A" : "#6B5B52",
+                      fontSize: 12, fontWeight: 600, cursor: "pointer"
+                    }}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Toggles Section */}
+            <div style={{ marginBottom: 32 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#6B5B52", marginBottom: 16 }}>Preferences</div>
+              
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <div style={{ fontSize: 14, color: "#1C1412", fontWeight: 500 }}>Wheelchair Accessible</div>
+                <button 
+                  onClick={() => setOnlyAccessible(!onlyAccessible)}
+                  style={{ 
+                    width: 44, height: 24, borderRadius: 20, border: "none", cursor: "pointer",
+                    background: onlyAccessible ? "#4A6741" : "#EDE8DF",
+                    position: "relative", transition: "0.3s"
+                  }}
+                >
+                  <div style={{ 
+                    width: 18, height: 18, background: "#fff", borderRadius: "50%",
+                    position: "absolute", top: 3, left: onlyAccessible ? 23 : 3, transition: "0.3s"
+                  }} />
+                </button>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ fontSize: 14, color: "#1C1412", fontWeight: 500 }}>Top Rated (4.5+)</div>
+                <button 
+                  onClick={() => setOnlyTopRated(!onlyTopRated)}
+                  style={{ 
+                    width: 44, height: 24, borderRadius: 20, border: "none", cursor: "pointer",
+                    background: onlyTopRated ? "#B87318" : "#EDE8DF",
+                    position: "relative", transition: "0.3s"
+                  }}
+                >
+                  <div style={{ 
+                    width: 18, height: 18, background: "#fff", borderRadius: "50%",
+                    position: "absolute", top: 3, left: onlyTopRated ? 23 : 3, transition: "0.3s"
+                  }} />
+                </button>
               </div>
             </div>
 
