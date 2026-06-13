@@ -72,6 +72,8 @@ export const searchOSMPlaces = async (query: string): Promise<any[]> => {
         emoji: mapEmoji(category),
         category: category,
         rating: Number((4.0 + Math.random() * 0.8).toFixed(2)), // Round to 2 decimals
+        latitude: el.lat || el.center?.lat,
+        longitude: el.lon || el.center?.lon,
         distance: "Calculating...",
         entryFee: "Check locally",
         estYear: el.tags.start_date || "—",
