@@ -5,20 +5,31 @@ import { fetchPlaces, fetchUserStats } from "../data/api";
 import { colors } from "../data/tokens";
 
 export default function ProfileScreen({ onPlaceSelect }) {
+  // User Personalization State
+  const [userName, setUserName] = useState(() => localStorage.getItem("pune_user_name") || "Sourav Paul");
+  const [userBio, setUserBio] = useState(() => localStorage.getItem("pune_user_bio") || "Local Guide · Pune Explorer");
+  
   const [savedPlaces, setSavedPlaces] = useState([]);
+  const [discoveredPlaces, setDiscoveredPlaces] = useState([]);
   const [stats, setStats] = useState({ totalPoints: 0, savedCount: 0, completedStops: 0, discoveredCount: 0 });
   const [loading, setLoading] = useState(true);
-  const [activeSubTab, setActiveTab] = useState("bookmarks"); // 'bookmarks' or 'activity'
+  const [activeSubTab, setActiveTab] = useState("bookmarks"); // 'bookmarks', 'discoveries', 'activity'
+  
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [tempName, setTempName] = useState(userName);
+  const [tempBio, setTempBio] = useState(userBio);
 
   useEffect(() => {
     const loadProfileData = async () => {
       setLoading(true);
       try {
-        const [placesData, statsData] = await Promise.all([
+        const [savedData, discoveredData, statsData] = await Promise.all([
           fetchPlaces({ isSaved: true }),
+          fetchPlaces({ isDiscovered: true }),
           fetchUserStats()
         ]);
-        setSavedPlaces(placesData);
+        setSavedPlaces(savedData);
+        setDiscoveredPlaces(discoveredData);
         setStats(statsData);
       } catch (error) {
         console.error("Failed to load profile data:", error);
@@ -30,13 +41,21 @@ export default function ProfileScreen({ onPlaceSelect }) {
   }, []);
 
   const getPunekarLevel = (pts) => {
-    if (pts >= 1000) return { title: "PUNERI LEGEND", icon: "👑" };
-    if (pts >= 500) return { title: "SHILEDAR", icon: "🚩" };
-    if (pts >= 101) return { title: "PUNE EXPLORER", icon: "🧭" };
-    return { title: "NAVIN PUNEKAR", icon: "🌱" };
+    if (pts >= 1000) return { title: "PUNERI LEGEND", icon: "👑", rank: 5 };
+    if (pts >= 500) return { title: "SHILEDAR", icon: "🚩", rank: 42 };
+    if (pts >= 101) return { title: "PUNE EXPLORER", icon: "🧭", rank: 156 };
+    return { title: "NAVIN PUNEKAR", icon: "🌱", rank: 890 };
   };
 
   const currentLevel = getPunekarLevel(stats.totalPoints);
+
+  const handleSaveProfile = () => {
+    setUserName(tempName);
+    setUserBio(tempBio);
+    localStorage.setItem("pune_user_name", tempName);
+    localStorage.setItem("pune_user_bio", tempBio);
+    setIsEditModalOpen(false);
+  };
 
   if (loading) {
     return (
@@ -47,8 +66,59 @@ export default function ProfileScreen({ onPlaceSelect }) {
   }
 
   return (
-    <div style={{ background: "#FBF8F3", minHeight: "100%", fontFamily: 'Mukta' }}>
+    <div style={{ background: "#FBF8F3", minHeight: "100%", fontFamily: 'Mukta', position: "relative" }}>
       <StatusBar light />
+
+      {/* Edit Profile Modal */}
+      {isEditModalOpen && (
+        <div style={{
+          position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 100,
+          display: "flex", alignItems: "center", justifyContent: "center", padding: 20
+        }}>
+          <div style={{ background: "#fff", width: "100%", borderRadius: 20, padding: 24 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: colors.ink, marginBottom: 20 }}>Edit Profile</div>
+            
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: colors.inkMuted, marginBottom: 6 }}>Display Name</div>
+              <input 
+                value={tempName}
+                onChange={(e) => setTempName(e.target.value)}
+                style={{ 
+                  width: "100%", padding: "12px", borderRadius: 10, border: `1px solid ${colors.stoneDark}`,
+                  fontSize: 14, outline: "none"
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: colors.inkMuted, marginBottom: 6 }}>Bio / Tagline</div>
+              <input 
+                value={tempBio}
+                onChange={(e) => setTempBio(e.target.value)}
+                style={{ 
+                  width: "100%", padding: "12px", borderRadius: 10, border: `1px solid ${colors.stoneDark}`,
+                  fontSize: 14, outline: "none"
+                }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: 12 }}>
+              <button 
+                onClick={() => setIsEditModalOpen(false)}
+                style={{ flex: 1, padding: "12px", borderRadius: 12, border: `1px solid ${colors.stoneDark}`, background: "none", fontWeight: 600, cursor: "pointer" }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSaveProfile}
+                style={{ flex: 1, padding: "12px", borderRadius: 12, border: "none", background: colors.wadaRed, color: "#fff", fontWeight: 600, cursor: "pointer" }}
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Profile Header */}
       <div
@@ -59,16 +129,6 @@ export default function ProfileScreen({ onPlaceSelect }) {
           overflow: "hidden",
         }}
       >
-        {/* Background decorative elements */}
-        <div style={{ 
-          position: "absolute", top: -20, left: -20, width: 100, height: 100, 
-          borderRadius: "50%", background: "rgba(255,255,255,0.05)" 
-        }} />
-        <div style={{ 
-          position: "absolute", bottom: -30, right: -10, width: 150, height: 150, 
-          borderRadius: "50%", background: "rgba(255,255,255,0.03)" 
-        }} />
-
         <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
           <div
             style={{
@@ -87,12 +147,11 @@ export default function ProfileScreen({ onPlaceSelect }) {
           >
             👤
           </div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: "#fff" }}>Sourav Paul</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: "#fff" }}>{userName}</div>
           <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", marginTop: 4 }}>
-            Local Guide · Pune Explorer
+            {userBio}
           </div>
           
-          {/* Punekar Level Badge */}
           <div style={{
             display: "inline-flex",
             alignItems: "center",
@@ -112,68 +171,71 @@ export default function ProfileScreen({ onPlaceSelect }) {
         </div>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats & Rank Card */}
       <div style={{ 
         margin: "-24px 16px 20px", 
         background: "#fff", 
         borderRadius: 16, 
         padding: "16px",
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr 1fr",
-        gap: 12,
         boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
         position: "relative",
         zIndex: 2
       }}>
-        {[
-          { label: "Saved", val: stats.savedCount, color: colors.wadaRed },
-          { label: "Points", val: stats.totalPoints, color: colors.paithaniSaffron },
-          { label: "Stops", val: stats.completedStops, color: colors.peshwaPurple },
-        ].map(stat => (
-          <div key={stat.label} style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 18, fontWeight: 800, color: stat.color }}>{stat.val}</div>
-            <div style={{ fontSize: 10, fontWeight: 600, color: colors.inkMuted, textTransform: "uppercase" }}>{stat.label}</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16, borderBottom: `1px solid ${colors.stone}`, paddingBottom: 16 }}>
+          {[
+            { label: "Saved", val: stats.savedCount, color: colors.wadaRed },
+            { label: "Points", val: stats.totalPoints, color: colors.paithaniSaffron },
+            { label: "Stops", val: stats.completedStops, color: colors.peshwaPurple },
+          ].map(stat => (
+            <div key={stat.label} style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: stat.color }}>{stat.val}</div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: colors.inkMuted, textTransform: "uppercase" }}>{stat.label}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 32, height: 32, borderRadius: "50%", background: colors.wadaRedLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🏆</div>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: colors.ink }}>Community Rank</div>
+              <div style={{ fontSize: 10, color: colors.inkMuted }}>Based on {stats.totalPoints} points</div>
+            </div>
           </div>
-        ))}
+          <div style={{ fontSize: 15, fontWeight: 800, color: colors.wadaRed }}>#{currentLevel.rank} in Pune</div>
+        </div>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 24, padding: "0 20px", borderBottom: `1px solid ${colors.stoneDark}` }}>
-        <button 
-          onClick={() => setActiveTab("bookmarks")}
-          style={{ 
-            padding: "12px 4px", fontSize: 14, fontWeight: 700, border: "none", background: "none", cursor: "pointer",
-            color: activeSubTab === "bookmarks" ? colors.wadaRed : colors.inkMuted,
-            borderBottom: activeSubTab === "bookmarks" ? `3px solid ${colors.wadaRed}` : "3px solid transparent",
-            transition: "0.2s"
-          }}
-        >
-          Saved Places
-        </button>
-        <button 
-          onClick={() => setActiveTab("activity")}
-          style={{ 
-            padding: "12px 4px", fontSize: 14, fontWeight: 700, border: "none", background: "none", cursor: "pointer",
-            color: activeSubTab === "activity" ? colors.wadaRed : colors.inkMuted,
-            borderBottom: activeSubTab === "activity" ? `3px solid ${colors.wadaRed}` : "3px solid transparent",
-            transition: "0.2s"
-          }}
-        >
-          Badges & Achievements
-        </button>
+      <div style={{ display: "flex", gap: 20, padding: "0 20px", borderBottom: `1px solid ${colors.stoneDark}`, overflowX: "auto" }}>
+        {[
+          { id: "bookmarks", label: "Saved" },
+          { id: "discoveries", label: "My Discoveries" },
+          { id: "activity", label: "Badges" },
+        ].map(tab => (
+          <button 
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{ 
+              padding: "12px 4px", fontSize: 13, fontWeight: 700, border: "none", background: "none", cursor: "pointer",
+              color: activeSubTab === tab.id ? colors.wadaRed : colors.inkMuted,
+              borderBottom: activeSubTab === tab.id ? `3px solid ${colors.wadaRed}` : "3px solid transparent",
+              whiteSpace: "nowrap"
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Tab Content */}
       <div style={{ background: "#fff", flex: 1 }}>
-        {activeSubTab === "bookmarks" ? (
+        {activeSubTab === "bookmarks" && (
           <div>
             {savedPlaces.length === 0 ? (
               <div style={{ padding: "48px 16px", textAlign: "center" }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>🔖</div>
                 <div style={{ fontSize: 16, fontWeight: 700, color: colors.ink }}>Your treasure is empty</div>
-                <div style={{ fontSize: 13, color: colors.inkMuted, marginTop: 6, padding: "0 40px" }}>
-                  Save your favorite spots across Pune to see them listed here.
-                </div>
+                <div style={{ fontSize: 13, color: colors.inkMuted, marginTop: 6 }}>Save spots to see them here.</div>
               </div>
             ) : (
               savedPlaces.map((place) => (
@@ -181,7 +243,32 @@ export default function ProfileScreen({ onPlaceSelect }) {
               ))
             )}
           </div>
-        ) : (
+        )}
+
+        {activeSubTab === "discoveries" && (
+          <div>
+            {discoveredPlaces.length === 0 ? (
+              <div style={{ padding: "48px 16px", textAlign: "center" }}>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>🔎</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: colors.ink }}>No Discoveries Yet</div>
+                <div style={{ fontSize: 13, color: colors.inkMuted, marginTop: 6, padding: "0 40px" }}>
+                  Search for new places in the Explore tab to contribute to the Pune Guide!
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div style={{ padding: "12px 16px", fontSize: 11, fontWeight: 700, color: colors.wadaRed, background: colors.wadaRedLight }}>
+                  CONTRIBUTIONS TO PUNE DATABASE
+                </div>
+                {discoveredPlaces.map((place) => (
+                  <PlaceListItem key={place.id} place={place} onClick={onPlaceSelect} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeSubTab === "activity" && (
           <div style={{ padding: "20px 16px" }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: colors.ink, marginBottom: 16 }}>Earned Badges</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -223,10 +310,17 @@ export default function ProfileScreen({ onPlaceSelect }) {
 
       {/* Footer Info */}
       <div style={{ padding: "24px 16px 40px", textAlign: "center" }}>
-        <button style={{ 
-          background: "none", border: `1px solid ${colors.stoneDark}`, borderRadius: 10,
-          padding: "8px 20px", fontSize: 12, fontWeight: 600, color: colors.inkMuted, cursor: "pointer"
-        }}>
+        <button 
+          onClick={() => {
+            setTempName(userName);
+            setTempBio(userBio);
+            setIsEditModalOpen(true);
+          }}
+          style={{ 
+            background: "none", border: `1px solid ${colors.stoneDark}`, borderRadius: 10,
+            padding: "8px 20px", fontSize: 12, fontWeight: 600, color: colors.inkMuted, cursor: "pointer"
+          }}
+        >
           Edit Profile
         </button>
         <div style={{ fontSize: 10, color: colors.inkMuted, marginTop: 12 }}>

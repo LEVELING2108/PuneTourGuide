@@ -5,6 +5,7 @@ export const fetchPlaces = async (params = {}) => {
   if (params.category && params.category !== 'All') query.append('category', params.category);
   if (params.q) query.append('q', params.q);
   if (params.isSaved) query.append('isSaved', 'true');
+  if (params.isDiscovered) query.append('isDiscovered', 'true');
   
   const url = `${API_BASE_URL}/places?${query.toString()}`;
   const response = await fetch(url);

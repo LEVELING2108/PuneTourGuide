@@ -23,6 +23,10 @@ export const getAllPlaces = async (req: Request, res: Response) => {
     if (isSaved === 'true') {
       where.isSaved = true;
     }
+
+    if (req.query.isDiscovered === 'true') {
+      where.NOT = { osmId: null };
+    }
     
     let places = await prisma.place.findMany({
       where,
