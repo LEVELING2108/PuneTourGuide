@@ -68,29 +68,30 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick }) {
         />
 
         <div style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>
-            Namaste, Sourav 👋
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 4, letterSpacing: 0.5 }}>
+            Punekar, Namaste! 👋
           </div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: "#fff", lineHeight: 1.1 }}>
-            Explore Pune
+          <div style={{ fontSize: 32, fontWeight: 700, color: "#fff", lineHeight: 1.1, fontFamily: 'Mukta' }}>
+            Aamhi Pune <span style={{ color: "#FF9933" }}>Tour</span>
           </div>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>
-            The Oxford of the East
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>
+            Explore the Pride of Maharashtra 🚩
           </div>
           <div
             style={{
               display: "inline-flex",
               alignItems: "center",
               gap: 5,
-              marginTop: 14,
+              marginTop: 16,
               background: "rgba(255,255,255,0.15)",
+              border: "1px solid rgba(255,255,255,0.2)",
               borderRadius: 20,
               padding: "5px 12px",
               fontSize: 12,
               color: "#fff",
             }}
           >
-            ☀️ 32°C · Sunny
+            ☀️ 32°C · Pune Weather
           </div>
         </div>
       </div>
@@ -154,6 +155,27 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick }) {
             {cat}
           </button>
         ))}
+      </div>
+
+      {/* Puneri Patya Widget */}
+      <div style={{ padding: "8px 16px 16px" }}>
+        <div 
+          style={{ 
+            background: "#FF9933", borderRadius: 12, padding: "12px 16px",
+            border: "2px solid #D4AF37", boxShadow: "4px 4px 0 rgba(0,0,0,0.1)"
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: 1 }}>Puneri Patya ✨</div>
+            <div style={{ fontSize: 14 }}>🚩</div>
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginTop: 4, fontStyle: "italic" }}>
+            "Dupari 1 te 4 ya veles vishranti ghyavi, amhi hi ghenar!"
+          </div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.8)", marginTop: 4 }}>
+            Translation: Rest between 1 PM to 4 PM, we will too!
+          </div>
+        </div>
       </div>
 
       {/* Popular Spots */}
