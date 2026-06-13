@@ -108,7 +108,7 @@ export default function PlaceDetailScreen({ place, onBack }) {
               flexShrink: 0,
             }}
           >
-            {place.rating} ⭐
+            {place.rating?.toFixed(1) || "4.0"} ⭐
           </div>
         </div>
 

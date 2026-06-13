@@ -52,7 +52,7 @@ export default function PlaceListItem({ place, onClick }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 600, color: "#B87318" }}>
-            ⭐ {place.rating}
+            ⭐ {place.rating?.toFixed(1) || "4.0"}
           </div>
           <div
             style={{

@@ -35,7 +35,7 @@ export default function PlaceCard({ place, onClick }) {
       <div style={{ padding: "8px 10px 10px" }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: "#1C1412" }}>{place.name}</div>
         <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 2 }}>
-          ⭐ {place.rating} · {place.category}
+          ⭐ {place.rating?.toFixed(1) || "4.0"} · {place.category}
         </div>
         <div
           style={{
