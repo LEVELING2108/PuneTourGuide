@@ -132,6 +132,24 @@ const events = [
     desc: "FC Road street eats tour",
     color: "indigo",
   },
+  {
+    date: "WED · JUN 18",
+    name: "Osho Meditation Session",
+    desc: "Evening zen at Koregaon Park",
+    color: "terracotta",
+  },
+  {
+    date: "FRI · JUN 20",
+    name: "Pune Tech Meetup",
+    desc: "Networking at Hinjewadi IT Park",
+    color: "indigo",
+  },
+  {
+    date: "SAT · JUN 21",
+    name: "Heritage Cycle Tour",
+    desc: "Morning ride through old city",
+    color: "terracotta",
+  },
 ];
 
 const itineraryDays = [

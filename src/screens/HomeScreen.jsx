@@ -9,6 +9,7 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick }) {
   const [places, setPlaces] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showAllEvents, setShowAllEvents] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -188,25 +189,33 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick }) {
         >
           <div style={{ fontSize: 14, fontWeight: 600, color: "#1C1412" }}>Nearby Events</div>
           <div 
-            onClick={() => alert("Exploring more events in Pune...")}
+            onClick={() => setShowAllEvents(!showAllEvents)}
             style={{ fontSize: 12, color: "#8B3A2A", cursor: "pointer" }}
           >
-            More
+            {showAllEvents ? "Show Less" : "More"}
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 8, padding: "0 16px 20px" }}>
-          {events.map((ev) => (
+        <div style={{ 
+          display: "flex", 
+          gap: 8, 
+          padding: "0 16px 20px", 
+          flexDirection: showAllEvents ? "column" : "row",
+          overflowX: showAllEvents ? "visible" : "auto"
+        }}>
+          {(showAllEvents ? events : events.slice(0, 2)).map((ev) => (
             <div
               key={ev.id}
               onClick={() => alert(`Event: ${ev.name}\nDate: ${ev.date}\nDescription: ${ev.desc}`)}
               style={{
-                flex: 1,
+                flex: showAllEvents ? "none" : 1,
+                minWidth: showAllEvents ? "auto" : 160,
                 background: "#fff",
                 borderRadius: 12,
                 border: "1px solid #EDE8DF",
                 padding: "10px 12px",
                 cursor: "pointer",
+                marginBottom: showAllEvents ? 8 : 0
               }}
             >
               <div
