@@ -4,7 +4,7 @@ import PlaceListItem from "../components/PlaceListItem";
 import { categories } from "../data/puneData";
 import { fetchPlaces } from "../data/api";
 
-export default function ExploreScreen({ onPlaceSelect, initialParams = {} }) {
+export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userLocation }) {
   const [activeFilter, setActiveFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [places, setPlaces] = useState([]);

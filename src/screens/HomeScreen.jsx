@@ -4,7 +4,7 @@ import PlaceCard from "../components/PlaceCard";
 import { categories } from "../data/puneData";
 import { fetchPlaces, fetchEvents } from "../data/api";
 
-export default function HomeScreen({ onPlaceSelect, onSearchClick }) {
+export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation }) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [places, setPlaces] = useState([]);
   const [events, setEvents] = useState([]);

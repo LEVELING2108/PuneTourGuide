@@ -1,3 +1,6 @@
+// ── CATEGORIES ────────────────────────────────────────────
+export const categories = ["All", "Heritage", "Temple", "Nature", "Food", "Wellness"];
+
 // ── PLACES DATA ──────────────────────────────────────────
 export const places = [
   {
@@ -127,8 +130,6 @@ export const places = [
       "A sprawling resort in Koregaon Park combining a meditation campus, spa, and lush gardens. Visitors undergo an orientation and HIV test before entry — it is a unique and tranquil retreat.",
   },
 ];
-
-export const categories = ["All", "Heritage", "Temple", "Nature", "Food", "Wellness"];
 
 // ── ROUTE STOPS ──────────────────────────────────────────
 export const routeStops = [

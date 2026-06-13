@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -29,28 +26,28 @@ model Place {
   tagColor    String
   bgColor     String
   description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   isSaved     Boolean  @default(false)
   osmId       String?  @unique
   latitude    Float?
   longitude   Float?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 }
 
 model Event {
-  id          Int      @id @default(autoincrement())
-  date        String
-  name        String
-  desc        String
-  color       String
-  createdAt   DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  date      String
+  name      String
+  desc      String
+  color     String
+  createdAt DateTime @default(now())
 }
 
 model ItineraryDay {
-  id        Int      @id @default(autoincrement())
-  day       Int
-  label     String
-  stops     ItineraryStop[]
+  id    Int             @id @default(autoincrement())
+  day   Int
+  label String
+  stops ItineraryStop[]
 }
 
 model ItineraryStop {
@@ -59,8 +56,8 @@ model ItineraryStop {
   name           String
   desc           String
   dotColor       String
-  done           Boolean      @default(false)
   itineraryDayId Int
+  tags           Json
+  done           Boolean      @default(false)
   itineraryDay   ItineraryDay @relation(fields: [itineraryDayId], references: [id])
-  tags           Json         // Store tags as JSON array for simplicity
 }
