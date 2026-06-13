@@ -1,11 +1,16 @@
 import { useState } from "react";
 import StatusBar from "../components/StatusBar";
 import { addStopToItinerary, toggleSavePlace } from "../data/api";
+import { calculateDistance, formatDistance } from "../utils/location";
 
-export default function PlaceDetailScreen({ place, onBack }) {
+export default function PlaceDetailScreen({ place, onBack, userLocation }) {
   const [isSaved, setIsSaved] = useState(place?.isSaved || false);
 
   if (!place) return null;
+
+  const dynamicDistance = userLocation
+    ? calculateDistance(userLocation.latitude, userLocation.longitude, place.latitude, place.longitude)
+    : null;
 
   const handleToggleSave = async () => {
     try {
@@ -94,7 +99,7 @@ export default function PlaceDetailScreen({ place, onBack }) {
           <div>
             <div style={{ fontSize: 20, fontWeight: 700, color: "#1C1412" }}>{place.name}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#6B5B52", marginTop: 4 }}>
-              📍 {place.address} · {place.distance} away
+              📍 {place.address} · {formatDistance(dynamicDistance)}
             </div>
           </div>
           <div

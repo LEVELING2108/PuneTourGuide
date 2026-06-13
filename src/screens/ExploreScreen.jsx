@@ -258,7 +258,7 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {} }) {
           </div>
         ) : (
           filteredAndSortedPlaces.map((place) => (
-            <PlaceListItem key={place.id} place={place} onClick={onPlaceSelect} />
+            <PlaceListItem key={place.id} place={place} onClick={onPlaceSelect} userLocation={userLocation} />
           ))
         )}
       </div>

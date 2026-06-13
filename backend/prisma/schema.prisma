@@ -31,6 +31,8 @@ model Place {
   description String
   isSaved     Boolean  @default(false)
   osmId       String?  @unique
+  latitude    Float?
+  longitude   Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

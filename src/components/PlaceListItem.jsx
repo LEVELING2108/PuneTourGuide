@@ -1,8 +1,13 @@
 import { tagColorMap, categoryColors } from "../data/tokens";
+import { calculateDistance, formatDistance } from "../utils/location";
 
-export default function PlaceListItem({ place, onClick }) {
+export default function PlaceListItem({ place, onClick, userLocation }) {
   const catStyle = categoryColors[place.category] || categoryColors.default;
   const tagStyle = tagColorMap[place.tagColor] || tagColorMap.terracotta;
+
+  const dynamicDistance = userLocation
+    ? calculateDistance(userLocation.latitude, userLocation.longitude, place.latitude, place.longitude)
+    : null;
 
   return (
     <div
@@ -63,7 +68,7 @@ export default function PlaceListItem({ place, onClick }) {
               borderRadius: 8,
             }}
           >
-            {place.distance}
+            {formatDistance(dynamicDistance)}
           </div>
           {place.tag === "Open Now" && (
             <div

@@ -1,7 +1,12 @@
 import { tagColorMap } from "../data/tokens";
+import { calculateDistance, formatDistance } from "../utils/location";
 
-export default function PlaceCard({ place, onClick }) {
+export default function PlaceCard({ place, onClick, userLocation }) {
   const tagStyle = tagColorMap[place.tagColor] || tagColorMap.terracotta;
+
+  const dynamicDistance = userLocation
+    ? calculateDistance(userLocation.latitude, userLocation.longitude, place.latitude, place.longitude)
+    : null;
 
   return (
     <div
@@ -35,7 +40,7 @@ export default function PlaceCard({ place, onClick }) {
       <div style={{ padding: "8px 10px 10px" }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: "#1C1412" }}>{place.name}</div>
         <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 2 }}>
-          ⭐ {place.rating?.toFixed(1) || "4.0"} · {place.category}
+          ⭐ {place.rating?.toFixed(1) || "4.0"} · {formatDistance(dynamicDistance)}
         </div>
         <div
           style={{

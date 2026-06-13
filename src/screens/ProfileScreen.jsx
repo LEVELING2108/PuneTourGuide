@@ -303,7 +303,7 @@ export default function ProfileScreen({ onPlaceSelect }) {
               </div>
             ) : (
               savedPlaces.map((place) => (
-                <PlaceListItem key={place.id} place={place} onClick={onPlaceSelect} />
+                <PlaceListItem key={place.id} place={place} onClick={onPlaceSelect} userLocation={userLocation} />
               ))
             )}
           </div>
@@ -325,7 +325,7 @@ export default function ProfileScreen({ onPlaceSelect }) {
                   CONTRIBUTIONS TO PUNE DATABASE
                 </div>
                 {discoveredPlaces.map((place) => (
-                  <PlaceListItem key={place.id} place={place} onClick={onPlaceSelect} />
+                  <PlaceListItem key={place.id} place={place} onClick={onPlaceSelect} userLocation={userLocation} />
                 ))}
               </div>
             )}

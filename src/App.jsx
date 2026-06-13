@@ -6,11 +6,13 @@ import PlanScreen from "./screens/PlanScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import PlaceDetailScreen from "./screens/PlaceDetailScreen";
 import BottomNav from "./components/BottomNav";
+import { useUserLocation } from "./hooks/useUserLocation";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("home");
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [exploreParams, setExploreParams] = useState({});
+  const { location: userLocation } = useUserLocation();
 
   const handlePlaceSelect = (place) => {
     setSelectedPlace(place);
@@ -30,21 +32,22 @@ export default function App() {
   const renderScreen = () => {
     switch (activeTab) {
       case "home":
-        return <HomeScreen onPlaceSelect={handlePlaceSelect} onSearchClick={handleSearchClick} />;
+        return <HomeScreen onPlaceSelect={handlePlaceSelect} onSearchClick={handleSearchClick} userLocation={userLocation} />;
       case "explore":
-        return <ExploreScreen onPlaceSelect={handlePlaceSelect} initialParams={exploreParams} />;
+        return <ExploreScreen onPlaceSelect={handlePlaceSelect} initialParams={exploreParams} userLocation={userLocation} />;
       case "map":
-        return <MapScreen />;
+        return <MapScreen userLocation={userLocation} />;
       case "plan":
-        return <PlanScreen />;
+        return <PlanScreen userLocation={userLocation} />;
       case "profile":
-        return <ProfileScreen onPlaceSelect={handlePlaceSelect} />;
+        return <ProfileScreen onPlaceSelect={handlePlaceSelect} userLocation={userLocation} />;
       case "detail":
-        return <PlaceDetailScreen place={selectedPlace} onBack={handleBack} />;
+        return <PlaceDetailScreen place={selectedPlace} onBack={handleBack} userLocation={userLocation} />;
       default:
-        return <HomeScreen onPlaceSelect={handlePlaceSelect} onSearchClick={() => setActiveTab("explore")} />;
+        return <HomeScreen onPlaceSelect={handlePlaceSelect} onSearchClick={handleSearchClick} userLocation={userLocation} />;
     }
   };
+
 
 
   return (

@@ -194,7 +194,7 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick }) {
 
         <div style={{ display: "flex", gap: 10, padding: "0 16px 16px", overflowX: "auto" }}>
           {places.map((place) => (
-            <PlaceCard key={place.id} place={place} onClick={onPlaceSelect} />
+            <PlaceCard key={place.id} place={place} onClick={onPlaceSelect} userLocation={userLocation} />
           ))}
         </div>
       </div>
