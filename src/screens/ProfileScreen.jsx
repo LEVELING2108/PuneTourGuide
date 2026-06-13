@@ -4,7 +4,7 @@ import PlaceListItem from "../components/PlaceListItem";
 import { fetchPlaces, fetchUserStats } from "../data/api";
 import { colors } from "../data/tokens";
 
-export default function ProfileScreen({ onPlaceSelect }) {
+export default function ProfileScreen({ onPlaceSelect, userLocation }) {
   // User Personalization State
   const [userName, setUserName] = useState(() => localStorage.getItem("pune_user_name") || "Sourav Paul");
   const [userBio, setUserBio] = useState(() => localStorage.getItem("pune_user_bio") || "Local Guide · Pune Explorer");
