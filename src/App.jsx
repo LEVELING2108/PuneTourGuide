@@ -10,6 +10,7 @@ import BottomNav from "./components/BottomNav";
 export default function App() {
   const [activeTab, setActiveTab] = useState("home");
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const [exploreParams, setExploreParams] = useState({});
 
   const handlePlaceSelect = (place) => {
     setSelectedPlace(place);
@@ -21,12 +22,17 @@ export default function App() {
     setActiveTab("explore");
   };
 
+  const handleSearchClick = (params = {}) => {
+    setExploreParams(params);
+    setActiveTab("explore");
+  };
+
   const renderScreen = () => {
     switch (activeTab) {
       case "home":
-        return <HomeScreen onPlaceSelect={handlePlaceSelect} onSearchClick={() => setActiveTab("explore")} />;
+        return <HomeScreen onPlaceSelect={handlePlaceSelect} onSearchClick={handleSearchClick} />;
       case "explore":
-        return <ExploreScreen onPlaceSelect={handlePlaceSelect} />;
+        return <ExploreScreen onPlaceSelect={handlePlaceSelect} initialParams={exploreParams} />;
       case "map":
         return <MapScreen />;
       case "plan":

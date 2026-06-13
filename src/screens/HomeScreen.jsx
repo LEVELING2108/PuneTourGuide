@@ -119,7 +119,7 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick }) {
           <span 
             onClick={(e) => {
               e.stopPropagation();
-              alert("Search settings: Advanced filters coming soon!");
+              onSearchClick({ showFilters: true });
             }}
             style={{ fontSize: 16, color: "#8B3A2A" }}
           >

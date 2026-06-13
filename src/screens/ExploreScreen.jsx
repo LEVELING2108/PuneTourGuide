@@ -4,11 +4,13 @@ import PlaceListItem from "../components/PlaceListItem";
 import { categories } from "../data/puneData";
 import { fetchPlaces } from "../data/api";
 
-export default function ExploreScreen({ onPlaceSelect }) {
+export default function ExploreScreen({ onPlaceSelect, initialParams = {} }) {
   const [activeFilter, setActiveFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showFilters, setShowFilters] = useState(initialParams.showFilters || false);
+  const [sortBy, setSortBy] = useState("rating"); // 'rating' or 'name'
 
   useEffect(() => {
     const loadPlaces = async () => {
@@ -26,6 +28,12 @@ export default function ExploreScreen({ onPlaceSelect }) {
     return () => clearTimeout(timeoutId);
   }, [activeFilter, search]);
 
+  const sortedPlaces = [...places].sort((a, b) => {
+    if (sortBy === "rating") return b.rating - a.rating;
+    if (sortBy === "name") return a.name.localeCompare(b.name);
+    return 0;
+  });
+
   if (loading && places.length === 0) {
     return (
       <div style={{ background: "#FBF8F3", minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -35,8 +43,63 @@ export default function ExploreScreen({ onPlaceSelect }) {
   }
 
   return (
-    <div style={{ background: "#FBF8F3", minHeight: "100%" }}>
+    <div style={{ background: "#FBF8F3", minHeight: "100%", position: "relative" }}>
       <StatusBar />
+
+      {/* Filter Modal Overlay */}
+      {showFilters && (
+        <div 
+          onClick={() => setShowFilters(false)}
+          style={{ 
+            position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", 
+            zIndex: 100, display: "flex", alignItems: "flex-end" 
+          }}
+        >
+          <div 
+            onClick={e => e.stopPropagation()}
+            style={{ 
+              width: "100%", background: "#fff", borderRadius: "24px 24px 0 0", 
+              padding: "24px 20px 40px", boxShadow: "0 -4px 20px rgba(0,0,0,0.1)" 
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "#1C1412" }}>Search Settings</div>
+              <button onClick={() => setShowFilters(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer" }}>✕</button>
+            </div>
+            
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#6B5B52", marginBottom: 12 }}>Sort By</div>
+              <div style={{ display: "flex", gap: 10 }}>
+                {["rating", "name"].map(s => (
+                  <button
+                    key={s}
+                    onClick={() => setSortBy(s)}
+                    style={{
+                      flex: 1, padding: "10px", borderRadius: 12, border: "1.5px solid",
+                      borderColor: sortBy === s ? "#8B3A2A" : "#EDE8DF",
+                      background: sortBy === s ? "#F2EAE7" : "#fff",
+                      color: sortBy === s ? "#8B3A2A" : "#6B5B52",
+                      fontSize: 12, fontWeight: 600, textTransform: "capitalize", cursor: "pointer"
+                    }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setShowFilters(false)}
+              style={{ 
+                width: "100%", background: "#8B3A2A", color: "#fff", border: "none", 
+                borderRadius: 14, padding: "14px", fontWeight: 600, cursor: "pointer" 
+              }}
+            >
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div style={{ background: "#FBF8F3", padding: "10px 16px 14px" }}>
@@ -71,7 +134,7 @@ export default function ExploreScreen({ onPlaceSelect }) {
             />
           </div>
           <div
-            onClick={() => alert("Advanced Filters: Coming soon!")}
+            onClick={() => setShowFilters(true)}
             style={{
               width: 36,
               height: 36,
@@ -113,12 +176,12 @@ export default function ExploreScreen({ onPlaceSelect }) {
 
       {/* Place list */}
       <div style={{ background: "#fff" }}>
-        {places.length === 0 ? (
+        {sortedPlaces.length === 0 ? (
           <div style={{ padding: "32px 16px", textAlign: "center", color: "#6B5B52", fontSize: 13 }}>
             No places found. Try a different search.
           </div>
         ) : (
-          places.map((place) => (
+          sortedPlaces.map((place) => (
             <PlaceListItem key={place.id} place={place} onClick={onPlaceSelect} />
           ))
         )}
