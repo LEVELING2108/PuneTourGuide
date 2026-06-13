@@ -94,9 +94,50 @@ export default function ProfileScreen({ onPlaceSelect }) {
           position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 100,
           display: "flex", alignItems: "center", justifyContent: "center", padding: 20
         }}>
-          <div style={{ background: "#fff", width: "100%", borderRadius: 20, padding: 24 }}>
+          <div style={{ background: "#fff", width: "100%", borderRadius: 20, padding: 24, boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }}>
             <div style={{ fontSize: 18, fontWeight: 700, color: colors.ink, marginBottom: 20 }}>Edit Profile</div>
             
+            {/* Avatar Edit Section */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 24 }}>
+              <label style={{ position: "relative", cursor: "pointer" }}>
+                <div
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: "50%",
+                    background: "#f0f0f0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 40,
+                    border: `3px solid ${colors.paithaniGold}`,
+                    overflow: "hidden",
+                    backgroundImage: tempAvatar ? `url(${tempAvatar})` : "none",
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                >
+                  {!tempAvatar && "👤"}
+                </div>
+                <div style={{
+                  position: "absolute", bottom: 0, right: 0,
+                  width: 28, height: 28, borderRadius: "50%",
+                  background: colors.wadaRed, color: "#fff",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 14, border: "2px solid #fff"
+                }}>
+                  📷
+                </div>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleImageChange}
+                  style={{ display: "none" }}
+                />
+              </label>
+              <div style={{ fontSize: 11, color: colors.inkMuted, marginTop: 8 }}>Click to change photo</div>
+            </div>
+
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 12, fontWeight: 600, color: colors.inkMuted, marginBottom: 6 }}>Display Name</div>
               <input 
@@ -162,9 +203,13 @@ export default function ProfileScreen({ onPlaceSelect }) {
               fontSize: 44,
               border: `4px solid ${colors.paithaniGold}`,
               boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
+              overflow: "hidden",
+              backgroundImage: userAvatar ? `url(${userAvatar})` : "none",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
             }}
           >
-            👤
+            {!userAvatar && "👤"}
           </div>
           <div style={{ fontSize: 22, fontWeight: 700, color: "#fff" }}>{userName}</div>
           <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", marginTop: 4 }}>
@@ -333,6 +378,7 @@ export default function ProfileScreen({ onPlaceSelect }) {
           onClick={() => {
             setTempName(userName);
             setTempBio(userBio);
+            setTempAvatar(userAvatar);
             setIsEditModalOpen(true);
           }}
           style={{ 

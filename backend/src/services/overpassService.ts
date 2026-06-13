@@ -71,7 +71,7 @@ export const searchOSMPlaces = async (query: string): Promise<any[]> => {
         name: el.tags.name,
         emoji: mapEmoji(category),
         category: category,
-        rating: 4.0 + Math.random() * 0.8, // Simulate a rating
+        rating: Number((4.0 + Math.random() * 0.8).toFixed(2)), // Round to 2 decimals
         distance: "Calculating...",
         entryFee: "Check locally",
         estYear: el.tags.start_date || "—",
