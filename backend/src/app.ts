@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import placeRoutes from './routes/placeRoutes';
 import eventRoutes from './routes/eventRoutes';
 import itineraryRoutes from './routes/itineraryRoutes';
+import userRoutes from './routes/userRoutes';
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/api/places', placeRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/itinerary', itineraryRoutes);
+app.use('/api/user', userRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Pune Tour Guide API is running');

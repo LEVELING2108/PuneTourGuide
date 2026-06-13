@@ -53,3 +53,9 @@ export const toggleSavePlace = async (id, isSaved) => {
   if (!response.ok) throw new Error('Failed to toggle save status');
   return response.json();
 };
+
+export const fetchUserStats = async () => {
+  const response = await fetch(`${API_BASE_URL}/user/stats`);
+  if (!response.ok) throw new Error('Failed to fetch user stats');
+  return response.json();
+};
