@@ -252,12 +252,12 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {} }) {
 
       {/* Place list */}
       <div style={{ background: "#fff" }}>
-        {sortedPlaces.length === 0 ? (
+        {filteredAndSortedPlaces.length === 0 ? (
           <div style={{ padding: "32px 16px", textAlign: "center", color: "#6B5B52", fontSize: 13 }}>
             No places found. Try a different search.
           </div>
         ) : (
-          sortedPlaces.map((place) => (
+          filteredAndSortedPlaces.map((place) => (
             <PlaceListItem key={place.id} place={place} onClick={onPlaceSelect} />
           ))
         )}
