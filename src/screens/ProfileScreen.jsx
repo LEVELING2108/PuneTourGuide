@@ -80,8 +80,8 @@ export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguag
   };
 
   const handleLanguageChange = (lang) => {
+    // This updates the global state in App.jsx, which re-renders the whole app with the new language.
     setUserLanguage(lang);
-    localStorage.setItem("pune_user_lang", lang);
   };
 
   if (loading) {

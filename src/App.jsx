@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import HomeScreen from "./screens/HomeScreen";
 import ExploreScreen from "./screens/ExploreScreen";
 import MapScreen from "./screens/MapScreen";
@@ -7,12 +7,17 @@ import ProfileScreen from "./screens/ProfileScreen";
 import PlaceDetailScreen from "./screens/PlaceDetailScreen";
 import BottomNav from "./components/BottomNav";
 import { useUserLocation } from "./hooks/useUserLocation";
+
 export default function App() {
   const [activeTab, setActiveTab] = useState("home");
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [exploreParams, setExploreParams] = useState({});
   const { location: userLocation } = useUserLocation();
   const [userLanguage, setUserLanguage] = useState(() => localStorage.getItem("pune_user_lang") || "English");
+
+  useEffect(() => {
+    localStorage.setItem("pune_user_lang", userLanguage);
+  }, [userLanguage]);
 
   const handlePlaceSelect = (place) => {
     setSelectedPlace(place);
@@ -47,16 +52,12 @@ export default function App() {
         return <HomeScreen onPlaceSelect={handlePlaceSelect} onSearchClick={handleSearchClick} userLocation={userLocation} userLanguage={userLanguage} />;
     }
   };
-...
-        {/* Bottom nav — hidden on detail screen */}
-        {activeTab !== "detail" && (
-          <BottomNav activeTab={activeTab} onTabChange={setActiveTab} userLanguage={userLanguage} />
-        )}
-      </div>
-    </div>
-  );
-}
 
+  return (
+    <div className="flex justify-center items-start min-h-screen bg-gray-100 py-8">
+      <div
+        className="relative bg-[#FBF8F3] overflow-hidden flex flex-col"
+        style={{
           width: 375,
           minHeight: 812,
           borderRadius: 40,
@@ -82,7 +83,7 @@ export default function App() {
 
         {/* Bottom nav — hidden on detail screen */}
         {activeTab !== "detail" && (
-          <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+          <BottomNav activeTab={activeTab} onTabChange={setActiveTab} userLanguage={userLanguage} />
         )}
       </div>
     </div>
