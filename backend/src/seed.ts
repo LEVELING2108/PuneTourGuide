@@ -181,6 +181,36 @@ const events = [
     desc: "FC Road street eats tour",
     color: "indigo",
   },
+  {
+    date: "WED · JUN 18",
+    name: "Heritage Cycle Tour",
+    desc: "Morning cycle through Old Pune Peths",
+    color: "sage",
+  },
+  {
+    date: "FRI · JUN 20",
+    name: "Dhamal Dandiya Night",
+    desc: "Pre-season workshop at Koregaon Park",
+    color: "amber",
+  },
+  {
+    date: "SAT · JUN 21",
+    name: "Pune Tech Meetup",
+    desc: "Networking for developers at Baner",
+    color: "indigo",
+  },
+  {
+    date: "SUN · JUN 22",
+    name: "Mulshi Lake Trek",
+    desc: "Guided monsoon trek near Pune",
+    color: "green",
+  },
+  {
+    date: "TUE · JUN 24",
+    name: "Classical Dance Night",
+    desc: "Kathak performance at Shaniwar Wada",
+    color: "terracotta",
+  }
 ];
 
 async function main() {

@@ -12,6 +12,7 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(initialParams.showFilters || false);
   const [sortBy, setSortBy] = useState("rating"); // 'rating' or 'name'
+  const [showScrollTop, setShowScrollTop] = useState(false);
   
   const t = translations[userLanguage] || translations.English;
 
@@ -19,6 +20,25 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
   const [onlyAccessible, setOnlyAccessible] = useState(false);
   const [priceFilter, setPriceFilter] = useState("All"); // 'All', 'Free', 'Paid'
   const [onlyTopRated, setOnlyTopRated] = useState(false);
+
+  useEffect(() => {
+    const scrollContainer = document.getElementById('main-scroll-container');
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      setShowScrollTop(scrollContainer.scrollTop > 300);
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    const scrollContainer = document.getElementById('explore-scroll-container');
+    if (scrollContainer) {
+      scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     const loadPlaces = async () => {
@@ -52,15 +72,141 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
 
   if (loading && places.length === 0) {
     return (
-      <div style={{ background: "#FBF8F3", minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ background: "#FBF8F3", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ color: "#8B3A2A", fontWeight: 600 }}>{t.searching}</div>
       </div>
     );
   }
 
   return (
-    <div style={{ background: "#FBF8F3", minHeight: "100%", position: "relative" }}>
-      <StatusBar />
+    <div style={{ background: "#FBF8F3", height: "100%", display: "flex", flexDirection: "column" }}>
+      {/* Fixed Header Section */}
+      <div style={{ background: "#FBF8F3", zIndex: 10, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
+        <StatusBar />
+        
+        {/* Header */}
+        <div style={{ padding: "10px 16px 14px" }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "#1C1412", marginBottom: 10 }}>
+            {t.exploreTitle}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                flex: 1,
+                background: "#EDE8DF",
+                borderRadius: 10,
+                padding: "8px 12px",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <span style={{ fontSize: 14, color: "#6B5B52" }}>🔍</span>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t.searchPlaceholder}
+                style={{
+                  background: "none",
+                  border: "none",
+                  outline: "none",
+                  fontSize: 12,
+                  color: "#1C1412",
+                  width: "100%",
+                }}
+              />
+            </div>
+            <div
+              onClick={() => setShowFilters(true)}
+              style={{
+                width: 36,
+                height: 36,
+                background: "#8B3A2A",
+                borderRadius: 10,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+              }}
+            >
+              <span style={{ fontSize: 16, color: "#fff" }}>☰</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Filter chips */}
+        <div style={{ 
+          display: "flex", gap: 6, padding: "0 16px 12px", overflowX: "auto", 
+          background: "#FBF8F3", paddingBottom: 12
+        }}>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveFilter(cat)}
+              style={{
+                padding: "5px 12px",
+                borderRadius: 16,
+                fontSize: 11,
+                fontWeight: 500,
+                flexShrink: 0,
+                border: "none",
+                cursor: "pointer",
+                background: activeFilter === cat ? "#3D3680" : "#EDE8DF",
+                color: activeFilter === cat ? "#fff" : "#6B5B52",
+              }}
+            >
+              {userLanguage === "Marathi" ? (translations.Marathi[cat.toLowerCase()] || cat) : cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Scrollable Content */}
+      <div 
+        id="explore-scroll-container"
+        onScroll={(e) => setShowScrollTop(e.target.scrollTop > 300)}
+        style={{ flex: 1, overflowY: "auto", paddingBottom: 80 }}
+      >
+        <div style={{ background: "#fff" }}>
+          {filteredAndSortedPlaces.length === 0 ? (
+            <div style={{ padding: "32px 16px", textAlign: "center", color: "#6B5B52", fontSize: 13 }}>
+              {t.noPlaces}
+            </div>
+          ) : (
+            filteredAndSortedPlaces.map((place) => (
+              <PlaceListItem key={place.id} place={place} onClick={onPlaceSelect} userLocation={userLocation} />
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Scroll to top button */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          style={{
+            position: "absolute",
+            bottom: 100,
+            right: 20,
+            width: 44,
+            height: 44,
+            borderRadius: "50%",
+            background: "#8B3A2A",
+            color: "#fff",
+            border: "none",
+            boxShadow: "0 4px 12px rgba(139,58,42,0.3)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 20,
+            cursor: "pointer",
+            zIndex: 100,
+            transition: "0.3s"
+          }}
+        >
+          ↑
+        </button>
+      )}
 
       {/* Filter Modal Overlay */}
       {showFilters && (
@@ -181,7 +327,7 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
       )}
 
       {/* Header */}
-      <div style={{ background: "#FBF8F3", padding: "10px 16px 14px" }}>
+      <div style={{ background: "#FBF8F3", padding: "10px 16px 14px", position: "sticky", top: 0, zIndex: 10 }}>
         <div style={{ fontSize: 18, fontWeight: 700, color: "#1C1412", marginBottom: 10 }}>
           {t.exploreTitle}
         </div>
@@ -231,7 +377,10 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
       </div>
 
       {/* Filter chips */}
-      <div style={{ display: "flex", gap: 6, padding: "0 16px 12px", overflowX: "auto" }}>
+      <div style={{ 
+        display: "flex", gap: 6, padding: "0 16px 12px", overflowX: "auto", 
+        background: "#FBF8F3", position: "sticky", top: 104, zIndex: 9 
+      }}>
         {categories.map((cat) => (
           <button
             key={cat}
@@ -265,6 +414,34 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
           ))
         )}
       </div>
+
+      {/* Scroll to top button */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          style={{
+            position: "fixed",
+            bottom: 90,
+            right: 20,
+            width: 44,
+            height: 44,
+            borderRadius: "50%",
+            background: "#8B3A2A",
+            color: "#fff",
+            border: "none",
+            boxShadow: "0 4px 12px rgba(139,58,42,0.3)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 20,
+            cursor: "pointer",
+            zIndex: 100,
+            transition: "0.3s"
+          }}
+        >
+          ↑
+        </button>
+      )}
     </div>
   );
 }

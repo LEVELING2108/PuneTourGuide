@@ -42,7 +42,7 @@ export default function PlaceDetailScreen({ place, onBack, userLocation, userLan
   };
 
   return (
-    <div style={{ background: "#fff", minHeight: "100%" }}>
+    <div style={{ background: "#fff", height: "100%", overflowY: "auto" }}>
       <StatusBar light />
 
       {/* Hero */}
