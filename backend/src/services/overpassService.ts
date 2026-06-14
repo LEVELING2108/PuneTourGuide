@@ -27,12 +27,39 @@ export interface OSMPlace {
 
 const mapCategory = (tags: any): string => {
   const name = (tags.name || '').toLowerCase();
-  if (tags.historic) return 'Heritage';
-  if (tags.amenity === 'place_of_worship' || tags.building === 'temple') return 'Temple';
-  if (tags.tourism === 'zoo' || tags.leisure === 'park' || tags.leisure === 'nature_reserve') return 'Nature';
+  
+  // Strict tourist filtering: ignore non-tourist establishments
+  const skipKeywords = [
+    'society', 'apartment', 'villa', 'building', 'bank', 'atm', 'nursing', 'clinic', 'hospital', 
+    'school', 'college', 'institute', 'academy', 'business', 'office', 'company', 'industrial', 
+    'residential', 'hostel', 'pg', 'stores', 'shop', 'service', 'center', 'centre', 'mall'
+  ];
+  
+  if (skipKeywords.some(kw => name.includes(kw))) return 'Skip';
+  if (tags.residential || tags.industrial || tags.office || tags.landuse === 'residential' || tags.amenity === 'bank') return 'Skip';
+
+  // Heritage sites in Pune
+  if (tags.historic || tags.tourism === 'museum' || tags.tourism === 'artwork' || name.includes('fort') || name.includes('wada') || name.includes('palace')) return 'Heritage';
+  
+  // Temples and religious sites
+  if (tags.amenity === 'place_of_worship' || tags.building === 'temple' || name.includes('temple') || name.includes('mandir') || name.includes('gurudwara') || name.includes('mosque')) return 'Temple';
+  
+  // Nature and Parks
+  if (tags.tourism === 'zoo' || tags.leisure === 'park' || tags.leisure === 'nature_reserve' || tags.tourism === 'viewpoint' || name.includes('garden') || name.includes('lake') || name.includes('hill') || name.includes('tekdi')) return 'Nature';
+  
+  // Famous Food spots
+  if (tags.amenity === 'restaurant' || tags.amenity === 'cafe') return 'Food';
+  
+  // Wellness
   if (name.includes('spa') || name.includes('wellness') || tags.amenity === 'spa' || tags.leisure === 'resort') return 'Wellness';
-  if (tags.amenity === 'restaurant' || tags.amenity === 'cafe' || tags.amenity === 'food_court') return 'Food';
-  return 'Explore';
+  
+  // If it's a generic tourist attraction, put it in Heritage or Nature depending on keywords
+  if (tags.tourism === 'attraction') {
+    if (name.includes('garden') || name.includes('park')) return 'Nature';
+    return 'Heritage'; // Default for attractions in Pune
+  }
+  
+  return 'Skip';
 };
 
 const mapEmoji = (category: string): string => {
@@ -50,8 +77,12 @@ export const searchOSMPlaces = async (query: string): Promise<any[]> => {
   const overpassQuery = `
     [out:json][timeout:25];
     (
-      node["name"~"${query}",i](${PUNE_BBOX});
-      way["name"~"${query}",i](${PUNE_BBOX});
+      node["name"~"${query}",i]["tourism"](${PUNE_BBOX});
+      node["name"~"${query}",i]["historic"](${PUNE_BBOX});
+      node["name"~"${query}",i]["amenity"~"restaurant|cafe|place_of_worship"](${PUNE_BBOX});
+      way["name"~"${query}",i]["tourism"](${PUNE_BBOX});
+      way["name"~"${query}",i]["historic"](${PUNE_BBOX});
+      way["name"~"${query}",i]["amenity"~"restaurant|cafe|place_of_worship"](${PUNE_BBOX});
     );
     out center;
   `;
@@ -63,22 +94,22 @@ export const fetchOSMPlacesByCategory = async (category: string): Promise<any[]>
   let categoryFilter = '';
   switch (category) {
     case 'Heritage':
-      categoryFilter = 'node["historic"]; way["historic"];';
+      categoryFilter = 'node["historic"]; way["historic"]; node["tourism"="museum"]; way["tourism"="museum"];';
       break;
     case 'Temple':
       categoryFilter = 'node["amenity"="place_of_worship"]; way["amenity"="place_of_worship"];';
       break;
     case 'Nature':
-      categoryFilter = 'node["leisure"~"park|nature_reserve"]; way["leisure"~"park|nature_reserve"]; node["tourism"="zoo"]; way["tourism"="zoo"];';
+      categoryFilter = 'node["leisure"~"park|nature_reserve"]; way["leisure"~"park|nature_reserve"]; node["tourism"~"zoo|viewpoint"]; way["tourism"~"zoo|viewpoint"];';
       break;
     case 'Food':
-      categoryFilter = 'node["amenity"~"restaurant|cafe|food_court"]; way["amenity"~"restaurant|cafe|food_court"];';
+      categoryFilter = 'node["amenity"~"restaurant|cafe"]; way["amenity"~"restaurant|cafe"];';
       break;
     case 'Wellness':
       categoryFilter = 'node["amenity"="spa"]; way["amenity"="spa"]; node["leisure"="resort"]; way["leisure"="resort"]; node["name"~"Spa|Wellness",i]; way["name"~"Spa|Wellness",i];';
       break;
     default:
-      categoryFilter = 'node["tourism"~"attraction|museum|viewpoint"]; way["tourism"~"attraction|museum|viewpoint"];';
+      categoryFilter = 'node["tourism"="attraction"]; way["tourism"="attraction"];';
   }
 
   const overpassQuery = `
@@ -104,6 +135,8 @@ const executeOverpassQuery = async (query: string): Promise<any[]> => {
 
     return elements.map((el: any) => {
       const category = mapCategory(el.tags);
+      if (category === 'Skip') return null;
+
       return {
         osmId: String(el.id),
         name: el.tags.name,
@@ -126,7 +159,7 @@ const executeOverpassQuery = async (query: string): Promise<any[]> => {
         bgColor: "#ECEAF8",
         description: el.tags.description || `A discovered location: ${el.tags.name} in Pune.`
       };
-    }).filter((p: any) => p.name);
+    }).filter((p: any) => p !== null && p.name);
   } catch (error) {
     console.error('Overpass API error:', error);
     return [];
