@@ -45,7 +45,7 @@ export default function PlanScreen({ userLocation, userLanguage }) {
   const day = itineraryDays[activeDay];
 
   return (
-    <div style={{ background: "#FBF8F3", minHeight: "100%" }}>
+    <div style={{ background: "#FBF8F3", height: "100%", overflowY: "auto", paddingBottom: 80 }}>
       <StatusBar light />
 
       {/* Hero / Header */}

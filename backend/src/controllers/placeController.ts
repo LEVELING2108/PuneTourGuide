@@ -1,16 +1,43 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { searchOSMPlaces } from '../services/overpassService';
+import { searchOSMPlaces, fetchOSMPlacesByCategory } from '../services/overpassService';
 import { getCachedData, setCachedData, invalidateCache } from '../services/cacheService';
 
 const prisma = new PrismaClient();
+
+const saveDiscoveredPlaces = async (discoveredPlaces: any[]) => {
+  if (discoveredPlaces.length === 0) return;
+  
+  for (const p of discoveredPlaces) {
+    const { latitude, longitude, ...rest } = p;
+    
+    // 1. Upsert basic data
+    const upserted = await prisma.place.upsert({
+      where: { osmId: p.osmId },
+      update: { latitude, longitude }, 
+      create: { ...rest, latitude, longitude }
+    });
+
+    // 2. Populate PostGIS geometry column using raw SQL
+    if (latitude && longitude) {
+      await prisma.$executeRaw`
+        UPDATE "Place" 
+        SET "location" = ST_SetSRID(ST_MakePoint(${Number(longitude)}, ${Number(latitude)}), 4326)
+        WHERE id = ${upserted.id}
+      `;
+    }
+  }
+  
+  // Invalidate cache if new data was added
+  await invalidateCache('places:*');
+};
 
 export const getAllPlaces = async (req: Request, res: Response) => {
   try {
     const { category, q, isSaved, isDiscovered } = req.query;
     
     // Generate a unique cache key based on query parameters
-    const cacheKey = `places:v2:${category || 'all'}:${q || 'none'}:${isSaved || 'any'}:${isDiscovered || 'any'}`;
+    const cacheKey = `places:v5:${category || 'all'}:${q || 'none'}:${isSaved || 'any'}:${isDiscovered || 'any'}`;
     
     // Check cache first
     const cachedPlaces = await getCachedData<any[]>(cacheKey);
@@ -45,39 +72,28 @@ export const getAllPlaces = async (req: Request, res: Response) => {
       orderBy: { rating: 'desc' }
     });
 
-    // Auto-Discovery Logic
-    if (q && places.length < 3 && !isSaved) {
-      const discoveredPlaces = await searchOSMPlaces(String(q));
+    // Auto-Discovery Logic: If search query provided and few results
+    if (q && places.length < 5 && !isSaved) {
+      const discovered = await searchOSMPlaces(String(q));
+      await saveDiscoveredPlaces(discovered);
       
-      if (discoveredPlaces.length > 0) {
-        for (const p of discoveredPlaces) {
-          const { latitude, longitude, ...rest } = p;
-          
-          // 1. Upsert basic data
-          const upserted = await prisma.place.upsert({
-            where: { osmId: p.osmId },
-            update: { latitude, longitude }, 
-            create: { ...rest, latitude, longitude }
-          });
+      places = await prisma.place.findMany({
+        where,
+        orderBy: { rating: 'desc' }
+      });
+    }
 
-          // 2. Populate PostGIS geometry column using raw SQL
-          if (latitude && longitude) {
-            await prisma.$executeRaw`
-              UPDATE "Place" 
-              SET "location" = ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)
-              WHERE id = ${upserted.id}
-            `;
-          }
-        }
-        
-        // Invalidate cache if new data was added
-        await invalidateCache('places:*');
-
-        places = await prisma.place.findMany({
-          where,
-          orderBy: { rating: 'desc' }
-        });
-      }
+    // Category Population Logic: Ensure at least 10 places in a category
+    if (category && category !== 'All' && places.length < 10 && !q && !isSaved) {
+      console.log(`Low count for category ${category} (${places.length}). Fetching from OSM...`);
+      const discovered = await fetchOSMPlacesByCategory(String(category));
+      await saveDiscoveredPlaces(discovered);
+      
+      places = await prisma.place.findMany({
+        where,
+        orderBy: { rating: 'desc' },
+        take: 20
+      });
     }
 
     // Nearby search enhancement: If user coordinates are provided, sort by real physical distance using PostGIS

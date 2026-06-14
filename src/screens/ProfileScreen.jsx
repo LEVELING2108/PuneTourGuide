@@ -93,7 +93,7 @@ export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguag
   }
 
   return (
-    <div style={{ background: "#FBF8F3", minHeight: "100%", fontFamily: 'Mukta', position: "relative" }}>
+    <div style={{ background: "#FBF8F3", height: "100%", overflowY: "auto", paddingBottom: 80, fontFamily: 'Mukta', position: "relative" }}>
       <StatusBar light />
 
       {/* Edit Profile Modal */}
