@@ -1,7 +1,8 @@
 import { tagColorMap } from "../data/tokens";
 import { calculateDistance, formatDistance } from "../utils/location";
+import { translations } from "../data/translations";
 
-export default function PlaceCard({ place, onClick, userLocation }) {
+export default function PlaceCard({ place, onClick, userLocation, userLanguage }) {
   const tagStyle = tagColorMap[place.tagColor] || tagColorMap.terracotta;
 
   const dynamicDistance = userLocation
@@ -38,7 +39,9 @@ export default function PlaceCard({ place, onClick, userLocation }) {
 
       {/* Info */}
       <div style={{ padding: "8px 10px 10px" }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: "#1C1412" }}>{place.name}</div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: "#1C1412" }}>
+          {userLanguage === "Marathi" && place.name_mr ? place.name_mr : place.name}
+        </div>
         <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 2 }}>
           ⭐ {place.rating?.toFixed(1) || "4.0"} · {formatDistance(dynamicDistance)}
         </div>
@@ -54,7 +57,11 @@ export default function PlaceCard({ place, onClick, userLocation }) {
             color: tagStyle.color,
           }}
         >
-          {place.tag}
+          {userLanguage === "Marathi" && place.tag === "Must Visit" ? "भेट दिलीच पाहिजे" : 
+           userLanguage === "Marathi" && place.tag === "Iconic" ? "प्रसिद्ध" :
+           userLanguage === "Marathi" && place.tag === "Family" ? "कौटुंबिक" :
+           userLanguage === "Marathi" && place.tag === "New Discovery" ? "नवीन शोध" :
+           place.tag}
         </div>
       </div>
     </div>

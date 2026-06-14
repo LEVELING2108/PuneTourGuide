@@ -2,11 +2,14 @@ import { useState } from "react";
 import StatusBar from "../components/StatusBar";
 import { addStopToItinerary, toggleSavePlace } from "../data/api";
 import { calculateDistance, formatDistance } from "../utils/location";
+import { translations } from "../data/translations";
 
-export default function PlaceDetailScreen({ place, onBack, userLocation }) {
+export default function PlaceDetailScreen({ place, onBack, userLocation, userLanguage }) {
   const [isSaved, setIsSaved] = useState(place?.isSaved || false);
 
   if (!place) return null;
+
+  const t = translations[userLanguage] || translations.English;
 
   const dynamicDistance = userLocation
     ? calculateDistance(userLocation.latitude, userLocation.longitude, place.latitude, place.longitude)
@@ -25,13 +28,13 @@ export default function PlaceDetailScreen({ place, onBack, userLocation }) {
     try {
       await addStopToItinerary({
         itineraryDayId: 1, // Defaulting to Day 1 for now
-        name: place.name,
+        name: userLanguage === "Marathi" && place.name_mr ? place.name_mr : place.name,
         time: "TBD",
-        desc: place.description,
+        desc: userLanguage === "Marathi" && place.description_mr ? place.description_mr : place.description,
         dotColor: "#8B3A2A",
         tags: [{ label: place.category, type: place.category.toLowerCase() }]
       });
-      alert(`${place.name} added to your Day 1 itinerary!`);
+      alert(userLanguage === "Marathi" ? `${place.name_mr || place.name} सहलीत जोडले गेले!` : `${place.name} added to your Day 1 itinerary!`);
     } catch (error) {
       console.error("Failed to add to itinerary:", error);
       alert("Failed to add to itinerary.");
@@ -97,7 +100,9 @@ export default function PlaceDetailScreen({ place, onBack, userLocation }) {
         {/* Title row */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "#1C1412" }}>{place.name}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "#1C1412" }}>
+              {userLanguage === "Marathi" && place.name_mr ? place.name_mr : place.name}
+            </div>
             <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#6B5B52", marginTop: 4 }}>
               📍 {place.address} · {formatDistance(dynamicDistance)}
             </div>
@@ -120,9 +125,9 @@ export default function PlaceDetailScreen({ place, onBack, userLocation }) {
         {/* Stats */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, margin: "16px 0" }}>
           {[
-            { val: place.estYear, lbl: "Est. year" },
-            { val: place.entryFee, lbl: "Entry fee" },
-            { val: place.visitTime, lbl: "Visit time" },
+            { val: place.estYear, lbl: t.estYear },
+            { val: place.entryFee, lbl: t.entryFee },
+            { val: place.visitTime, lbl: t.visitTime },
           ].map((s) => (
             <div
               key={s.lbl}
@@ -140,8 +145,10 @@ export default function PlaceDetailScreen({ place, onBack, userLocation }) {
         </div>
 
         {/* About */}
-        <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1412", marginBottom: 6 }}>About</div>
-        <div style={{ fontSize: 12, color: "#6B5B52", lineHeight: 1.6 }}>{place.description}</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1412", marginBottom: 6 }}>{t.about}</div>
+        <div style={{ fontSize: 12, color: "#6B5B52", lineHeight: 1.6 }}>
+          {userLanguage === "Marathi" && place.description_mr ? place.description_mr : place.description}
+        </div>
 
         {/* Info rows */}
         <InfoRow icon="🕐" text={place.hours} />
@@ -150,8 +157,8 @@ export default function PlaceDetailScreen({ place, onBack, userLocation }) {
             <InfoRow icon="📞" text={place.phone} />
           </a>
         )}
-        {place.accessible && <InfoRow icon="♿" text="Wheelchair accessible" />}
-        {place.guidedTours && <InfoRow icon="🎙️" text="Guided tours available" />}
+        {place.accessible && <InfoRow icon="♿" text={t.info.accessible} />}
+        {place.guidedTours && <InfoRow icon="🎙️" text={t.info.guided} />}
 
         {/* Quick actions */}
         <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
@@ -168,7 +175,7 @@ export default function PlaceDetailScreen({ place, onBack, userLocation }) {
           >
             <div style={{ fontSize: 20 }}>🗺️</div>
             <div style={{ fontSize: 11, fontWeight: 500, color: "#1C1412", marginTop: 3 }}>
-              Directions
+              {t.directions}
             </div>
           </div>
 
@@ -195,7 +202,7 @@ export default function PlaceDetailScreen({ place, onBack, userLocation }) {
           >
             <div style={{ fontSize: 20 }}>📤</div>
             <div style={{ fontSize: 11, fontWeight: 500, color: "#1C1412", marginTop: 3 }}>
-              Share
+              {t.share}
             </div>
           </div>
 
@@ -210,9 +217,9 @@ export default function PlaceDetailScreen({ place, onBack, userLocation }) {
               cursor: "pointer",
             }}
           >
-            <div style={{ fontSize: 20 }}>{isSaved ? "🔖" : "🔖"}</div>
+            <div style={{ fontSize: 20 }}>🔖</div>
             <div style={{ fontSize: 11, fontWeight: 500, color: isSaved ? "#8B3A2A" : "#1C1412", marginTop: 3 }}>
-              {isSaved ? "Saved" : "Save"}
+              {isSaved ? t.saved : t.save}
             </div>
           </div>
         </div>
@@ -238,7 +245,7 @@ export default function PlaceDetailScreen({ place, onBack, userLocation }) {
             gap: 6,
           }}
         >
-          📅 Add to Itinerary
+          📅 {t.addToPlan}
         </button>
       </div>
     </div>

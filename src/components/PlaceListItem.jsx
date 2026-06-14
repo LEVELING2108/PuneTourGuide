@@ -1,7 +1,7 @@
 import { tagColorMap, categoryColors } from "../data/tokens";
 import { calculateDistance, formatDistance } from "../utils/location";
 
-export default function PlaceListItem({ place, onClick, userLocation }) {
+export default function PlaceListItem({ place, onClick, userLocation, userLanguage }) {
   const catStyle = categoryColors[place.category] || categoryColors.default;
   const tagStyle = tagColorMap[place.tagColor] || tagColorMap.terracotta;
 
@@ -40,7 +40,9 @@ export default function PlaceListItem({ place, onClick, userLocation }) {
 
       {/* Body */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1412" }}>{place.name}</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1412" }}>
+          {userLanguage === "Marathi" && place.name_mr ? place.name_mr : place.name}
+        </div>
         <div
           style={{
             fontSize: 11,
@@ -53,7 +55,7 @@ export default function PlaceListItem({ place, onClick, userLocation }) {
             WebkitBoxOrient: "vertical",
           }}
         >
-          {place.description}
+          {userLanguage === "Marathi" && place.description_mr ? place.description_mr : place.description}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 600, color: "#B87318" }}>
@@ -70,7 +72,7 @@ export default function PlaceListItem({ place, onClick, userLocation }) {
           >
             {formatDistance(dynamicDistance)}
           </div>
-          {place.tag === "Open Now" && (
+          {(place.tag === "Open Now" || (userLanguage === "Marathi" && place.tag === "उघडले आहे")) && (
             <div
               style={{
                 fontSize: 10,
@@ -81,7 +83,7 @@ export default function PlaceListItem({ place, onClick, userLocation }) {
                 borderRadius: 8,
               }}
             >
-              Open now
+              {userLanguage === "Marathi" ? "उघडले आहे" : "Open now"}
             </div>
           )}
         </div>

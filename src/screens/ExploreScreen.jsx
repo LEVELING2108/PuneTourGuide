@@ -3,8 +3,9 @@ import StatusBar from "../components/StatusBar";
 import PlaceListItem from "../components/PlaceListItem";
 import { categories } from "../data/puneData";
 import { fetchPlaces } from "../data/api";
+import { translations } from "../data/translations";
 
-export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userLocation }) {
+export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userLocation, userLanguage }) {
   const [activeFilter, setActiveFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [places, setPlaces] = useState([]);
@@ -12,6 +13,8 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
   const [showFilters, setShowFilters] = useState(initialParams.showFilters || false);
   const [sortBy, setSortBy] = useState("rating"); // 'rating' or 'name'
   
+  const t = translations[userLanguage] || translations.English;
+
   // Advanced Filters
   const [onlyAccessible, setOnlyAccessible] = useState(false);
   const [priceFilter, setPriceFilter] = useState("All"); // 'All', 'Free', 'Paid'
@@ -50,7 +53,7 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
   if (loading && places.length === 0) {
     return (
       <div style={{ background: "#FBF8F3", minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ color: "#8B3A2A", fontWeight: 600 }}>Searching Pune...</div>
+        <div style={{ color: "#8B3A2A", fontWeight: 600 }}>{t.searching}</div>
       </div>
     );
   }
@@ -77,13 +80,13 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
-              <div style={{ fontSize: 18, fontWeight: 700, color: "#1C1412" }}>Search Settings</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "#1C1412" }}>{t.filters}</div>
               <button onClick={() => setShowFilters(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer" }}>✕</button>
             </div>
             
             {/* Sort Section */}
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#6B5B52", marginBottom: 12 }}>Sort By</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#6B5B52", marginBottom: 12 }}>{t.sortBy}</div>
               <div style={{ display: "flex", gap: 10 }}>
                 {["rating", "name"].map(s => (
                   <button
@@ -105,7 +108,7 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
 
             {/* Price Section */}
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#6B5B52", marginBottom: 12 }}>Price Range</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#6B5B52", marginBottom: 12 }}>{t.priceRange}</div>
               <div style={{ display: "flex", gap: 8 }}>
                 {["All", "Free", "Paid"].map(p => (
                   <button
@@ -127,10 +130,10 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
 
             {/* Toggles Section */}
             <div style={{ marginBottom: 32 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#6B5B52", marginBottom: 16 }}>Preferences</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#6B5B52", marginBottom: 16 }}>{t.preferences}</div>
               
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <div style={{ fontSize: 14, color: "#1C1412", fontWeight: 500 }}>Wheelchair Accessible</div>
+                <div style={{ fontSize: 14, color: "#1C1412", fontWeight: 500 }}>{t.accessible}</div>
                 <button 
                   onClick={() => setOnlyAccessible(!onlyAccessible)}
                   style={{ 
@@ -147,7 +150,7 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
               </div>
 
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ fontSize: 14, color: "#1C1412", fontWeight: 500 }}>Top Rated (4.5+)</div>
+                <div style={{ fontSize: 14, color: "#1C1412", fontWeight: 500 }}>{t.topRated}</div>
                 <button 
                   onClick={() => setOnlyTopRated(!onlyTopRated)}
                   style={{ 
@@ -171,7 +174,7 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
                 borderRadius: 14, padding: "14px", fontWeight: 600, cursor: "pointer" 
               }}
             >
-              Apply Filters
+              {t.apply}
             </button>
           </div>
         </div>
@@ -180,7 +183,7 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
       {/* Header */}
       <div style={{ background: "#FBF8F3", padding: "10px 16px 14px" }}>
         <div style={{ fontSize: 18, fontWeight: 700, color: "#1C1412", marginBottom: 10 }}>
-          Explore Pune
+          {t.exploreTitle}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div
@@ -198,7 +201,7 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search Pune…"
+              placeholder={t.searchPlaceholder}
               style={{
                 background: "none",
                 border: "none",
@@ -245,7 +248,7 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
               color: activeFilter === cat ? "#fff" : "#6B5B52",
             }}
           >
-            {cat}
+            {userLanguage === "Marathi" ? (translations.Marathi[cat.toLowerCase()] || cat) : cat}
           </button>
         ))}
       </div>
@@ -254,7 +257,7 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
       <div style={{ background: "#fff" }}>
         {filteredAndSortedPlaces.length === 0 ? (
           <div style={{ padding: "32px 16px", textAlign: "center", color: "#6B5B52", fontSize: 13 }}>
-            No places found. Try a different search.
+            {t.noPlaces}
           </div>
         ) : (
           filteredAndSortedPlaces.map((place) => (

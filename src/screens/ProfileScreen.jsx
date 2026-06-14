@@ -5,12 +5,11 @@ import { fetchPlaces, fetchUserStats } from "../data/api";
 import { colors } from "../data/tokens";
 import { translations } from "../data/translations";
 
-export default function ProfileScreen({ onPlaceSelect, userLocation }) {
+export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguage, setUserLanguage }) {
   // User Personalization State
   const [userName, setUserName] = useState(() => localStorage.getItem("pune_user_name") || "Sourav Paul");
   const [userBio, setUserBio] = useState(() => localStorage.getItem("pune_user_bio") || "Local Guide · Pune Explorer");
   const [userAvatar, setUserAvatar] = useState(() => localStorage.getItem("pune_user_avatar") || null);
-  const [userLanguage, setUserLanguage] = useState(() => localStorage.getItem("pune_user_lang") || "English");
   
   const [savedPlaces, setSavedPlaces] = useState([]);
   const [discoveredPlaces, setDiscoveredPlaces] = useState([]);
@@ -104,7 +103,7 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
           display: "flex", alignItems: "center", justifyContent: "center", padding: 20
         }}>
           <div style={{ background: "#fff", width: "100%", borderRadius: 20, padding: 24, boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }}>
-            <div style={{ fontSize: 18, fontWeight: 700, color: colors.ink, marginBottom: 20 }}>{t.editProfile}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: colors.ink, marginBottom: 20 }}>{t.editProfileModal}</div>
             
             {/* Avatar Edit Section */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 24 }}>
@@ -144,11 +143,11 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
                   style={{ display: "none" }}
                 />
               </label>
-              <div style={{ fontSize: 11, color: colors.inkMuted, marginTop: 8 }}>{userLanguage === "Marathi" ? "फोटो बदलण्यासाठी क्लिक करा" : "Click to change photo"}</div>
+              <div style={{ fontSize: 11, color: colors.inkMuted, marginTop: 8 }}>{t.changePhoto}</div>
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: colors.inkMuted, marginBottom: 6 }}>{userLanguage === "Marathi" ? "नाव" : "Display Name"}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: colors.inkMuted, marginBottom: 6 }}>{t.displayName}</div>
               <input 
                 value={tempName}
                 onChange={(e) => setTempName(e.target.value)}
@@ -160,7 +159,7 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
             </div>
 
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: colors.inkMuted, marginBottom: 6 }}>{userLanguage === "Marathi" ? "बायो / टॅगलाइन" : "Bio / Tagline"}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: colors.inkMuted, marginBottom: 6 }}>{t.bio}</div>
               <input 
                 value={tempBio}
                 onChange={(e) => setTempBio(e.target.value)}
@@ -176,13 +175,13 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
                 onClick={() => setIsEditModalOpen(false)}
                 style={{ flex: 1, padding: "12px", borderRadius: 12, border: `1px solid ${colors.stoneDark}`, background: "none", fontWeight: 600, cursor: "pointer" }}
               >
-                {userLanguage === "Marathi" ? "रद्द करा" : "Cancel"}
+                {t.cancel}
               </button>
               <button 
                 onClick={handleSaveProfile}
                 style={{ flex: 1, padding: "12px", borderRadius: 12, border: "none", background: colors.wadaRed, color: "#fff", fontWeight: 600, cursor: "pointer" }}
               >
-                {userLanguage === "Marathi" ? "बदल सेव्ह करा" : "Save Changes"}
+                {t.saveChanges}
               </button>
             </div>
           </div>
