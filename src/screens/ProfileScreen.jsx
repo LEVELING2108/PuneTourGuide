@@ -3,12 +3,14 @@ import StatusBar from "../components/StatusBar";
 import PlaceListItem from "../components/PlaceListItem";
 import { fetchPlaces, fetchUserStats } from "../data/api";
 import { colors } from "../data/tokens";
+import { translations } from "../data/translations";
 
 export default function ProfileScreen({ onPlaceSelect, userLocation }) {
   // User Personalization State
   const [userName, setUserName] = useState(() => localStorage.getItem("pune_user_name") || "Sourav Paul");
   const [userBio, setUserBio] = useState(() => localStorage.getItem("pune_user_bio") || "Local Guide · Pune Explorer");
   const [userAvatar, setUserAvatar] = useState(() => localStorage.getItem("pune_user_avatar") || null);
+  const [userLanguage, setUserLanguage] = useState(() => localStorage.getItem("pune_user_lang") || "English");
   
   const [savedPlaces, setSavedPlaces] = useState([]);
   const [discoveredPlaces, setDiscoveredPlaces] = useState([]);
@@ -20,6 +22,8 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
   const [tempName, setTempName] = useState(userName);
   const [tempBio, setTempBio] = useState(userBio);
   const [tempAvatar, setTempAvatar] = useState(userAvatar);
+
+  const t = translations[userLanguage] || translations.English;
 
   useEffect(() => {
     const loadProfileData = async () => {
@@ -43,10 +47,10 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
   }, []);
 
   const getPunekarLevel = (pts) => {
-    if (pts >= 1000) return { title: "PUNERI LEGEND", icon: "👑", rank: 5 };
-    if (pts >= 500) return { title: "SHILEDAR", icon: "🚩", rank: 42 };
-    if (pts >= 101) return { title: "PUNE EXPLORER", icon: "🧭", rank: 156 };
-    return { title: "NAVIN PUNEKAR", icon: "🌱", rank: 890 };
+    if (pts >= 1000) return { title: userLanguage === "Marathi" ? "पुणेरी लिजेंड" : "PUNERI LEGEND", icon: "👑", rank: 5 };
+    if (pts >= 500) return { title: userLanguage === "Marathi" ? "शिलेदार" : "SHILEDAR", icon: "🚩", rank: 42 };
+    if (pts >= 101) return { title: userLanguage === "Marathi" ? "पुणे एक्सप्लोरर" : "PUNE EXPLORER", icon: "🧭", rank: 156 };
+    return { title: userLanguage === "Marathi" ? "नवीन पुणेकर" : "NAVIN PUNEKAR", icon: "🌱", rank: 890 };
   };
 
   const currentLevel = getPunekarLevel(stats.totalPoints);
@@ -76,10 +80,15 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
     }
   };
 
+  const handleLanguageChange = (lang) => {
+    setUserLanguage(lang);
+    localStorage.setItem("pune_user_lang", lang);
+  };
+
   if (loading) {
     return (
       <div style={{ background: "#FBF8F3", minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ color: colors.wadaRed, fontWeight: 600 }}>Loading profile...</div>
+        <div style={{ color: colors.wadaRed, fontWeight: 600 }}>{userLanguage === "Marathi" ? "प्रोफाइल लोड होत आहे..." : "Loading profile..."}</div>
       </div>
     );
   }
@@ -95,7 +104,7 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
           display: "flex", alignItems: "center", justifyContent: "center", padding: 20
         }}>
           <div style={{ background: "#fff", width: "100%", borderRadius: 20, padding: 24, boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }}>
-            <div style={{ fontSize: 18, fontWeight: 700, color: colors.ink, marginBottom: 20 }}>Edit Profile</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: colors.ink, marginBottom: 20 }}>{t.editProfile}</div>
             
             {/* Avatar Edit Section */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 24 }}>
@@ -135,11 +144,11 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
                   style={{ display: "none" }}
                 />
               </label>
-              <div style={{ fontSize: 11, color: colors.inkMuted, marginTop: 8 }}>Click to change photo</div>
+              <div style={{ fontSize: 11, color: colors.inkMuted, marginTop: 8 }}>{userLanguage === "Marathi" ? "फोटो बदलण्यासाठी क्लिक करा" : "Click to change photo"}</div>
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: colors.inkMuted, marginBottom: 6 }}>Display Name</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: colors.inkMuted, marginBottom: 6 }}>{userLanguage === "Marathi" ? "नाव" : "Display Name"}</div>
               <input 
                 value={tempName}
                 onChange={(e) => setTempName(e.target.value)}
@@ -151,7 +160,7 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
             </div>
 
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: colors.inkMuted, marginBottom: 6 }}>Bio / Tagline</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: colors.inkMuted, marginBottom: 6 }}>{userLanguage === "Marathi" ? "बायो / टॅगलाइन" : "Bio / Tagline"}</div>
               <input 
                 value={tempBio}
                 onChange={(e) => setTempBio(e.target.value)}
@@ -167,13 +176,13 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
                 onClick={() => setIsEditModalOpen(false)}
                 style={{ flex: 1, padding: "12px", borderRadius: 12, border: `1px solid ${colors.stoneDark}`, background: "none", fontWeight: 600, cursor: "pointer" }}
               >
-                Cancel
+                {userLanguage === "Marathi" ? "रद्द करा" : "Cancel"}
               </button>
               <button 
                 onClick={handleSaveProfile}
                 style={{ flex: 1, padding: "12px", borderRadius: 12, border: "none", background: colors.wadaRed, color: "#fff", fontWeight: 600, cursor: "pointer" }}
               >
-                Save Changes
+                {userLanguage === "Marathi" ? "बदल सेव्ह करा" : "Save Changes"}
               </button>
             </div>
           </div>
@@ -229,7 +238,7 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
           }}>
             <span style={{ fontSize: 14 }}>{currentLevel.icon}</span>
             <span style={{ fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: 0.5 }}>
-              PUNEKAR LEVEL: {currentLevel.title}
+              {t.punekarLevel}: {currentLevel.title}
             </span>
           </div>
         </div>
@@ -247,9 +256,9 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
       }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16, borderBottom: `1px solid ${colors.stone}`, paddingBottom: 16 }}>
           {[
-            { label: "Saved", val: stats.savedCount, color: colors.wadaRed },
-            { label: "Points", val: stats.totalPoints, color: colors.paithaniSaffron },
-            { label: "Stops", val: stats.completedStops, color: colors.peshwaPurple },
+            { label: t.saved, val: stats.savedCount, color: colors.wadaRed },
+            { label: t.points, val: stats.totalPoints, color: colors.paithaniSaffron },
+            { label: t.stops, val: stats.completedStops, color: colors.peshwaPurple },
           ].map(stat => (
             <div key={stat.label} style={{ textAlign: "center" }}>
               <div style={{ fontSize: 18, fontWeight: 800, color: stat.color }}>{stat.val}</div>
@@ -261,20 +270,20 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 32, height: 32, borderRadius: "50%", background: colors.wadaRedLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🏆</div>
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: colors.ink }}>Community Rank</div>
-              <div style={{ fontSize: 10, color: colors.inkMuted }}>Based on {stats.totalPoints} points</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: colors.ink }}>{t.communityRank}</div>
+              <div style={{ fontSize: 10, color: colors.inkMuted }}>{userLanguage === "Marathi" ? `${stats.totalPoints} गुणांवर आधारित` : `Based on ${stats.totalPoints} points`}</div>
             </div>
           </div>
-          <div style={{ fontSize: 15, fontWeight: 800, color: colors.wadaRed }}>#{currentLevel.rank} in Pune</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: colors.wadaRed }}>#{currentLevel.rank} {t.rankInPune}</div>
         </div>
       </div>
 
       {/* Tabs */}
       <div style={{ display: "flex", gap: 20, padding: "0 20px", borderBottom: `1px solid ${colors.stoneDark}`, overflowX: "auto" }}>
         {[
-          { id: "bookmarks", label: "Saved" },
-          { id: "discoveries", label: "My Discoveries" },
-          { id: "activity", label: "Badges" },
+          { id: "bookmarks", label: t.saved },
+          { id: "discoveries", label: t.discoveries },
+          { id: "activity", label: t.badges },
         ].map(tab => (
           <button 
             key={tab.id}
@@ -298,8 +307,8 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
             {savedPlaces.length === 0 ? (
               <div style={{ padding: "48px 16px", textAlign: "center" }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>🔖</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: colors.ink }}>Your treasure is empty</div>
-                <div style={{ fontSize: 13, color: colors.inkMuted, marginTop: 6 }}>Save spots to see them here.</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: colors.ink }}>{t.noTreasureMsg}</div>
+                <div style={{ fontSize: 13, color: colors.inkMuted, marginTop: 6 }}>{t.saveSpotsMsg}</div>
               </div>
             ) : (
               savedPlaces.map((place) => (
@@ -314,15 +323,15 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
             {discoveredPlaces.length === 0 ? (
               <div style={{ padding: "48px 16px", textAlign: "center" }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>🔎</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: colors.ink }}>No Discoveries Yet</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: colors.ink }}>{t.noDiscoveriesMsg}</div>
                 <div style={{ fontSize: 13, color: colors.inkMuted, marginTop: 6, padding: "0 40px" }}>
-                  Search for new places in the Explore tab to contribute to the Pune Guide!
+                  {userLanguage === "Marathi" ? "पुणे मार्गदर्शिका मध्ये योगदान देण्यासाठी एक्सप्लोर टॅबमध्ये नवीन ठिकाणे शोधा!" : "Search for new places in the Explore tab to contribute to the Pune Guide!"}
                 </div>
               </div>
             ) : (
               <div>
                 <div style={{ padding: "12px 16px", fontSize: 11, fontWeight: 700, color: colors.wadaRed, background: colors.wadaRedLight }}>
-                  CONTRIBUTIONS TO PUNE DATABASE
+                  {t.contributionsMsg}
                 </div>
                 {discoveredPlaces.map((place) => (
                   <PlaceListItem key={place.id} place={place} onClick={onPlaceSelect} userLocation={userLocation} />
@@ -334,13 +343,13 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
 
         {activeSubTab === "activity" && (
           <div style={{ padding: "20px 16px" }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: colors.ink, marginBottom: 16 }}>Earned Badges</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: colors.ink, marginBottom: 16 }}>{t.earnedBadges}</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {[
-                { icon: "🏰", name: "History Buff", active: stats.totalPoints > 200 },
-                { icon: "🍽️", name: "Foodie", active: stats.totalPoints > 400 },
-                { icon: "⛩️", name: "Devotee", active: stats.totalPoints > 100 },
-                { icon: "🥾", name: "Trekker", active: stats.totalPoints > 800 },
+                { icon: "🏰", name: userLanguage === "Marathi" ? "इतिहास प्रेमी" : "History Buff", active: stats.totalPoints > 200 },
+                { icon: "🍽️", name: userLanguage === "Marathi" ? "खवय्ये" : "Foodie", active: stats.totalPoints > 400 },
+                { icon: "⛩️", name: userLanguage === "Marathi" ? "भक्त" : "Devotee", active: stats.totalPoints > 100 },
+                { icon: "🥾", name: userLanguage === "Marathi" ? "गिर्यारोहक" : "Trekker", active: stats.totalPoints > 800 },
               ].map(badge => (
                 <div key={badge.name} style={{ 
                   background: badge.active ? colors.stone : "#f9f9f9", 
@@ -351,7 +360,7 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
                   <div style={{ fontSize: 24, filter: badge.active ? "none" : "grayscale(1)" }}>{badge.icon}</div>
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 700, color: colors.ink }}>{badge.name}</div>
-                    <div style={{ fontSize: 10, color: colors.inkMuted }}>{badge.active ? "Unlocked" : "Locked"}</div>
+                    <div style={{ fontSize: 10, color: colors.inkMuted }}>{badge.active ? t.unlocked : t.locked}</div>
                   </div>
                 </div>
               ))}
@@ -361,19 +370,40 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
               marginTop: 24, padding: "16px", borderRadius: 12, background: colors.wadaRedLight,
               border: `1px dashed ${colors.wadaRed}`
             }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: colors.wadaRed }}>Points Breakdown</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: colors.wadaRed }}>{t.pointsBreakdown}</div>
               <div style={{ fontSize: 11, color: colors.inkMuted, marginTop: 6 }}>
-                • {stats.savedCount} Places Saved (+{stats.savedCount * 10} pts)<br/>
-                • {stats.completedStops} Stops Completed (+{stats.completedStops * 50} pts)<br/>
-                • {stats.discoveredCount} New Discoveries (+{stats.discoveredCount * 100} pts)
+                • {stats.savedCount} {t.placesSaved} (+{stats.savedCount * 10} {t.points})<br/>
+                • {stats.completedStops} {t.stopsCompleted} (+{stats.completedStops * 50} {t.points})<br/>
+                • {stats.discoveredCount} {t.newDiscoveries} (+{stats.discoveredCount * 100} {t.points})
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Footer Info */}
-      <div style={{ padding: "24px 16px 40px", textAlign: "center" }}>
+      {/* Language Selection & Footer */}
+      <div style={{ padding: "24px 16px 40px", textAlign: "center", background: "#FBF8F3" }}>
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: colors.inkMuted, marginBottom: 10, textTransform: "uppercase" }}>{t.language}</div>
+          <div style={{ display: "inline-flex", background: colors.stoneDark, borderRadius: 12, padding: 4 }}>
+            {["English", "Marathi"].map(lang => (
+              <button
+                key={lang}
+                onClick={() => handleLanguageChange(lang)}
+                style={{
+                  padding: "8px 16px", borderRadius: 10, border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer",
+                  background: userLanguage === lang ? "#fff" : "none",
+                  color: userLanguage === lang ? colors.wadaRed : colors.inkMuted,
+                  boxShadow: userLanguage === lang ? "0 2px 8px rgba(0,0,0,0.05)" : "none",
+                  transition: "0.2s"
+                }}
+              >
+                {lang === "Marathi" ? "मराठी" : "English"}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <button 
           onClick={() => {
             setTempName(userName);
@@ -386,10 +416,10 @@ export default function ProfileScreen({ onPlaceSelect, userLocation }) {
             padding: "8px 20px", fontSize: 12, fontWeight: 600, color: colors.inkMuted, cursor: "pointer"
           }}
         >
-          Edit Profile
+          {t.editProfile}
         </button>
         <div style={{ fontSize: 10, color: colors.inkMuted, marginTop: 12 }}>
-          Member since June 2026 · Aamhi Pune Tour
+          {t.memberSince}
         </div>
       </div>
     </div>
