@@ -32,6 +32,7 @@ model Place {
   osmId       String?  @unique
   latitude    Float?
   longitude   Float?
+  location    Unsupported("geometry(Point, 4326)")?
 }
 
 model Event {
