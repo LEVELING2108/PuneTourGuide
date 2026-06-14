@@ -10,6 +10,7 @@ datasource db {
 model Place {
   id          Int      @id @default(autoincrement())
   name        String
+  name_mr     String?
   emoji       String
   category    String
   rating      Float
@@ -26,6 +27,7 @@ model Place {
   tagColor    String
   bgColor     String
   description String
+  description_mr String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   isSaved     Boolean  @default(false)
@@ -55,7 +57,9 @@ model ItineraryStop {
   id             Int          @id @default(autoincrement())
   time           String
   name           String
+  name_mr        String?
   desc           String
+  desc_mr        String?
   dotColor       String
   itineraryDayId Int
   tags           Json

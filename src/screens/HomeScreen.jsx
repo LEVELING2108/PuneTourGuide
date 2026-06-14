@@ -3,13 +3,16 @@ import StatusBar from "../components/StatusBar";
 import PlaceCard from "../components/PlaceCard";
 import { categories } from "../data/puneData";
 import { fetchPlaces, fetchEvents } from "../data/api";
+import { translations } from "../data/translations";
 
-export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation }) {
+export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation, userLanguage }) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [places, setPlaces] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAllEvents, setShowAllEvents] = useState(false);
+
+  const t = translations[userLanguage] || translations.English;
 
   useEffect(() => {
     const loadData = async () => {
@@ -33,7 +36,7 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation 
   if (loading) {
     return (
       <div style={{ background: "#FBF8F3", minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ color: "#8B3A2A", fontWeight: 600 }}>Loading Pune...</div>
+        <div style={{ color: "#8B3A2A", fontWeight: 600 }}>{userLanguage === "Marathi" ? "पुणे लोड होत आहे..." : "Loading Pune..."}</div>
       </div>
     );
   }
@@ -69,13 +72,13 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation 
 
         <div style={{ position: "relative", zIndex: 1 }}>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 4, letterSpacing: 0.5 }}>
-            Punekar, Namaste! 👋
+            {t.greeting}
           </div>
           <div style={{ fontSize: 32, fontWeight: 700, color: "#fff", lineHeight: 1.1, fontFamily: 'Mukta' }}>
-            Aamhi Pune <span style={{ color: "#FF9933" }}>Tour</span>
+            {t.heroTitle} <span style={{ color: "#FF9933" }}>{t.heroSpan}</span>
           </div>
           <div style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>
-            Explore the Pride of Maharashtra 🚩
+            {t.heroSub}
           </div>
           <div
             style={{
@@ -91,7 +94,7 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation 
               color: "#fff",
             }}
           >
-            ☀️ 32°C · Pune Weather
+            ☀️ 32°C · {t.weather}
           </div>
         </div>
       </div>
@@ -116,7 +119,7 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation 
         >
           <span style={{ fontSize: 16, color: "#6B5B52" }}>🔍</span>
           <span style={{ fontSize: 13, color: "#6B5B52", flex: 1 }}>
-            Search places, food, events…
+            {t.searchPlaceholder}
           </span>
           <span 
             onClick={(e) => {
@@ -152,7 +155,7 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation 
               color: activeCategory === cat ? "#fff" : "#6B5B52",
             }}
           >
-            {cat}
+            {userLanguage === "Marathi" ? (translations.Marathi[cat.toLowerCase()] || cat) : cat}
           </button>
         ))}
       </div>
@@ -188,8 +191,8 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation 
             padding: "8px 16px 10px",
           }}
         >
-          <div style={{ fontSize: 14, fontWeight: 600, color: "#1C1412" }}>Popular Spots</div>
-          <div onClick={onSearchClick} style={{ fontSize: 12, color: "#8B3A2A", cursor: "pointer" }}>See all</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#1C1412" }}>{t.popularSpots}</div>
+          <div onClick={onSearchClick} style={{ fontSize: 12, color: "#8B3A2A", cursor: "pointer" }}>{t.seeAll}</div>
         </div>
 
         <div style={{ display: "flex", gap: 10, padding: "0 16px 16px", overflowX: "auto" }}>
@@ -209,12 +212,12 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation 
             padding: "4px 16px 10px",
           }}
         >
-          <div style={{ fontSize: 14, fontWeight: 600, color: "#1C1412" }}>Nearby Events</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#1C1412" }}>{t.nearbyEvents}</div>
           <div 
             onClick={() => setShowAllEvents(!showAllEvents)}
             style={{ fontSize: 12, color: "#8B3A2A", cursor: "pointer" }}
           >
-            {showAllEvents ? "Show Less" : "More"}
+            {showAllEvents ? t.showLess : t.more}
           </div>
         </div>
 

@@ -1,12 +1,14 @@
-const tabs = [
-  { id: "home", icon: "🏠", label: "Home" },
-  { id: "explore", icon: "🧭", label: "Explore" },
-  { id: "map", icon: "🗺️", label: "Map" },
-  { id: "plan", icon: "📅", label: "Plan" },
-  { id: "profile", icon: "👤", label: "Profile" },
-];
+import { translations } from "../data/translations";
 
-export default function BottomNav({ activeTab, onTabChange }) {
+export default function BottomNav({ activeTab, onTabChange, userLanguage }) {
+  const t = translations[userLanguage] || translations.English;
+  const tabs = [
+    { id: "home", icon: "🏠", label: t.home },
+    { id: "explore", icon: "🧭", label: t.explore },
+    { id: "map", icon: "🗺️", label: t.map },
+    { id: "plan", icon: "📅", label: t.plan },
+    { id: "profile", icon: "👤", label: t.profile },
+  ];
   return (
     <div
       className="absolute bottom-0 left-0 right-0 flex justify-around items-center bg-white border-t"

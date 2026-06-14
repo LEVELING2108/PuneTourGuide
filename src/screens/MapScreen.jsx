@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react";
 import StatusBar from "../components/StatusBar";
 import { fetchItinerary, updateStopStatus } from "../data/api";
+import { translations } from "../data/translations";
 
 const TRAVEL_MODES = ["Walking", "Auto", "Driving"];
 
-export default function MapScreen() {
+export default function MapScreen({ userLocation, userLanguage }) {
   const [mode, setMode] = useState("Walking");
   const [stops, setStops] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const t = translations[userLanguage] || translations.English;
 
   useEffect(() => {
     const loadStops = async () => {
@@ -44,7 +47,7 @@ export default function MapScreen() {
   if (loading) {
     return (
       <div style={{ background: "#FBF8F3", minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ color: "#8B3A2A", fontWeight: 600 }}>Loading map...</div>
+        <div style={{ color: "#8B3A2A", fontWeight: 600 }}>{t.loadingMap}</div>
       </div>
     );
   }
@@ -57,10 +60,10 @@ export default function MapScreen() {
       <div style={{ background: "#FBF8F3", padding: "10px 16px 12px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ fontSize: 18, fontWeight: 700, color: "#1C1412", flex: 1 }}>
-            Heritage Trail
+            {t.heritageTrail}
           </div>
           <div style={{ fontSize: 11, color: "#8B3A2A", fontWeight: 600 }}>
-            4 stops · 6.2 km
+            {stops.length} {t.stops} · 6.2 km
           </div>
         </div>
       </div>
@@ -111,30 +114,30 @@ export default function MapScreen() {
           {/* Stop 1 — Shaniwar Wada */}
           <circle cx="58" cy="158" r="7" fill="#8B3A2A" stroke="white" strokeWidth="2" />
           <rect x="20" y="136" width="76" height="18" rx="5" fill="#8B3A2A" />
-          <text x="58" y="148" textAnchor="middle" fontSize="8" fill="white" fontWeight="600">Shaniwar Wada</text>
+          <text x="58" y="148" textAnchor="middle" fontSize="8" fill="white" fontWeight="600">{userLanguage === "Marathi" ? "शनिवार वाडा" : "Shaniwar Wada"}</text>
           <line x1="58" y1="154" x2="58" y2="158" stroke="#8B3A2A" strokeWidth="1.5" />
 
           {/* Stop 2 — Dagdusheth */}
           <circle cx="162" cy="95" r="7" fill="#B87318" stroke="white" strokeWidth="2" />
           <rect x="130" y="74" width="62" height="18" rx="5" fill="#B87318" />
-          <text x="161" y="86" textAnchor="middle" fontSize="8" fill="white" fontWeight="600">Dagdusheth</text>
+          <text x="161" y="86" textAnchor="middle" fontSize="8" fill="white" fontWeight="600">{userLanguage === "Marathi" ? "दगडूशेठ" : "Dagdusheth"}</text>
           <line x1="162" y1="92" x2="162" y2="95" stroke="#B87318" strokeWidth="1.5" />
 
           {/* Stop 3 — Vishrambaug (current) */}
           <circle cx="222" cy="68" r="7" fill="#3D3680" stroke="white" strokeWidth="2.5" />
           <rect x="188" y="48" width="68" height="18" rx="5" fill="#3D3680" />
-          <text x="222" y="60" textAnchor="middle" fontSize="8" fill="white" fontWeight="600">Vishrambaug</text>
+          <text x="222" y="60" textAnchor="middle" fontSize="8" fill="white" fontWeight="600">{userLanguage === "Marathi" ? "विश्रामबाग" : "Vishrambaug"}</text>
           <line x1="222" y1="65" x2="222" y2="68" stroke="#3D3680" strokeWidth="1.5" />
 
           {/* Stop 4 — Aga Khan */}
           <circle cx="264" cy="48" r="7" fill="#4A6741" stroke="white" strokeWidth="2" />
           <rect x="226" y="26" width="76" height="18" rx="5" fill="#4A6741" />
-          <text x="264" y="38" textAnchor="middle" fontSize="8" fill="white" fontWeight="600">Aga Khan Palace</text>
+          <text x="264" y="38" textAnchor="middle" fontSize="8" fill="white" fontWeight="600">{userLanguage === "Marathi" ? "आगा खान पॅलेस" : "Aga Khan Palace"}</text>
           <line x1="264" y1="44" x2="264" y2="48" stroke="#4A6741" strokeWidth="1.5" />
 
           {/* You are here */}
           <circle cx="113" cy="145" r="8" fill="#3D3680" stroke="white" strokeWidth="3" />
-          <text x="127" y="140" fontSize="8" fill="#3D3680" fontWeight="700">You</text>
+          <text x="127" y="140" fontSize="8" fill="#3D3680" fontWeight="700">{userLanguage === "Marathi" ? "तुम्ही" : "You"}</text>
         </svg>
       </div>
 
@@ -149,12 +152,12 @@ export default function MapScreen() {
           gap: 8,
         }}
       >
-        {TRAVEL_MODES.map((m) => (
+        {TRAVEL_MODES.map((modeId) => (
           <button
-            key={m}
+            key={modeId}
             onClick={() => {
-              setMode(m);
-              alert(`Recalculating route for ${m} mode...`);
+              setMode(modeId);
+              alert(userLanguage === "Marathi" ? `${t[modeId.toLowerCase()]} मोडसाठी मार्ग मोजत आहे...` : `Recalculating route for ${modeId} mode...`);
             }}
             style={{
               padding: "6px 12px",
@@ -163,11 +166,11 @@ export default function MapScreen() {
               fontWeight: 500,
               border: "none",
               cursor: "pointer",
-              background: mode === m ? "#F2EAE7" : "#EDE8DF",
-              color: mode === m ? "#8B3A2A" : "#6B5B52",
+              background: mode === modeId ? "#F2EAE7" : "#EDE8DF",
+              color: mode === modeId ? "#8B3A2A" : "#6B5B52",
             }}
           >
-            {m}
+            {t[modeId.toLowerCase()]}
           </button>
         ))}
         <div style={{ marginLeft: "auto", fontSize: 12, color: "#6B5B52" }}>~1h 45m</div>
@@ -204,11 +207,11 @@ export default function MapScreen() {
               {stop.id}
             </div>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1412" }}>{stop.name}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1412" }}>{userLanguage === "Marathi" && stop.name === "Shaniwar Wada" ? "शनिवार वाडा" : stop.name}</div>
               <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 1 }}>
                 {stop.distance} · {stop.time}{" "}
                 {stop.current && (
-                  <span style={{ color: "#3D3680", fontWeight: 600, fontSize: 10 }}>— Up next</span>
+                  <span style={{ color: "#3D3680", fontWeight: 600, fontSize: 10 }}>— {userLanguage === "Marathi" ? "पुढचा थांबा" : "Up next"}</span>
                 )}
               </div>
             </div>
