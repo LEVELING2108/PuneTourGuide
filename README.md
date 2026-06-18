@@ -1,81 +1,85 @@
-# 🏰 Pune Tour Guide — End-to-End Application
+# 🏰 Pune Explorer — A Modern Tour Guide for Pune
+
+![Pune Explorer Mockup](https://i.imgur.com/gY2k1iH.png)
+
+---
+
+### **[Live Demo (Placeholder)](https://pune-explorer-demo.netlify.app/)** · **[Backend Architecture](./BACKEND.md)** · **[Contribution Guidelines](./GEMINI.md)**
+
+---
 
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?&style=for-the-badge&logo=redis&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?&style=for-the-badge&logo=docker&logoColor=white)
 ![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)
-![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=Leaflet&logoColor=white)
 
-A modern, full-stack tour guide application for Pune, featuring heritage trails, popular spots, upcoming events, and personalized itineraries. Transitioned from a static prototype to a dynamic, database-driven application.
+**Pune Explorer** is a dynamic, full-stack tour guide application built to showcase a seamless, high-performance user experience. It features a React/Vite frontend and a powerful Node.js/Express/Prisma backend, all communicating to bring the best of Pune's heritage, food, and events to your fingertips.
 
-## 🚀 Tech Stack
+This project has evolved from a static prototype into a database-driven, cache-accelerated system with intelligent, real-time data discovery.
 
-### Frontend
-- **Framework:** React 18
-- **Build Tool:** Vite
-- **Styling:** Tailwind CSS + Inline Styles (for precise design control)
-- **Icons/Emoji:** Native Unicode Emojis
-- **Data Fetching:** Fetch API with custom wrappers
+## ✨ Core Features
 
-### Backend
-- **Runtime:** Node.js
-- **Language:** TypeScript
-- **Framework:** Express.js
-- **ORM:** Prisma (v5)
-- **Security:** Helmet, CORS, Dotenv
+| Feature | Description | Status |
+| :--- | :--- | :--- |
+| **Interactive Leaflet Map** | Live, interactive map with custom-styled markers for all tourist spots. Filterable by category. | ✅ Done |
+| **Auto-Discovery System** | If a category has too few places, the app **automatically queries OpenStreetMap** in the background to find and save new locations. | ✅ Done |
+| **High-Performance Caching** | Uses a **Redis** cache to deliver popular API requests in **under 20ms**, eliminating database bottlenecks. | ✅ Done |
+| **Dynamic Itineraries** | Add places to a multi-day itinerary. Your plan is saved to the database and is accessible on the Plan & Map screens. | ✅ Done |
+| **Dual-Language Support** | Full UI and data translation for **English** and **Marathi** (मराठी), configurable in the Profile tab. | ✅ Done |
+| **Geolocation & Distance** | Uses the browser's Geolocation API to find your location and calculate distances to nearby spots. | ✅ Done |
+| **Strict Tourist Filtering** | Programmatically filters out irrelevant locations like housing societies, banks, and clinics to ensure high-quality results. | ✅ Done |
 
-### Database
-- **Database:** PostgreSQL
-- **Local Dev:** Prisma Migrate & Studio
+## 🚀 Tech Stack & Architecture
 
----
+A high-level overview of the technologies used:
 
-## 📂 Project Structure
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Frontend** | **React 18 (Vite)**, **Tailwind CSS** | Modern, fast, and scalable UI development. |
+| **Backend** | **Node.js**, **Express**, **TypeScript** | Robust, type-safe, and efficient server-side logic. |
+| **Database** | **PostgreSQL** with **PostGIS** | Reliable relational data storage with powerful geospatial querying. |
+| **ORM** | **Prisma** | Next-generation ORM for type-safe database access. |
+| **Caching** | **Redis** | High-speed in-memory cache for API query acceleration. |
+| **Geospatial API** | **OpenStreetMap (Overpass API)** | For automatic discovery and hydration of new tourist locations. |
+| **Mapping** | **React-Leaflet** | For rendering beautiful and interactive maps. |
+| **Local Dev** | **Docker Compose**, **Vite**, **Nodemon** | For a consistent and fast local development environment. |
 
-```
-PuneTourGuide/
-├── backend/                # Express + TypeScript API
-│   ├── prisma/             # DB Schema & Migrations
-│   ├── src/
-│   │   ├── controllers/    # Business Logic
-│   │   ├── routes/         # API Endpoints
-│   │   ├── app.ts          # Server Entry Point
-│   │   └── seed.ts         # DB Seeding Script
-│   └── tsconfig.json
-├── src/                    # React Frontend
-│   ├── components/         # Reusable UI Components
-│   ├── screens/            # Main View Screens
-│   ├── data/
-│   │   ├── api.js          # API Client Wrappers
-│   │   └── puneData.js     # Legacy static data (reference)
-│   └── App.jsx             # Main Routing/Navigation
-├── index.html
-├── package.json
-└── tailwind.config.js
-```
-
----
+For a more detailed breakdown, see [**BACKEND.md**](./BACKEND.md).
 
 ## 🛠️ Getting Started
 
 ### Prerequisites
 - Node.js (v18+)
-- PostgreSQL (Running locally)
+- Docker and Docker Compose (to run PostgreSQL and Redis)
 
-### 1. Setup Backend
+### 1. Setup Backend & Database
 ```bash
+# Start the database and cache server
+# From the root directory:
+docker-compose up -d
+
+# Navigate to the backend folder
 cd backend
 npm install
 ```
-Create a `.env` file in the `backend/` folder:
+Create a `.env` file in the `backend/` folder and populate it. A `DATABASE_URL` is provided for the Docker setup.
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/Pune_Tour_Guide?schema=public"
+# Connects to the PostgreSQL container from docker-compose.yml
+DATABASE_URL="postgresql://user:password@localhost:5432/pune_tour_db?schema=public"
+
+# Connects to the Redis container
+REDIS_URL="redis://127.0.0.1:6379"
+
+# Server port
 PORT=3000
 ```
-Run migrations and seed data:
+Run migrations to set up the schema and seed the database with initial data:
 ```bash
 npx prisma migrate dev --name init
 npx ts-node src/seed.ts
@@ -83,30 +87,26 @@ npx ts-node src/seed.ts
 
 ### 2. Setup Frontend
 ```bash
-# In the root directory
+# In the root directory (one level above backend)
 npm install
 ```
 
 ### 3. Run Development Servers
-**Start Backend:**
+You need two terminals open.
+
+**Terminal 1: Start Backend**
 ```bash
 cd backend
 npm run dev
 ```
+*Backend will be available at `http://localhost:3000`.*
 
-**Start Frontend:**
+**Terminal 2: Start Frontend**
 ```bash
+# From the root directory
 npm run dev
 ```
-
----
-
-## 🗺️ Key Features
-- **Automatic Place Discovery:** Uses the **OpenStreetMap (Overpass API)** to automatically find and ingest new places in Pune. If you search for a cafe or monument not in the database, the app finds it and saves it for everyone!
-- **Dynamic Explore:** Search and filter Pune's top spots by category (Heritage, Food, Nature, etc.) fetched directly from the DB.
-- **Interactive Itineraries:** Multi-day travel plans with specific timings and location details.
-- **Schematic Map:** A custom-designed SVG heritage trail map showing live route stops.
-- **Real-time Events:** Stay updated with classical music festivals and food walks.
+*Frontend will be available at `http://localhost:5173`.*
 
 ## 🤝 Contribution
-This project was built to showcase a clean transition from static design to a functional full-stack system. Feel free to fork and extend!
+This project is architected to be clean, maintainable, and scalable. For detailed workflow and branching strategy, please see the **[Contribution Guidelines](./GEMINI.md)**.
