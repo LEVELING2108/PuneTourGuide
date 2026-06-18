@@ -1,10 +1,8 @@
 # 🏰 Pune Explorer — A Modern Tour Guide for Pune
 
-![Pune Explorer Mockup](https://i.imgur.com/gY2k1iH.png)
-
 ---
 
-### **[Live Demo (Placeholder)](https://pune-explorer-demo.netlify.app/)** · **[Backend Architecture](./BACKEND.md)** · **[Contribution Guidelines](./GEMINI.md)**
+### **[Backend Architecture](./BACKEND.md)** · **[Contribution Guidelines](./GEMINI.md)**
 
 ---
 
