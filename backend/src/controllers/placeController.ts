@@ -72,28 +72,19 @@ export const getAllPlaces = async (req: Request, res: Response) => {
       orderBy: { rating: 'desc' }
     });
 
-    // Auto-Discovery Logic: If search query provided and few results
+    // Auto-Discovery Logic: If search query provided and few results - run in background
     if (q && places.length < 5 && !isSaved) {
-      const discovered = await searchOSMPlaces(String(q));
-      await saveDiscoveredPlaces(discovered);
-      
-      places = await prisma.place.findMany({
-        where,
-        orderBy: { rating: 'desc' }
-      });
+      searchOSMPlaces(String(q))
+        .then(discovered => saveDiscoveredPlaces(discovered))
+        .catch(err => console.error('Background search discovery error:', err));
     }
 
-    // Category Population Logic: Ensure at least 10 places in a category
+    // Category Population Logic: Ensure at least 10 places in a category - run in background
     if (category && category !== 'All' && places.length < 10 && !q && !isSaved) {
-      console.log(`Low count for category ${category} (${places.length}). Fetching from OSM...`);
-      const discovered = await fetchOSMPlacesByCategory(String(category));
-      await saveDiscoveredPlaces(discovered);
-      
-      places = await prisma.place.findMany({
-        where,
-        orderBy: { rating: 'desc' },
-        take: 20
-      });
+      console.log(`Low count for category ${category} (${places.length}). Hydrating in background...`);
+      fetchOSMPlacesByCategory(String(category))
+        .then(discovered => saveDiscoveredPlaces(discovered))
+        .catch(err => console.error('Background category discovery error:', err));
     }
 
     // Nearby search enhancement: If user coordinates are provided, sort by real physical distance using PostGIS

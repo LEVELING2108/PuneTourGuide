@@ -232,6 +232,49 @@ async function main() {
     await prisma.event.create({ data: e });
   }
 
+  // Seed Itineraries
+  const day1 = await prisma.itineraryDay.create({
+    data: { day: 1, label: "Day 1 · Sat" }
+  });
+  const day2 = await prisma.itineraryDay.create({
+    data: { day: 2, label: "Day 2 · Sun" }
+  });
+
+  await prisma.itineraryStop.createMany({
+    data: [
+      {
+        itineraryDayId: day1.id,
+        time: "09:00 AM",
+        name: "Shaniwar Wada",
+        name_mr: "शनिवार वाडा",
+        desc: "Explore the primary fortress seat of the Peshwas.",
+        desc_mr: "पेशव्यांचे मुख्य ऐतिहासिक निवासस्थान एक्सप्लोर करा.",
+        dotColor: "#8B3A2A",
+        tags: ["Heritage", "Must Visit"]
+      },
+      {
+        itineraryDayId: day1.id,
+        time: "11:30 AM",
+        name: "Dagdusheth Halwai Ganpati",
+        name_mr: "दगडूशेठ हलवाई गणपती",
+        desc: "Pay a visit to the most celebrated golden Ganpati temple in Pune.",
+        desc_mr: "पुण्यातील सर्वात प्रसिद्ध सोन्याच्या गणपती मंदिराला भेट द्या.",
+        dotColor: "#B87318",
+        tags: ["Temple", "Iconic"]
+      },
+      {
+        itineraryDayId: day2.id,
+        time: "08:30 AM",
+        name: "Pataleshwar Caves",
+        name_mr: "पाताळेश्वर लेणी",
+        desc: "Marvel at the ancient 8th-century rock-cut monolithic Shiva shrine.",
+        desc_mr: "८ व्या शतकातील प्राचीन पाताळेश्वर शिव मंदिराला भेट द्या.",
+        dotColor: "#4A6741",
+        tags: ["Heritage", "Ancient"]
+      }
+    ]
+  });
+
   console.log('Seeding finished.');
 }
 

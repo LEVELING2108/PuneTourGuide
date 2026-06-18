@@ -26,8 +26,17 @@ export default function PlaceDetailScreen({ place, onBack, userLocation, userLan
 
   const handleAddToItinerary = async () => {
     try {
+      // 1. Fetch current itinerary to find the real ID for "Day 1"
+      const itinerary = await fetchItinerary();
+      const day1 = itinerary.find(d => d.day === 1);
+      
+      if (!day1) {
+        throw new Error("Day 1 itinerary record not found in database.");
+      }
+
+      // 2. Add the stop using the dynamic ID
       await addStopToItinerary({
-        itineraryDayId: 1, // Defaulting to Day 1 for now
+        itineraryDayId: day1.id,
         name: userLanguage === "Marathi" && place.name_mr ? place.name_mr : place.name,
         time: "TBD",
         desc: userLanguage === "Marathi" && place.description_mr ? place.description_mr : place.description,
@@ -37,7 +46,7 @@ export default function PlaceDetailScreen({ place, onBack, userLocation, userLan
       alert(userLanguage === "Marathi" ? `${place.name_mr || place.name} सहलीत जोडले गेले!` : `${place.name} added to your Day 1 itinerary!`);
     } catch (error) {
       console.error("Failed to add to itinerary:", error);
-      alert("Failed to add to itinerary.");
+      alert(userLanguage === "Marathi" ? "सहलीत जोडण्यात अडचण आली." : "Failed to add to itinerary. Please try again.");
     }
   };
 
