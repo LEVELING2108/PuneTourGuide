@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import StatusBar from "../components/StatusBar";
-import { fetchPlaces, fetchItinerary, updateStopStatus, deleteStopFromItinerary } from "../data/api";
+import { fetchPlaces, fetchItinerary, updateStopStatus, deleteStopFromItinerary, addStopToItinerary } from "../data/api";
 import { translations } from "../data/translations";
 import { categories } from "../data/puneData";
 import { calculateDistance } from "../utils/location";
@@ -29,6 +29,9 @@ export default function MapScreen({ userLocation, userLanguage }) {
   const [loading, setLoading] = useState(true);
   const [mapCenter, setMapCenter] = useState([18.5194, 73.8553]); // Default Shaniwar Wada
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const [routeGeometry, setRouteGeometry] = useState([]);
+  const [routeStats, setRouteStats] = useState({ distanceKm: 0, durationSec: 0 });
+  const [completedStopId, setCompletedStopId] = useState(null);
 
   const t = translations[userLanguage] || translations.English;
 
@@ -91,6 +94,10 @@ export default function MapScreen({ userLocation, userLanguage }) {
 
     try {
       const updated = await updateStopStatus(id, !stop.done);
+      if (updated.done) {
+        setCompletedStopId(id);
+        setTimeout(() => setCompletedStopId(null), 1000);
+      }
       setStops((prev) =>
         prev.map((s) => (s.id === id ? { ...s, done: updated.done } : s))
       );
@@ -108,6 +115,31 @@ export default function MapScreen({ userLocation, userLanguage }) {
         console.error("Failed to delete stop:", error);
         alert("Failed to delete stop");
       }
+    }
+  };
+
+  const handleAddPlaceToItinerary = async (place) => {
+    try {
+      const itinerary = await fetchItinerary();
+      const day1 = itinerary.find(d => d.day === 1);
+      if (!day1) throw new Error("Day 1 itinerary day not found");
+
+      const newStop = await addStopToItinerary({
+        itineraryDayId: day1.id,
+        name: place.name,
+        name_mr: place.name_mr || place.name,
+        time: "TBD",
+        desc: place.description,
+        desc_mr: place.description_mr || place.description,
+        dotColor: "#8B3A2A",
+        tags: [{ label: place.category, type: place.category.toLowerCase() }]
+      });
+
+      setStops((prev) => [...prev, newStop]);
+      alert(userLanguage === "Marathi" ? `${place.name_mr || place.name} सहलीत जोडले गेले!` : `${place.name} added to your Day 1 itinerary!`);
+    } catch (error) {
+      console.error("Failed to add stop from map popup:", error);
+      alert(userLanguage === "Marathi" ? "सहलीत जोडण्यात अडचण आली." : "Failed to add to itinerary.");
     }
   };
 
@@ -170,16 +202,66 @@ export default function MapScreen({ userLocation, userLanguage }) {
     }
   }
 
+  // Fetch dynamic road route from OSRM
+  useEffect(() => {
+    if (points.length < 2) {
+      setRouteGeometry([]);
+      setRouteStats({ distanceKm: 0, durationSec: 0 });
+      return;
+    }
+
+    const fetchRoute = async () => {
+      try {
+        const profile = mode === "Walking" ? "foot" : "driving";
+        const coordsStr = points.map(p => `${p[1]},${p[0]}`).join(";");
+        const url = `https://router.project-osrm.org/route/v1/${profile}/${coordsStr}?overview=full&geometries=geojson`;
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("OSRM routing request failed");
+        const data = await res.json();
+
+        if (data.routes && data.routes.length > 0) {
+          const route = data.routes[0];
+          const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
+          setRouteGeometry(coords);
+
+          const distanceKm = route.distance / 1000;
+          let durationSec = route.duration;
+          if (mode === "Auto") {
+            durationSec = durationSec * 1.25; // Auto-rickshaw slow-traffic adjustment
+          }
+          setRouteStats({ distanceKm, durationSec });
+        }
+      } catch (err) {
+        console.error("OSRM Routing error:", err);
+        // Fallback to straight lines
+        setRouteGeometry(points);
+        let fallbackDistance = 0;
+        for (let i = 0; i < points.length - 1; i++) {
+          const p1 = points[i];
+          const p2 = points[i + 1];
+          const dist = calculateDistance(p1[0], p1[1], p2[0], p2[1]);
+          if (dist !== null) fallbackDistance += dist;
+        }
+        const speed = mode === "Walking" ? 4.5 : mode === "Auto" ? 20 : 25;
+        const durationSec = (fallbackDistance / speed) * 3600;
+        setRouteStats({ distanceKm: fallbackDistance, durationSec });
+      }
+    };
+
+    fetchRoute();
+  }, [points, mode]);
+
   // Travel time estimation according to Pune city speeds
   const getDurationLabel = () => {
-    if (calculatedDistance === 0) {
-      // Fallback/Placeholder
+    const distance = routeStats.distanceKm > 0 ? routeStats.distanceKm : calculatedDistance;
+    const duration = routeStats.durationSec > 0 ? routeStats.durationSec : 0;
+
+    if (distance === 0) {
       return mode === "Walking" ? "~1h 45m" : mode === "Auto" ? "~30m" : "~25m";
     }
-    // Speed defaults (km/h) for city environment
-    const speed = mode === "Walking" ? 4.5 : mode === "Auto" ? 20 : 25;
-    const mins = Math.round((calculatedDistance / speed) * 60);
-    
+
+    const mins = Math.round(duration / 60);
     if (mins < 1) return "< 1m";
     if (mins < 60) return `~${mins}m`;
     const hrs = Math.floor(mins / 60);
@@ -188,14 +270,35 @@ export default function MapScreen({ userLocation, userLanguage }) {
   };
 
   const getSubHeaderLabel = () => {
+    const distance = routeStats.distanceKm > 0 ? routeStats.distanceKm : calculatedDistance;
     if (stops.length > 0) {
-      return `${stops.length} ${t.stops} · ${calculatedDistance > 0 ? calculatedDistance.toFixed(1) : "6.2"} km`;
+      return `${stops.length} ${t.stops} · ${distance > 0 ? distance.toFixed(1) : "6.2"} km`;
     }
     if (selectedPlace) {
       const name = userLanguage === "Marathi" && selectedPlace.name_mr ? selectedPlace.name_mr : selectedPlace.name;
-      return `${name} · ${calculatedDistance > 0 ? `${calculatedDistance.toFixed(1)} km` : "Calculating..."}`;
+      return `${name} · ${distance > 0 ? `${distance.toFixed(1)} km` : "Calculating..."}`;
     }
     return `${places.length} ${t.popularSpots}`;
+  };
+
+  const getGoogleMapsDirUrl = () => {
+    if (points.length < 2) return "";
+    const origin = `${points[0][0]},${points[0][1]}`;
+    const destination = `${points[points.length - 1][0]},${points[points.length - 1][1]}`;
+    
+    let waypoints = "";
+    if (points.length > 2) {
+      waypoints = points.slice(1, -1).map(p => `${p[0]},${p[1]}`).join("|");
+    }
+    
+    const travelModeMap = {
+      Walking: "walking",
+      Auto: "driving",
+      Driving: "driving"
+    };
+    const googleMode = travelModeMap[mode] || "driving";
+    
+    return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${waypoints ? `&waypoints=${waypoints}` : ""}&travelmode=${googleMode}`;
   };
 
   return (
@@ -283,6 +386,11 @@ export default function MapScreen({ userLocation, userLanguage }) {
             50% { transform: scale(1.2); opacity: 0; }
             100% { transform: scale(0.9); opacity: 0.4; }
           }
+          @keyframes bounceUp {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            50% { transform: translateY(-15px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-30px) scale(1); opacity: 0; }
+          }
         `}</style>
 
         <MapContainer
@@ -317,29 +425,123 @@ export default function MapScreen({ userLocation, userLanguage }) {
                 icon={createCustomIcon(getCategoryColor(place.category), place.emoji || "📍")}
               >
                 <Popup>
-                  <div style={{ padding: "2px 4px" }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#1C1412" }}>
-                      {userLanguage === "Marathi" && place.name_mr ? place.name_mr : place.name}
+                  <div style={{ minWidth: 150, padding: "2px 0", fontFamily: "'Inter', sans-serif" }}>
+                    <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 4 }}>
+                      <span style={{ fontSize: 16 }}>{place.emoji}</span>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#1C1412", lineHeight: 1.2 }}>
+                        {userLanguage === "Marathi" && place.name_mr ? place.name_mr : place.name}
+                      </div>
                     </div>
-                    <div style={{ fontSize: 10, color: "#6B5B52", marginTop: 2 }}>
-                      ⭐ {place.rating} · {place.category}
+                    <div style={{ fontSize: 10, color: "#6B5B52", marginBottom: 8, display: "flex", gap: 6, alignItems: "center" }}>
+                      <span>⭐ {place.rating?.toFixed(1)}</span>
+                      <span>•</span>
+                      <span>{userLanguage === "Marathi" ? (translations.Marathi[place.category.toLowerCase()] || place.category) : place.category}</span>
                     </div>
+                    
+                    {stops.some(s => s.name.toLowerCase() === place.name.toLowerCase()) ? (
+                      <button
+                        onClick={() => {
+                          const stop = stops.find(s => s.name.toLowerCase() === place.name.toLowerCase());
+                          if (stop) handleDeleteStop(stop.id);
+                        }}
+                        style={{
+                          width: "100%",
+                          background: "#F2EAE7",
+                          color: "#8B3A2A",
+                          border: "none",
+                          borderRadius: 6,
+                          padding: "5px",
+                          fontSize: 10,
+                          fontWeight: 600,
+                          cursor: "pointer",
+                        }}
+                      >
+                        ❌ {userLanguage === "Marathi" ? "थांबा काढा" : "Remove Stop"}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleAddPlaceToItinerary(place)}
+                        style={{
+                          width: "100%",
+                          background: "#8B3A2A",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: 6,
+                          padding: "5px",
+                          fontSize: 10,
+                          fontWeight: 600,
+                          cursor: "pointer",
+                        }}
+                      >
+                        📅 {userLanguage === "Marathi" ? "सहलीत जोडा" : "Add to Itinerary"}
+                      </button>
+                    )}
                   </div>
                 </Popup>
               </Marker>
             ))}
 
-          {/* Connected route line */}
-          {points.length > 1 && (
+          {/* Connected route line (road geometry or straight fallback) */}
+          {(routeGeometry.length > 0 ? routeGeometry : points).length > 1 && (
             <Polyline 
-              positions={points} 
+              positions={routeGeometry.length > 0 ? routeGeometry : points} 
               color={isItineraryRoute ? "#8B3A2A" : "#3D3680"} 
-              weight={isItineraryRoute ? 3 : 4} 
+              weight={isItineraryRoute ? 3.5 : 4.5} 
               dashArray={isItineraryRoute ? "5, 5" : "0"} 
             />
           )}
         </MapContainer>
       </div>
+
+      {/* Interactive Routing Card */}
+      {points.length > 1 && (
+        <div
+          style={{
+            background: "#fff",
+            margin: "0 16px 10px",
+            borderRadius: 14,
+            border: "1px solid #EDE8DF",
+            padding: "12px 14px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
+            zIndex: 5
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#F2EAE7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>
+              {mode === "Walking" ? "🚶" : mode === "Auto" ? "🛺" : "🚗"}
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#1C1412" }}>
+                {isItineraryRoute ? (userLanguage === "Marathi" ? "सहल वारसा मार्ग" : "Active Itinerary Trail") : (userLanguage === "Marathi" ? "थेट मार्ग शोध" : "Direct Navigator")}
+              </div>
+              <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 2 }}>
+                {routeStats.distanceKm > 0 ? `${routeStats.distanceKm.toFixed(1)} km` : "..."} · {getDurationLabel()}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => window.open(getGoogleMapsDirUrl(), '_blank')}
+            style={{
+              background: "#8B3A2A",
+              color: "#fff",
+              border: "none",
+              borderRadius: 10,
+              padding: "7px 12px",
+              fontSize: 11,
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 4
+            }}
+          >
+            🧭 {userLanguage === "Marathi" ? "मार्गदर्शन" : "Navigate"} ↗
+          </button>
+        </div>
+      )}
 
       {/* Travel Mode buttons */}
       <div
@@ -390,87 +592,107 @@ export default function MapScreen({ userLocation, userLanguage }) {
       >
         {stops.length > 0 ? (
           // Render Itinerary Stops if active
-          stops.map((stop) => (
-            <div
-              key={stop.id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                padding: "12px 16px",
-                borderBottom: "1px solid #EDE8DF",
-              }}
-            >
+          stops.map((stop) => {
+            const isAnimating = completedStopId === stop.id;
+            return (
               <div
+                key={stop.id}
                 style={{
-                  width: 26,
-                  height: 26,
-                  borderRadius: "50%",
-                  background: stop.current ? "#ECEAF8" : "#F2EAE7",
-                  color: stop.current ? "#3D3680" : "#8B3A2A",
-                  fontSize: 11,
-                  fontWeight: 700,
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
+                  gap: 12,
+                  padding: "12px 16px",
+                  borderBottom: "1px solid #EDE8DF",
+                  transform: isAnimating ? "scale(1.03)" : "scale(1)",
+                  background: isAnimating ? "#EBF0E8" : "transparent",
+                  transition: "all 0.3s ease",
+                  position: "relative"
                 }}
               >
-                {stop.id}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1412" }}>
-                  {userLanguage === "Marathi" && stop.name_mr ? stop.name_mr : stop.name}
+                <div
+                  style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: "50%",
+                    background: stop.current ? "#ECEAF8" : "#F2EAE7",
+                    color: stop.current ? "#3D3680" : "#8B3A2A",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {stop.id}
                 </div>
-                <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 2 }}>
-                  {stop.time}
-                  {stop.current && (
-                    <span style={{ color: "#3D3680", fontWeight: 600, fontSize: 10, marginLeft: 6 }}>
-                      — {userLanguage === "Marathi" ? "पुढचा थांबा" : "Up next"}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1412" }}>
+                    {userLanguage === "Marathi" && stop.name_mr ? stop.name_mr : stop.name}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 2 }}>
+                    {stop.time}
+                    {stop.current && (
+                      <span style={{ color: "#3D3680", fontWeight: 600, fontSize: 10, marginLeft: 6 }}>
+                        — {userLanguage === "Marathi" ? "पुढचा थांबा" : "Up next"}
+                      </span>
+                    )}
+                  </div>
+                  {isAnimating && (
+                    <span style={{ 
+                      position: "absolute", 
+                      right: 76, 
+                      top: "35%", 
+                      fontSize: 12, 
+                      fontWeight: 700,
+                      color: "#2E8B57",
+                      animation: "bounceUp 1s ease forwards" 
+                    }}>
+                      🎉 +50 Pts!
                     </span>
                   )}
                 </div>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <button
+                    onClick={() => toggleStop(stop.id)}
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: "50%",
+                      border: stop.done ? "none" : "1.5px solid #EDE8DF",
+                      background: stop.done ? "#4A6741" : "transparent",
+                      color: stop.done ? "#fff" : "transparent",
+                      fontSize: 12,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    ✓
+                  </button>
+                  <button
+                    onClick={() => handleDeleteStop(stop.id)}
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: "50%",
+                      border: "none",
+                      background: "#F2EAE7",
+                      color: "#8B3A2A",
+                      fontSize: 11,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    🗑️
+                  </button>
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <button
-                  onClick={() => toggleStop(stop.id)}
-                  style={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: "50%",
-                    border: stop.done ? "none" : "1.5px solid #EDE8DF",
-                    background: stop.done ? "#4A6741" : "transparent",
-                    color: stop.done ? "#fff" : "transparent",
-                    fontSize: 12,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  ✓
-                </button>
-                <button
-                  onClick={() => handleDeleteStop(stop.id)}
-                  style={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: "50%",
-                    border: "none",
-                    background: "#F2EAE7",
-                    color: "#8B3A2A",
-                    fontSize: 11,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  🗑️
-                </button>
-              </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           // Fallback: Render beautifully filtered places when itinerary is empty
           places.map((place) => {
