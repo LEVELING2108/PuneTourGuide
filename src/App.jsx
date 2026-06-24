@@ -54,20 +54,16 @@ export default function App() {
   };
 
   return (
-    <div className="flex justify-center items-start min-h-screen bg-gray-100 py-8">
+    <div className="flex justify-center items-stretch sm:items-start min-h-screen bg-white sm:bg-gray-100 sm:py-8">
       <div
-        className="relative bg-[#FBF8F3] overflow-hidden flex flex-col"
+        className="relative bg-[#FBF8F3] overflow-hidden flex flex-col w-full h-[100dvh] sm:h-auto sm:w-[375px] sm:min-h-[812px] sm:rounded-[40px] sm:border-2 sm:border-[#D1CBC0]"
         style={{
-          width: 375,
-          minHeight: 812,
-          borderRadius: 40,
-          border: "2px solid #D1CBC0",
           fontFamily: "'Inter', sans-serif",
         }}
       >
-        {/* Notch */}
+        {/* Notch - hidden on mobile device screens */}
         <div
-          className="mx-auto z-10"
+          className="mx-auto z-10 hidden sm:block"
           style={{
             width: 126,
             height: 28,
@@ -77,7 +73,7 @@ export default function App() {
         />
 
         {/* Screen content */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative overflow-hidden">
           {renderScreen()}
         </div>
 
