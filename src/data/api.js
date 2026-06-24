@@ -45,6 +45,14 @@ export const addStopToItinerary = async (stopData) => {
   return response.json();
 };
 
+export const deleteStopFromItinerary = async (id) => {
+  const response = await fetch(`${API_BASE_URL}/itinerary/stops/${id}`, {
+    method: 'DELETE'
+  });
+  if (!response.ok) throw new Error('Failed to delete stop');
+  return response.json();
+};
+
 export const toggleSavePlace = async (id, isSaved) => {
   const response = await fetch(`${API_BASE_URL}/places/${id}/save`, {
     method: 'PATCH',
