@@ -16,6 +16,12 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
+// Request Logger Middleware
+app.use((req, res, next) => {
+  console.log(`[API] ${req.method} ${req.path}`, req.body);
+  next();
+});
+
 // Routes
 app.use('/api/places', placeRoutes);
 app.use('/api/events', eventRoutes);
