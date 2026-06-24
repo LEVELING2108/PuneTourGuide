@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import StatusBar from "../components/StatusBar";
 import { tagStyles } from "../data/tokens";
-import { fetchItinerary } from "../data/api";
+import { fetchItinerary, deleteStopFromItinerary } from "../data/api";
 import { translations } from "../data/translations";
 
 export default function PlanScreen({ userLocation, userLanguage }) {
@@ -10,6 +10,28 @@ export default function PlanScreen({ userLocation, userLanguage }) {
   const [loading, setLoading] = useState(true);
 
   const t = translations[userLanguage] || translations.English;
+
+  const handleDeleteStop = async (stopId, dayId) => {
+    if (confirm(userLanguage === "Marathi" ? "तुम्हाला हा थांबा काढून टाकायचा आहे का?" : "Are you sure you want to remove this stop?")) {
+      try {
+        await deleteStopFromItinerary(stopId);
+        setItineraryDays((prev) =>
+          prev.map((d) => {
+            if (d.id === dayId) {
+              return {
+                ...d,
+                stops: d.stops.filter((s) => s.id !== stopId)
+              };
+            }
+            return d;
+          })
+        );
+      } catch (error) {
+        console.error("Failed to delete stop:", error);
+        alert("Failed to delete stop");
+      }
+    }
+  };
 
   useEffect(() => {
     const loadItinerary = async () => {
@@ -150,9 +172,24 @@ export default function PlanScreen({ userLocation, userLanguage }) {
             </div>
 
             {/* Content */}
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#1C1412" }}>
-                {userLanguage === "Marathi" && stop.name_mr ? stop.name_mr : stop.name}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#1C1412", paddingRight: 8 }}>
+                  {userLanguage === "Marathi" && stop.name_mr ? stop.name_mr : stop.name}
+                </div>
+                <button
+                  onClick={() => handleDeleteStop(stop.id, day.id)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#8B3A2A",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    padding: "2px 6px",
+                  }}
+                >
+                  🗑️
+                </button>
               </div>
               <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 4, lineHeight: 1.5 }}>
                 {userLanguage === "Marathi" && stop.desc_mr ? stop.desc_mr : stop.desc}

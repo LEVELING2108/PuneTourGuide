@@ -56,3 +56,16 @@ export const addStopToItinerary = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to add stop' });
   }
 };
+
+export const deleteStopFromItinerary = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    await prisma.itineraryStop.delete({
+      where: { id: Number(id) }
+    });
+    res.json({ success: true, message: "Stop deleted successfully" });
+  } catch (error) {
+    console.error("Failed to delete stop:", error);
+    res.status(500).json({ error: 'Failed to delete stop' });
+  }
+};

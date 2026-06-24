@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import StatusBar from "../components/StatusBar";
-import { fetchPlaces, fetchItinerary, updateStopStatus } from "../data/api";
+import { fetchPlaces, fetchItinerary, updateStopStatus, deleteStopFromItinerary } from "../data/api";
 import { translations } from "../data/translations";
 import { categories } from "../data/puneData";
 import { calculateDistance } from "../utils/location";
@@ -96,6 +96,18 @@ export default function MapScreen({ userLocation, userLanguage }) {
       );
     } catch (error) {
       console.error("Failed to toggle stop:", error);
+    }
+  };
+
+  const handleDeleteStop = async (id) => {
+    if (confirm(userLanguage === "Marathi" ? "तुम्हाला हा थांबा काढून टाकायचा आहे का?" : "Are you sure you want to remove this stop?")) {
+      try {
+        await deleteStopFromItinerary(id);
+        setStops((prev) => prev.filter((s) => s.id !== id));
+      } catch (error) {
+        console.error("Failed to delete stop:", error);
+        alert("Failed to delete stop");
+      }
     }
   };
 
@@ -419,24 +431,44 @@ export default function MapScreen({ userLocation, userLanguage }) {
                   )}
                 </div>
               </div>
-              <button
-                onClick={() => toggleStop(stop.id)}
-                style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: "50%",
-                  border: stop.done ? "none" : "1.5px solid #EDE8DF",
-                  background: stop.done ? "#4A6741" : "transparent",
-                  color: stop.done ? "#fff" : "transparent",
-                  fontSize: 12,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                ✓
-              </button>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <button
+                  onClick={() => toggleStop(stop.id)}
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: "50%",
+                    border: stop.done ? "none" : "1.5px solid #EDE8DF",
+                    background: stop.done ? "#4A6741" : "transparent",
+                    color: stop.done ? "#fff" : "transparent",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  ✓
+                </button>
+                <button
+                  onClick={() => handleDeleteStop(stop.id)}
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: "50%",
+                    border: "none",
+                    background: "#F2EAE7",
+                    color: "#8B3A2A",
+                    fontSize: 11,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  🗑️
+                </button>
+              </div>
             </div>
           ))
         ) : (
