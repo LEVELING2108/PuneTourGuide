@@ -6,6 +6,7 @@ import StatusBar from "../components/StatusBar";
 import { fetchPlaces, fetchItinerary, updateStopStatus } from "../data/api";
 import { translations } from "../data/translations";
 import { categories } from "../data/puneData";
+import { calculateDistance } from "../utils/location";
 
 const TRAVEL_MODES = ["Walking", "Auto", "Driving"];
 
@@ -27,6 +28,7 @@ export default function MapScreen({ userLocation, userLanguage }) {
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mapCenter, setMapCenter] = useState([18.5194, 73.8553]); // Default Shaniwar Wada
+  const [selectedPlace, setSelectedPlace] = useState(null);
 
   const t = translations[userLanguage] || translations.English;
 
@@ -78,6 +80,11 @@ export default function MapScreen({ userLocation, userLanguage }) {
     loadData();
   }, [activeFilter]);
 
+  // Clear selected place if filter category changes
+  useEffect(() => {
+    setSelectedPlace(null);
+  }, [activeFilter]);
+
   const toggleStop = async (id) => {
     const stop = stops.find((s) => s.id === id);
     if (!stop) return;
@@ -122,6 +129,63 @@ export default function MapScreen({ userLocation, userLanguage }) {
     })
     .filter(Boolean);
 
+  // Dynamic Routing Logic & Mode Scenario Calculations
+  let points = [];
+  let isItineraryRoute = false;
+
+  if (stops.length > 0) {
+    points = routePoints;
+    isItineraryRoute = true;
+  } else if (selectedPlace?.latitude && selectedPlace?.longitude) {
+    if (userLocation?.latitude && userLocation?.longitude) {
+      points = [
+        [userLocation.latitude, userLocation.longitude],
+        [selectedPlace.latitude, selectedPlace.longitude]
+      ];
+    }
+  }
+
+  // Calculate dynamic physical distance
+  let calculatedDistance = 0;
+  if (points.length > 1) {
+    for (let i = 0; i < points.length - 1; i++) {
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const dist = calculateDistance(p1[0], p1[1], p2[0], p2[1]);
+      if (dist !== null) {
+        calculatedDistance += dist;
+      }
+    }
+  }
+
+  // Travel time estimation according to Pune city speeds
+  const getDurationLabel = () => {
+    if (calculatedDistance === 0) {
+      // Fallback/Placeholder
+      return mode === "Walking" ? "~1h 45m" : mode === "Auto" ? "~30m" : "~25m";
+    }
+    // Speed defaults (km/h) for city environment
+    const speed = mode === "Walking" ? 4.5 : mode === "Auto" ? 20 : 25;
+    const mins = Math.round((calculatedDistance / speed) * 60);
+    
+    if (mins < 1) return "< 1m";
+    if (mins < 60) return `~${mins}m`;
+    const hrs = Math.floor(mins / 60);
+    const remainingMins = mins % 60;
+    return remainingMins > 0 ? `~${hrs}h ${remainingMins}m` : `~${hrs}h`;
+  };
+
+  const getSubHeaderLabel = () => {
+    if (stops.length > 0) {
+      return `${stops.length} ${t.stops} · ${calculatedDistance > 0 ? calculatedDistance.toFixed(1) : "6.2"} km`;
+    }
+    if (selectedPlace) {
+      const name = userLanguage === "Marathi" && selectedPlace.name_mr ? selectedPlace.name_mr : selectedPlace.name;
+      return `${name} · ${calculatedDistance > 0 ? `${calculatedDistance.toFixed(1)} km` : "Calculating..."}`;
+    }
+    return `${places.length} ${t.popularSpots}`;
+  };
+
   return (
     <div style={{ background: "#FBF8F3", height: "100%", display: "flex", flexDirection: "column" }}>
       <StatusBar />
@@ -133,7 +197,7 @@ export default function MapScreen({ userLocation, userLanguage }) {
             {stops.length > 0 ? t.heritageTrail : t.map}
           </div>
           <div style={{ fontSize: 11, color: "#8B3A2A", fontWeight: 600 }}>
-            {stops.length > 0 ? `${stops.length} ${t.stops} · 6.2 km` : `${places.length} ${t.popularSpots}`}
+            {getSubHeaderLabel()}
           </div>
         </div>
       </div>
@@ -253,9 +317,14 @@ export default function MapScreen({ userLocation, userLanguage }) {
               </Marker>
             ))}
 
-          {/* Connected route line for itineraries */}
-          {routePoints.length > 1 && (
-            <Polyline positions={routePoints} color="#8B3A2A" weight={3} dashArray="5, 5" />
+          {/* Connected route line */}
+          {points.length > 1 && (
+            <Polyline 
+              positions={points} 
+              color={isItineraryRoute ? "#8B3A2A" : "#3D3680"} 
+              weight={isItineraryRoute ? 3 : 4} 
+              dashArray={isItineraryRoute ? "5, 5" : "0"} 
+            />
           )}
         </MapContainer>
       </div>
@@ -294,7 +363,7 @@ export default function MapScreen({ userLocation, userLanguage }) {
           </button>
         ))}
         <div style={{ marginLeft: "auto", fontSize: 11, color: "#6B5B52", fontWeight: 500 }}>
-          {mode === "Walking" ? "~1h 45m" : mode === "Auto" ? "~30m" : "~25m"}
+          {getDurationLabel()}
         </div>
       </div>
 
@@ -372,63 +441,73 @@ export default function MapScreen({ userLocation, userLanguage }) {
           ))
         ) : (
           // Fallback: Render beautifully filtered places when itinerary is empty
-          places.map((place) => (
-            <div
-              key={place.id}
-              onClick={() => {
-                if (place.latitude && place.longitude) {
-                  setMapCenter([place.latitude, place.longitude]);
-                }
-              }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                padding: "12px 16px",
-                borderBottom: "1px solid #EDE8DF",
-                cursor: "pointer",
-                transition: "background 0.2s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#FBF8F3")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
-            >
+          places.map((place) => {
+            const isSelected = selectedPlace?.id === place.id;
+            return (
               <div
+                key={place.id}
+                onClick={() => {
+                  setSelectedPlace(place);
+                  if (place.latitude && place.longitude) {
+                    setMapCenter([place.latitude, place.longitude]);
+                  }
+                }}
                 style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  background: place.bgColor || "#F2EAE7",
-                  fontSize: 16,
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
+                  gap: 12,
+                  padding: "12px 16px",
+                  borderBottom: "1px solid #EDE8DF",
+                  cursor: "pointer",
+                  background: isSelected ? "#F2EAE7" : "#fff",
+                  transition: "background 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSelected) e.currentTarget.style.background = "#FBF8F3";
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSelected) e.currentTarget.style.background = "#fff";
                 }}
               >
-                {place.emoji || "📍"}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1412" }}>
-                  {userLanguage === "Marathi" && place.name_mr ? place.name_mr : place.name}
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    background: place.bgColor || "#F2EAE7",
+                    fontSize: 16,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {place.emoji || "📍"}
                 </div>
-                <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 2 }}>
-                  ⭐ {place.rating} · {place.address || place.category}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1412" }}>
+                    {userLanguage === "Marathi" && place.name_mr ? place.name_mr : place.name}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 2 }}>
+                    ⭐ {place.rating} · {place.address || place.category}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: isSelected ? "#fff" : "#8B3A2A",
+                    fontWeight: 600,
+                    background: isSelected ? "#8B3A2A" : "#F2EAE7",
+                    padding: "4px 8px",
+                    borderRadius: 6,
+                    transition: "all 0.2s"
+                  }}
+                >
+                  {isSelected ? (userLanguage === "Marathi" ? "निवडलेले" : "Selected") : (userLanguage === "Marathi" ? "पहा" : "View")}
                 </div>
               </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "#8B3A2A",
-                  fontWeight: 600,
-                  background: "#F2EAE7",
-                  padding: "4px 8px",
-                  borderRadius: 6,
-                }}
-              >
-                🛰️ {userLanguage === "Marathi" ? "पहा" : "View"}
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
