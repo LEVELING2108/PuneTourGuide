@@ -15,6 +15,7 @@ export const getItinerary = async (req: Request, res: Response) => {
     });
     res.json(itinerary);
   } catch (error) {
+    console.error("Failed to fetch itinerary:", error);
     res.status(500).json({ error: 'Failed to fetch itinerary' });
   }
 };
@@ -29,18 +30,21 @@ export const toggleStopStatus = async (req: Request, res: Response) => {
     });
     res.json(updatedStop);
   } catch (error) {
+    console.error("Failed to update stop status:", error);
     res.status(500).json({ error: 'Failed to update stop status' });
   }
 };
 
 export const addStopToItinerary = async (req: Request, res: Response) => {
   try {
-    const { itineraryDayId, name, time, desc, dotColor, tags } = req.body;
+    const { itineraryDayId, name, name_mr, time, desc, desc_mr, dotColor, tags } = req.body;
     const newStop = await prisma.itineraryStop.create({
       data: {
         name,
+        name_mr,
         time,
         desc,
+        desc_mr,
         dotColor,
         itineraryDayId: Number(itineraryDayId),
         tags: tags || []
@@ -48,6 +52,7 @@ export const addStopToItinerary = async (req: Request, res: Response) => {
     });
     res.json(newStop);
   } catch (error) {
+    console.error("Failed to add stop to itinerary:", error);
     res.status(500).json({ error: 'Failed to add stop' });
   }
 };

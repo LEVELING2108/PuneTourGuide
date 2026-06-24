@@ -151,9 +151,11 @@ export default function PlanScreen({ userLocation, userLanguage }) {
 
             {/* Content */}
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#1C1412" }}>{stop.name}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#1C1412" }}>
+                {userLanguage === "Marathi" && stop.name_mr ? stop.name_mr : stop.name}
+              </div>
               <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 4, lineHeight: 1.5 }}>
-                {stop.desc}
+                {userLanguage === "Marathi" && stop.desc_mr ? stop.desc_mr : stop.desc}
               </div>
               <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
                 {Array.isArray(stop.tags) && stop.tags.map((tag, idx) => {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import StatusBar from "../components/StatusBar";
-import { addStopToItinerary, toggleSavePlace } from "../data/api";
+import { addStopToItinerary, toggleSavePlace, fetchItinerary } from "../data/api";
 import { calculateDistance, formatDistance } from "../utils/location";
 import { translations } from "../data/translations";
 
@@ -37,9 +37,11 @@ export default function PlaceDetailScreen({ place, onBack, userLocation, userLan
       // 2. Add the stop using the dynamic ID
       await addStopToItinerary({
         itineraryDayId: day1.id,
-        name: userLanguage === "Marathi" && place.name_mr ? place.name_mr : place.name,
+        name: place.name,
+        name_mr: place.name_mr || place.name,
         time: "TBD",
-        desc: userLanguage === "Marathi" && place.description_mr ? place.description_mr : place.description,
+        desc: place.description,
+        desc_mr: place.description_mr || place.description,
         dotColor: "#8B3A2A",
         tags: [{ label: place.category, type: place.category.toLowerCase() }]
       });
