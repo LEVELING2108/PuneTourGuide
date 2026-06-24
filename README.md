@@ -25,6 +25,11 @@ This project has evolved from a static prototype into a database-driven, cache-a
 
 | Feature | Description | Status |
 | :--- | :--- | :--- |
+| **OSRM Street Routing** | Replaces straight lines with real-road street routing paths mapped on Leaflet using the free OSRM engine. | ✅ Done |
+| **Interactive Map Popups** | Custom Leaflet popup actions on map pins for quick itinerary additions and removals. | ✅ Done |
+| **Floating Navigation Card** | Real-time distance and duration calculations for Walking, Auto, and Driving with direct Google Maps multi-point route shortcuts. | ✅ Done |
+| **Check-Off Animations** | Gamified stops checklist on the Map screen triggering score feedback highlights and `+50 Pts!` bounce-up effects. | ✅ Done |
+| **Itinerary Stop Deletion** | Direct stop removal options (trash icon) from both the Map list and the Itinerary timeline screen, with real-time UI updates. | ✅ Done |
 | **Interactive Leaflet Map** | Live, interactive map with custom-styled markers for all tourist spots. Filterable by category. | ✅ Done |
 | **Auto-Discovery System** | If a category has too few places, the app **automatically queries OpenStreetMap** in the background to find and save new locations. | ✅ Done |
 | **High-Performance Caching** | Uses a **Redis** cache to deliver popular API requests in **under 20ms**, eliminating database bottlenecks. | ✅ Done |
