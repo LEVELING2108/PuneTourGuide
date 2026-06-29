@@ -14,20 +14,18 @@ A modern, high-performance tour guide application for Pune, featuring an interac
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-%23DD0031.svg?style=flat-square&logo=redis&logoColor=white)](https://redis.io/)
 [![Docker](https://img.shields.io/badge/Docker-%230db7ed.svg?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vite.dev/)
 
 ---
 
 ## ✨ Core Features
 
-* **Interactive Leaflet Map & Popups:** Live map with custom marker categories, emojis, and quick "Add to Itinerary" / "Remove stop" CTA buttons.
-* **OSRM Street Routing:** Dynamic road-routing paths along real Pune streets instead of straight lines.
-* **Floating Navigation Card:** Real-time distance and duration calculations for Walking, Auto, and Driving with direct Google Maps direction shortcuts.
-* **Auto-Discovery System:** Automatically queries OpenStreetMap (Overpass API) in the background to hydrate database categories when counts are low.
-* **Redis Performance Caching:** Accelerated API responses served under 20ms using Redis (`places:v5:`).
-* **Strict Geolocation & Distance:** Uses browser Geolocation and PostGIS to sort tourist spots by proximity.
-* **Check-Off Animations:** Gamified checklist on the Map screen triggering score feedback highlights and `+50 Pts!` bounce-up effects.
+* **🔑 User Authentication (JWT & Hashed Passwords):** Full registration and login screen (localized in English/Marathi). JWT bearer tokens protect user data, and new registrations are pre-seeded with custom Day 1 & Day 2 tourist itineraries.
+* **⚡ Route Sequence Optimization (OSRM Trip API):** Solves the Traveling Salesperson Problem (TSP) on the fly for your active stops. Clicking **Optimize Route ⚡** sorts stops in the database by their physically shortest route (keeping the first stop fixed).
+* **⛶ Immersive Map UI/UX:** Features a floating expand/collapse button to scale the map to full layout height, numbered pin badges (`①`, `②`, `③`) for stops, and flowing polyline animation showing travel direction.
+* **📋 Collapsible Turn-by-Turn Directions:** Displays turn-by-turn routing steps from OSRM directly in a scrollable list inside the app, complete with English/Marathi translations.
+* **🏆 Persistent Gamification:** User profiles save and track XP (completed stops award `+50 XP`, bookmarking a place awards `+10 XP`) persisting in the PostgreSQL database.
+* **🌲 OSM Discovery & Caching:** Queries OpenStreetMap (Overpass API) to automatically populate new coordinates, throttled by a 5-minute Redis cooldown cache per query to protect API rate limits.
 * **Dual-Language Support:** Fully localized English and Marathi (मराठी) translation support.
 
 ---
@@ -44,7 +42,9 @@ docker-compose up -d
 Create `backend/.env` file:
 ```env
 DATABASE_URL="postgresql://postgres:Pune%400804@localhost:5432/Pune_Tour_Guide?schema=public"
-PORT=3000
+PORT=3001
+JWT_SECRET="pune_explorer_super_secret_key"
+REDIS_URL="redis://127.0.0.1:6379"
 ```
 Install dependencies, run migrations, and start the development server:
 ```bash
@@ -56,6 +56,10 @@ npm run dev
 ```
 
 ### 3. Run Frontend Web App
+Configure root `.env` environment variables:
+```env
+VITE_API_BASE_URL=http://localhost:3001/api
+```
 Install dependencies and run the Vite dev server:
 ```bash
 npm install
@@ -63,4 +67,4 @@ npm run dev
 ```
 
 * **Frontend Port:** `http://localhost:5173/`
-* **Backend API Port:** `http://localhost:3000/`
+* **Backend API Port:** `http://localhost:3001/`
