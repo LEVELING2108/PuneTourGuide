@@ -1,4 +1,5 @@
 import axios from 'axios';
+import redis from './cacheService';
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
 
@@ -74,6 +75,18 @@ const mapEmoji = (category: string): string => {
 };
 
 export const searchOSMPlaces = async (query: string): Promise<any[]> => {
+  const cooldownKey = `places:discovery:cooldown:search:${query.toLowerCase().trim()}`;
+  try {
+    const isCooldownActive = await redis.get(cooldownKey);
+    if (isCooldownActive) {
+      console.log(`[OSM] Discovery cooldown active for search query: ${query}. Skipping query.`);
+      return [];
+    }
+    await redis.set(cooldownKey, 'true', 'EX', 300); // 5 min cooldown
+  } catch (err) {
+    console.error('Redis error checking search cooldown:', err);
+  }
+
   const overpassQuery = `
     [out:json][timeout:25];
     (
@@ -91,6 +104,18 @@ export const searchOSMPlaces = async (query: string): Promise<any[]> => {
 };
 
 export const fetchOSMPlacesByCategory = async (category: string): Promise<any[]> => {
+  const cooldownKey = `places:discovery:cooldown:cat:${category.toLowerCase()}`;
+  try {
+    const isCooldownActive = await redis.get(cooldownKey);
+    if (isCooldownActive) {
+      console.log(`[OSM] Discovery cooldown active for category ${category}. Skipping query.`);
+      return [];
+    }
+    await redis.set(cooldownKey, 'true', 'EX', 300); // 5 min cooldown
+  } catch (err) {
+    console.error('Redis error checking discovery category cooldown:', err);
+  }
+
   let categoryFilter = '';
   switch (category) {
     case 'Heritage':

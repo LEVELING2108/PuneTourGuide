@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthRequest } from '../middleware/auth';
 import { PrismaClient } from '@prisma/client';
 import { searchOSMPlaces, fetchOSMPlacesByCategory } from '../services/overpassService';
 import { getCachedData, setCachedData, invalidateCache } from '../services/cacheService';
@@ -132,14 +133,39 @@ export const getPlaceById = async (req: Request, res: Response) => {
   }
 };
 
-export const toggleSavePlace = async (req: Request, res: Response) => {
+export const toggleSavePlace = async (req: AuthRequest, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     const { id } = req.params;
     const { isSaved } = req.body;
+    const userId = req.user.id;
+
+    // Check current save state to award XP only on new saves
+    const place = await prisma.place.findUnique({
+      where: { id: Number(id) }
+    });
+
+    if (!place) {
+      return res.status(404).json({ error: 'Place not found' });
+    }
+
+    const justSaved = Boolean(isSaved) && !place.isSaved;
+
     const updatedPlace = await prisma.place.update({
       where: { id: Number(id) },
       data: { isSaved: Boolean(isSaved) }
     });
+
+    if (justSaved) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { xp: { increment: 10 } }
+      });
+      console.log(`[XP] User ${userId} gained +10 XP for saving place: ${place.name}`);
+    }
 
     // Invalidate relevant caches
     await invalidateCache('places:*');
