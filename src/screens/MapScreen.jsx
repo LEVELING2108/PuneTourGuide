@@ -10,6 +10,42 @@ import { calculateDistance } from "../utils/location";
 
 const TRAVEL_MODES = ["Walking", "Auto", "Driving"];
 
+const formatInstruction = (maneuver, streetName) => {
+  const type = maneuver.type;
+  const modifier = maneuver.modifier || "";
+  
+  let action = "Continue";
+  if (type === "depart") action = "Start journey";
+  else if (type === "arrive") action = "Arrive at destination";
+  else if (type === "turn") {
+    action = `Turn ${modifier}`;
+  } else if (type === "new name") {
+    action = "Continue onto";
+  }
+  
+  action = action.charAt(0).toUpperCase() + action.slice(1);
+  const street = streetName ? ` on ${streetName}` : "";
+  return `${action}${street}`;
+};
+
+const translateInstruction = (instruction, lang) => {
+  if (lang !== "Marathi") return instruction;
+  
+  let text = instruction;
+  text = text.replace("Start journey", "प्रवास सुरू करा");
+  text = text.replace("Arrive at destination", "गंतव्यस्थानी पोहोचा");
+  text = text.replace("Turn left", "डावीकडे वळा");
+  text = text.replace("Turn right", "उजवीकडे वळा");
+  text = text.replace("Turn slight left", "किंचित डावीकडे वळा");
+  text = text.replace("Turn slight right", "किंचित उजवीकडे वळा");
+  text = text.replace("Turn sharp left", "तीव्र डावीकडे वळा");
+  text = text.replace("Turn sharp right", "तीव्र उजवीकडे वळा");
+  text = text.replace("Continue onto", "पुढे जा");
+  text = text.replace("Continue", "पुढे जा");
+  text = text.replace("on", "वर");
+  return text;
+};
+
 // Recenter helper component
 function RecenterMap({ center }) {
   const map = useMap();
@@ -33,12 +69,26 @@ export default function MapScreen({ userLocation, userLanguage }) {
   const [routeStats, setRouteStats] = useState({ distanceKm: 0, durationSec: 0 });
   const [completedStopId, setCompletedStopId] = useState(null);
 
+  // New Map Improvements State
+  const [isMapExpanded, setIsMapExpanded] = useState(false);
+  const [directions, setDirections] = useState([]);
+  const [showDirections, setShowDirections] = useState(false);
+
   const t = translations[userLanguage] || translations.English;
 
-  // Custom marker creators to avoid Leaflet asset path resolution issues in Vite
-  const createCustomIcon = (color, emoji) =>
+  // Custom marker creators with dynamic numbered badges for itinerary stops
+  const createCustomIcon = (color, emoji, stopNumber = null) =>
     L.divIcon({
-      html: `<div style="background-color: ${color}; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.25); font-size: 16px;">${emoji}</div>`,
+      html: `
+        <div style="position: relative; background-color: ${color}; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.25); font-size: 16px;">
+          ${emoji}
+          ${stopNumber !== null ? `
+            <div style="position: absolute; top: -6px; right: -6px; background-color: #3D3680; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; border: 1.5px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+              ${stopNumber}
+            </div>
+          ` : ""}
+        </div>
+      `,
       className: "custom-pin-icon",
       iconSize: [32, 32],
       iconAnchor: [16, 32],
@@ -131,7 +181,7 @@ export default function MapScreen({ userLocation, userLanguage }) {
         time: "TBD",
         desc: place.description,
         desc_mr: place.description_mr || place.description,
-        dotColor: "#8B3A2A",
+        dotColor: getCategoryColor(place.category),
         tags: [{ label: place.category, type: place.category.toLowerCase() }]
       });
 
@@ -202,11 +252,12 @@ export default function MapScreen({ userLocation, userLanguage }) {
     }
   }
 
-  // Fetch dynamic road route from OSRM
+  // Fetch dynamic road route from OSRM (with steps=true)
   useEffect(() => {
     if (points.length < 2) {
       setRouteGeometry([]);
       setRouteStats({ distanceKm: 0, durationSec: 0 });
+      setDirections([]);
       return;
     }
 
@@ -214,7 +265,7 @@ export default function MapScreen({ userLocation, userLanguage }) {
       try {
         const profile = mode === "Walking" ? "foot" : "driving";
         const coordsStr = points.map(p => `${p[1]},${p[0]}`).join(";");
-        const url = `https://router.project-osrm.org/route/v1/${profile}/${coordsStr}?overview=full&geometries=geojson`;
+        const url = `https://router.project-osrm.org/route/v1/${profile}/${coordsStr}?overview=full&geometries=geojson&steps=true`;
 
         const res = await fetch(url);
         if (!res.ok) throw new Error("OSRM routing request failed");
@@ -231,6 +282,25 @@ export default function MapScreen({ userLocation, userLanguage }) {
             durationSec = durationSec * 1.25; // Auto-rickshaw slow-traffic adjustment
           }
           setRouteStats({ distanceKm, durationSec });
+
+          // Parse turn-by-turn steps
+          const parsedSteps = [];
+          if (route.legs) {
+            route.legs.forEach((leg) => {
+              if (leg.steps) {
+                leg.steps.forEach((step) => {
+                  if (step.name || step.maneuver.type !== "turn") {
+                    parsedSteps.push({
+                      instruction: formatInstruction(step.maneuver, step.name),
+                      distance: step.distance,
+                      duration: step.duration
+                    });
+                  }
+                });
+              }
+            });
+          }
+          setDirections(parsedSteps);
         }
       } catch (err) {
         console.error("OSRM Routing error:", err);
@@ -246,6 +316,7 @@ export default function MapScreen({ userLocation, userLanguage }) {
         const speed = mode === "Walking" ? 4.5 : mode === "Auto" ? 20 : 25;
         const durationSec = (fallbackDistance / speed) * 3600;
         setRouteStats({ distanceKm: fallbackDistance, durationSec });
+        setDirections([]);
       }
     };
 
@@ -353,10 +424,11 @@ export default function MapScreen({ userLocation, userLanguage }) {
       {/* Interactive Leaflet Map View */}
       <div
         style={{
-          height: 240,
+          height: isMapExpanded ? "calc(100% - 110px)" : "240px",
           position: "relative",
           zIndex: 1,
           borderBottom: "1px solid #EDE8DF",
+          transition: "height 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       >
         {loading && places.length === 0 ? (
@@ -378,6 +450,7 @@ export default function MapScreen({ userLocation, userLanguage }) {
           </div>
         ) : null}
 
+        {/* Map Control Styles (including flowing dash array animation) */}
         <style>{`
           .leaflet-container { font-family: inherit; }
           .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -391,7 +464,43 @@ export default function MapScreen({ userLocation, userLanguage }) {
             50% { transform: translateY(-15px) scale(1.2); opacity: 1; }
             100% { transform: translateY(-30px) scale(1); opacity: 0; }
           }
+          .flowing-route {
+            stroke-dasharray: 8, 8;
+            animation: routeFlow 25s linear infinite;
+          }
+          @keyframes routeFlow {
+            from { stroke-dashoffset: 0; }
+            to { stroke-dashoffset: -1000; }
+          }
         `}</style>
+
+        {/* ⛶ Fullscreen Toggle Button */}
+        <button
+          onClick={() => {
+            setIsMapExpanded(!isMapExpanded);
+            setShowDirections(false);
+          }}
+          style={{
+            position: "absolute",
+            bottom: 12,
+            right: 12,
+            zIndex: 1000,
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            background: "#fff",
+            border: "1px solid #EDE8DF",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 15,
+            color: "#8B3A2A"
+          }}
+        >
+          {isMapExpanded ? "Collapse ⛶" : "Expand ⛶"}
+        </button>
 
         <MapContainer
           center={mapCenter}
@@ -415,79 +524,84 @@ export default function MapScreen({ userLocation, userLanguage }) {
             </Marker>
           )}
 
-          {/* Dynamic Places Markers */}
+          {/* Dynamic Places Markers (with custom numbered badges for stops) */}
           {places
             .filter((p) => p.latitude && p.longitude)
-            .map((place) => (
-              <Marker
-                key={place.id}
-                position={[place.latitude, place.longitude]}
-                icon={createCustomIcon(getCategoryColor(place.category), place.emoji || "📍")}
-              >
-                <Popup>
-                  <div style={{ minWidth: 150, padding: "2px 0", fontFamily: "'Inter', sans-serif" }}>
-                    <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 4 }}>
-                      <span style={{ fontSize: 16 }}>{place.emoji}</span>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: "#1C1412", lineHeight: 1.2 }}>
-                        {userLanguage === "Marathi" && place.name_mr ? place.name_mr : place.name}
+            .map((place) => {
+              const stopIndex = stops.findIndex(s => s.name.toLowerCase() === place.name.toLowerCase());
+              const stopNumber = stopIndex !== -1 ? stopIndex + 1 : null;
+              
+              return (
+                <Marker
+                  key={place.id}
+                  position={[place.latitude, place.longitude]}
+                  icon={createCustomIcon(getCategoryColor(place.category), place.emoji || "📍", stopNumber)}
+                >
+                  <Popup>
+                    <div style={{ minWidth: 150, padding: "2px 0", fontFamily: "'Inter', sans-serif" }}>
+                      <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 4 }}>
+                        <span style={{ fontSize: 16 }}>{place.emoji}</span>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "#1C1412", lineHeight: 1.2 }}>
+                          {userLanguage === "Marathi" && place.name_mr ? place.name_mr : place.name}
+                        </div>
                       </div>
+                      <div style={{ fontSize: 10, color: "#6B5B52", marginBottom: 8, display: "flex", gap: 6, alignItems: "center" }}>
+                        <span>⭐ {place.rating?.toFixed(1)}</span>
+                        <span>•</span>
+                        <span>{userLanguage === "Marathi" ? (translations.Marathi[place.category.toLowerCase()] || place.category) : place.category}</span>
+                      </div>
+                      
+                      {stopIndex !== -1 ? (
+                        <button
+                          onClick={() => {
+                            const stop = stops[stopIndex];
+                            if (stop) handleDeleteStop(stop.id);
+                          }}
+                          style={{
+                            width: "100%",
+                            background: "#F2EAE7",
+                            color: "#8B3A2A",
+                            border: "none",
+                            borderRadius: 6,
+                            padding: "5px",
+                            fontSize: 10,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                          }}
+                        >
+                          ❌ {userLanguage === "Marathi" ? "थांबा काढा" : "Remove Stop"}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleAddPlaceToItinerary(place)}
+                          style={{
+                            width: "100%",
+                            background: "#8B3A2A",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: 6,
+                            padding: "5px",
+                            fontSize: 10,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                          }}
+                        >
+                          📅 {userLanguage === "Marathi" ? "सहलीत जोडा" : "Add to Itinerary"}
+                        </button>
+                      )}
                     </div>
-                    <div style={{ fontSize: 10, color: "#6B5B52", marginBottom: 8, display: "flex", gap: 6, alignItems: "center" }}>
-                      <span>⭐ {place.rating?.toFixed(1)}</span>
-                      <span>•</span>
-                      <span>{userLanguage === "Marathi" ? (translations.Marathi[place.category.toLowerCase()] || place.category) : place.category}</span>
-                    </div>
-                    
-                    {stops.some(s => s.name.toLowerCase() === place.name.toLowerCase()) ? (
-                      <button
-                        onClick={() => {
-                          const stop = stops.find(s => s.name.toLowerCase() === place.name.toLowerCase());
-                          if (stop) handleDeleteStop(stop.id);
-                        }}
-                        style={{
-                          width: "100%",
-                          background: "#F2EAE7",
-                          color: "#8B3A2A",
-                          border: "none",
-                          borderRadius: 6,
-                          padding: "5px",
-                          fontSize: 10,
-                          fontWeight: 600,
-                          cursor: "pointer",
-                        }}
-                      >
-                        ❌ {userLanguage === "Marathi" ? "थांबा काढा" : "Remove Stop"}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleAddPlaceToItinerary(place)}
-                        style={{
-                          width: "100%",
-                          background: "#8B3A2A",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: 6,
-                          padding: "5px",
-                          fontSize: 10,
-                          fontWeight: 600,
-                          cursor: "pointer",
-                        }}
-                      >
-                        📅 {userLanguage === "Marathi" ? "सहलीत जोडा" : "Add to Itinerary"}
-                      </button>
-                    )}
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
+                  </Popup>
+                </Marker>
+              );
+            })}
 
-          {/* Connected route line (road geometry or straight fallback) */}
+          {/* Connected route line with Flowing Dash Animation */}
           {(routeGeometry.length > 0 ? routeGeometry : points).length > 1 && (
             <Polyline 
               positions={routeGeometry.length > 0 ? routeGeometry : points} 
               color={isItineraryRoute ? "#8B3A2A" : "#3D3680"} 
-              weight={isItineraryRoute ? 3.5 : 4.5} 
-              dashArray={isItineraryRoute ? "5, 5" : "0"} 
+              weight={isItineraryRoute ? 4.5 : 5.5} 
+              pathOptions={{ className: "flowing-route" }}
             />
           )}
         </MapContainer>
@@ -506,7 +620,8 @@ export default function MapScreen({ userLocation, userLanguage }) {
             alignItems: "center",
             justifyContent: "space-between",
             boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
-            zIndex: 5
+            zIndex: 5,
+            marginTop: isMapExpanded ? "-76px" : "10px"
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -522,24 +637,79 @@ export default function MapScreen({ userLocation, userLanguage }) {
               </div>
             </div>
           </div>
-          <button
-            onClick={() => window.open(getGoogleMapsDirUrl(), '_blank')}
-            style={{
-              background: "#8B3A2A",
-              color: "#fff",
-              border: "none",
-              borderRadius: 10,
-              padding: "7px 12px",
-              fontSize: 11,
-              fontWeight: 600,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 4
-            }}
-          >
-            🧭 {userLanguage === "Marathi" ? "मार्गदर्शन" : "Navigate"} ↗
-          </button>
+          
+          <div style={{ display: "flex", gap: 6 }}>
+            {directions.length > 0 && (
+              <button
+                onClick={() => setShowDirections(!showDirections)}
+                style={{
+                  background: showDirections ? "#8B3A2A" : "#EDE8DF",
+                  color: showDirections ? "#fff" : "#6B5B52",
+                  border: "none",
+                  borderRadius: 10,
+                  padding: "7px 10px",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
+                📋
+              </button>
+            )}
+            <button
+              onClick={() => window.open(getGoogleMapsDirUrl(), '_blank')}
+              style={{
+                background: "#8B3A2A",
+                color: "#fff",
+                border: "none",
+                borderRadius: 10,
+                padding: "7px 12px",
+                fontSize: 11,
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 4
+              }}
+            >
+              🧭 {userLanguage === "Marathi" ? "मार्गदर्शन" : "Navigate"} ↗
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 📋 Turn-by-Turn Directions Panel */}
+      {showDirections && directions.length > 0 && (
+        <div
+          style={{
+            background: "#fff",
+            margin: "-6px 16px 10px",
+            borderRadius: 14,
+            border: "1px solid #EDE8DF",
+            padding: "12px 14px",
+            maxHeight: 180,
+            overflowY: "auto",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
+            zIndex: 4,
+            display: "flex",
+            flexDirection: "column",
+            gap: 8
+          }}
+          className="no-scrollbar"
+        >
+          {directions.map((step, idx) => (
+            <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, borderBottom: idx !== directions.length - 1 ? "1px solid #FBF8F3" : "none", paddingBottom: 6 }}>
+              <div style={{ color: "#1C1412", fontWeight: 600, flex: 1, paddingRight: 8 }}>
+                {translateInstruction(step.instruction, userLanguage)}
+              </div>
+              <div style={{ color: "#8B3A2A", fontWeight: 700, fontSize: 10, flexShrink: 0 }}>
+                {step.distance > 1000 ? `${(step.distance / 1000).toFixed(1)} km` : `${Math.round(step.distance)} m`}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
@@ -582,188 +752,190 @@ export default function MapScreen({ userLocation, userLanguage }) {
       </div>
 
       {/* Scrollable Places / Stops List Panel */}
-      <div
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          background: "#fff",
-        }}
-        className="no-scrollbar"
-      >
-        {stops.length > 0 ? (
-          // Render Itinerary Stops if active
-          stops.map((stop) => {
-            const isAnimating = completedStopId === stop.id;
-            return (
-              <div
-                key={stop.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: "12px 16px",
-                  borderBottom: "1px solid #EDE8DF",
-                  transform: isAnimating ? "scale(1.03)" : "scale(1)",
-                  background: isAnimating ? "#EBF0E8" : "transparent",
-                  transition: "all 0.3s ease",
-                  position: "relative"
-                }}
-              >
+      {!isMapExpanded && (
+        <div
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            background: "#fff",
+          }}
+          className="no-scrollbar"
+        >
+          {stops.length > 0 ? (
+            // Render Itinerary Stops if active
+            stops.map((stop) => {
+              const isAnimating = completedStopId === stop.id;
+              return (
                 <div
+                  key={stop.id}
                   style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: "50%",
-                    background: stop.current ? "#ECEAF8" : "#F2EAE7",
-                    color: stop.current ? "#3D3680" : "#8B3A2A",
-                    fontSize: 11,
-                    fontWeight: 700,
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
+                    gap: 12,
+                    padding: "12px 16px",
+                    borderBottom: "1px solid #EDE8DF",
+                    transform: isAnimating ? "scale(1.03)" : "scale(1)",
+                    background: isAnimating ? "#EBF0E8" : "transparent",
+                    transition: "all 0.3s ease",
+                    position: "relative"
                   }}
                 >
-                  {stop.id}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1412" }}>
-                    {userLanguage === "Marathi" && stop.name_mr ? stop.name_mr : stop.name}
+                  <div
+                    style={{
+                      width: 26,
+                      height: 26,
+                      borderRadius: "50%",
+                      background: stop.current ? "#ECEAF8" : "#F2EAE7",
+                      color: stop.current ? "#3D3680" : "#8B3A2A",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {stop.id}
                   </div>
-                  <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 2 }}>
-                    {stop.time}
-                    {stop.current && (
-                      <span style={{ color: "#3D3680", fontWeight: 600, fontSize: 10, marginLeft: 6 }}>
-                        — {userLanguage === "Marathi" ? "पुढचा थांबा" : "Up next"}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1412" }}>
+                      {userLanguage === "Marathi" && stop.name_mr ? stop.name_mr : stop.name}
+                    </div>
+                    <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 2 }}>
+                      {stop.time}
+                      {stop.current && (
+                        <span style={{ color: "#3D3680", fontWeight: 600, fontSize: 10, marginLeft: 6 }}>
+                          — {userLanguage === "Marathi" ? "पुढचा थांबा" : "Up next"}
+                        </span>
+                      )}
+                    </div>
+                    {isAnimating && (
+                      <span style={{ 
+                        position: "absolute", 
+                        right: 76, 
+                        top: "35%", 
+                        fontSize: 12, 
+                        fontWeight: 700,
+                        color: "#2E8B57",
+                        animation: "bounceUp 1s ease forwards" 
+                      }}>
+                        🎉 +50 Pts!
                       </span>
                     )}
                   </div>
-                  {isAnimating && (
-                    <span style={{ 
-                      position: "absolute", 
-                      right: 76, 
-                      top: "35%", 
-                      fontSize: 12, 
-                      fontWeight: 700,
-                      color: "#2E8B57",
-                      animation: "bounceUp 1s ease forwards" 
-                    }}>
-                      🎉 +50 Pts!
-                    </span>
-                  )}
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <button
+                      onClick={() => toggleStop(stop.id)}
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: "50%",
+                        border: stop.done ? "none" : "1.5px solid #EDE8DF",
+                        background: stop.done ? "#4A6741" : "transparent",
+                        color: stop.done ? "#fff" : "transparent",
+                        fontSize: 12,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      ✓
+                    </button>
+                    <button
+                      onClick={() => handleDeleteStop(stop.id)}
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: "50%",
+                        border: "none",
+                        background: "#F2EAE7",
+                        color: "#8B3A2A",
+                        fontSize: 11,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <button
-                    onClick={() => toggleStop(stop.id)}
-                    style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: "50%",
-                      border: stop.done ? "none" : "1.5px solid #EDE8DF",
-                      background: stop.done ? "#4A6741" : "transparent",
-                      color: stop.done ? "#fff" : "transparent",
-                      fontSize: 12,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    ✓
-                  </button>
-                  <button
-                    onClick={() => handleDeleteStop(stop.id)}
-                    style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: "50%",
-                      border: "none",
-                      background: "#F2EAE7",
-                      color: "#8B3A2A",
-                      fontSize: 11,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-            );
-          })
-        ) : (
-          // Fallback: Render beautifully filtered places when itinerary is empty
-          places.map((place) => {
-            const isSelected = selectedPlace?.id === place.id;
-            return (
-              <div
-                key={place.id}
-                onClick={() => {
-                  setSelectedPlace(place);
-                  if (place.latitude && place.longitude) {
-                    setMapCenter([place.latitude, place.longitude]);
-                  }
-                }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: "12px 16px",
-                  borderBottom: "1px solid #EDE8DF",
-                  cursor: "pointer",
-                  background: isSelected ? "#F2EAE7" : "#fff",
-                  transition: "background 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  if (!isSelected) e.currentTarget.style.background = "#FBF8F3";
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSelected) e.currentTarget.style.background = "#fff";
-                }}
-              >
+              );
+            })
+          ) : (
+            // Fallback: Render beautifully filtered places when itinerary is empty
+            places.map((place) => {
+              const isSelected = selectedPlace?.id === place.id;
+              return (
                 <div
+                  key={place.id}
+                  onClick={() => {
+                    setSelectedPlace(place);
+                    if (place.latitude && place.longitude) {
+                      setMapCenter([place.latitude, place.longitude]);
+                    }
+                  }}
                   style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 8,
-                    background: place.bgColor || "#F2EAE7",
-                    fontSize: 16,
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
+                    gap: 12,
+                    padding: "12px 16px",
+                    borderBottom: "1px solid #EDE8DF",
+                    cursor: "pointer",
+                    background: isSelected ? "#F2EAE7" : "#fff",
+                    transition: "background 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) e.currentTarget.style.background = "#FBF8F3";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) e.currentTarget.style.background = "#fff";
                   }}
                 >
-                  {place.emoji || "📍"}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1412" }}>
-                    {userLanguage === "Marathi" && place.name_mr ? place.name_mr : place.name}
+                  <div
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 8,
+                      background: place.bgColor || "#F2EAE7",
+                      fontSize: 16,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {place.emoji || "📍"}
                   </div>
-                  <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 2 }}>
-                    ⭐ {place.rating} · {place.address || place.category}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#1C1412" }}>
+                      {userLanguage === "Marathi" && place.name_mr ? place.name_mr : place.name}
+                    </div>
+                    <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 2 }}>
+                      ⭐ {place.rating} · {place.address || place.category}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: isSelected ? "#fff" : "#8B3A2A",
+                      fontWeight: 600,
+                      background: isSelected ? "#8B3A2A" : "#F2EAE7",
+                      padding: "4px 8px",
+                      borderRadius: 6,
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    {isSelected ? (userLanguage === "Marathi" ? "निवडलेले" : "Selected") : (userLanguage === "Marathi" ? "पहा" : "View")}
                   </div>
                 </div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    color: isSelected ? "#fff" : "#8B3A2A",
-                    fontWeight: 600,
-                    background: isSelected ? "#8B3A2A" : "#F2EAE7",
-                    padding: "4px 8px",
-                    borderRadius: 6,
-                    transition: "all 0.2s"
-                  }}
-                >
-                  {isSelected ? (userLanguage === "Marathi" ? "निवडलेले" : "Selected") : (userLanguage === "Marathi" ? "पहा" : "View")}
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
+              );
+            })
+          )}
+        </div>
+      )}
     </div>
   );
 }
