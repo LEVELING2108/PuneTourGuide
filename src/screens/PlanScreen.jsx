@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import StatusBar from "../components/StatusBar";
 import { tagStyles, colors } from "../data/tokens";
-import { fetchItinerary, deleteStopFromItinerary, fetchPlaces, addStopToItinerary } from "../data/api";
+import { fetchItinerary, deleteStopFromItinerary, fetchPlaces, addStopToItinerary, optimizeItinerary } from "../data/api";
 import { translations } from "../data/translations";
 
 const localTranslations = {
@@ -71,6 +71,7 @@ export default function PlanScreen({ userLocation, userLanguage }) {
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [stopTime, setStopTime] = useState("10:00 AM");
   const [customDesc, setCustomDesc] = useState("");
+  const [optimizing, setOptimizing] = useState(false);
 
   const t = translations[userLanguage] || translations.English;
   const lt = localTranslations[userLanguage] || localTranslations.English;
@@ -183,6 +184,33 @@ export default function PlanScreen({ userLocation, userLanguage }) {
     } catch (error) {
       console.error("Failed to add stop:", error);
       alert("Failed to add stop");
+    }
+  };
+
+  const handleOptimize = async () => {
+    const day = itineraryDays[activeDay];
+    if (!day || day.stops.length < 3) return;
+    
+    setOptimizing(true);
+    try {
+      const optimizedStops = await optimizeItinerary(day.id, "Walking");
+      setItineraryDays((prev) =>
+        prev.map((d) => {
+          if (d.id === day.id) {
+            return {
+              ...d,
+              stops: optimizedStops
+            };
+          }
+          return d;
+        })
+      );
+      alert(userLanguage === "Marathi" ? "मार्ग यशस्वीरित्या सुधारा केला!" : "Route sequence successfully optimized!");
+    } catch (error) {
+      console.error("Failed to optimize route:", error);
+      alert(userLanguage === "Marathi" ? "मार्ग सुधारण्यात अडचण आली." : "Failed to optimize route.");
+    } finally {
+      setOptimizing(false);
     }
   };
 
@@ -351,6 +379,26 @@ export default function PlanScreen({ userLocation, userLanguage }) {
         >
           {t.overview} 📊
         </button>
+        {day.stops.length >= 3 && (
+          <button
+            onClick={handleOptimize}
+            disabled={optimizing}
+            style={{
+              padding: "7px 16px",
+              borderRadius: 20,
+              fontSize: 11,
+              fontWeight: 600,
+              border: "none",
+              cursor: "pointer",
+              background: "rgba(255,255,255,0.2)",
+              color: "rgba(255,255,255,0.85)",
+              whiteSpace: "nowrap",
+              opacity: optimizing ? 0.6 : 1
+            }}
+          >
+            {optimizing ? "..." : (userLanguage === "Marathi" ? "मार्ग सुधारा" : "Optimize Route")} ⚡
+          </button>
+        )}
       </div>
 
       {/* Timeline */}

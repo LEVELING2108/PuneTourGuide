@@ -46,11 +46,24 @@ model Event {
   createdAt DateTime @default(now())
 }
 
+model User {
+  id            Int            @id @default(autoincrement())
+  name          String
+  email         String         @unique
+  password      String
+  xp            Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  itineraryDays ItineraryDay[]
+}
+
 model ItineraryDay {
-  id    Int             @id @default(autoincrement())
-  day   Int
-  label String
-  stops ItineraryStop[]
+  id      Int             @id @default(autoincrement())
+  day     Int
+  label   String
+  userId  Int?
+  user    User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stops   ItineraryStop[]
 }
 
 model ItineraryStop {
@@ -64,5 +77,6 @@ model ItineraryStop {
   itineraryDayId Int
   tags           Json
   done           Boolean      @default(false)
-  itineraryDay   ItineraryDay @relation(fields: [itineraryDayId], references: [id])
+  order          Int          @default(0)
+  itineraryDay   ItineraryDay @relation(fields: [itineraryDayId], references: [id], onDelete: Cascade)
 }

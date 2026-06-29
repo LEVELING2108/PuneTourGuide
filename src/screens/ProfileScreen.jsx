@@ -5,7 +5,7 @@ import { fetchPlaces, fetchUserStats } from "../data/api";
 import { colors } from "../data/tokens";
 import { translations } from "../data/translations";
 
-export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguage, setUserLanguage }) {
+export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguage, setUserLanguage, onLogout }) {
   // User Personalization State
   const [userName, setUserName] = useState(() => localStorage.getItem("pune_user_name") || "Sourav Paul");
   const [userBio, setUserBio] = useState(() => localStorage.getItem("pune_user_bio") || "Local Guide · Pune Explorer");
@@ -403,20 +403,31 @@ export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguag
           </div>
         </div>
 
-        <button 
-          onClick={() => {
-            setTempName(userName);
-            setTempBio(userBio);
-            setTempAvatar(userAvatar);
-            setIsEditModalOpen(true);
-          }}
-          style={{ 
-            background: "none", border: `1px solid ${colors.stoneDark}`, borderRadius: 10,
-            padding: "8px 20px", fontSize: 12, fontWeight: 600, color: colors.inkMuted, cursor: "pointer"
-          }}
-        >
-          {t.editProfile}
-        </button>
+        <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+          <button 
+            onClick={() => {
+              setTempName(userName);
+              setTempBio(userBio);
+              setTempAvatar(userAvatar);
+              setIsEditModalOpen(true);
+            }}
+            style={{ 
+              background: "none", border: `1px solid ${colors.stoneDark}`, borderRadius: 10,
+              padding: "8px 20px", fontSize: 12, fontWeight: 600, color: colors.inkMuted, cursor: "pointer"
+            }}
+          >
+            {t.editProfile}
+          </button>
+          <button 
+            onClick={onLogout}
+            style={{ 
+              background: "none", border: `1px solid ${colors.wadaRed}`, borderRadius: 10,
+              padding: "8px 20px", fontSize: 12, fontWeight: 600, color: colors.wadaRed, cursor: "pointer"
+            }}
+          >
+            {userLanguage === "Marathi" ? "लॉगआउट" : "Logout"}
+          </button>
+        </div>
         <div style={{ fontSize: 10, color: colors.inkMuted, marginTop: 12 }}>
           {t.memberSince}
         </div>
