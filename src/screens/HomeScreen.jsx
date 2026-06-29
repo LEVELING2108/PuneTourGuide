@@ -11,6 +11,7 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation,
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAllEvents, setShowAllEvents] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const t = translations[userLanguage] || translations.English;
 
@@ -231,7 +232,7 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation,
           {(showAllEvents ? events : events.slice(0, 2)).map((ev) => (
             <div
               key={ev.id}
-              onClick={() => alert(`Event: ${ev.name}\nDate: ${ev.date}\nDescription: ${ev.desc}`)}
+              onClick={() => setSelectedEvent(ev)}
               style={{
                 flex: showAllEvents ? "none" : 1,
                 minWidth: showAllEvents ? "auto" : 160,
@@ -259,6 +260,47 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation,
           ))}
         </div>
       </div>
+
+      {/* 🎭 EVENT DETAILS MODAL */}
+      {selectedEvent && (
+        <div 
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 1000,
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+            backdropFilter: "blur(4px)"
+          }}
+        >
+          <div style={{ background: "#fff", width: "100%", maxWidth: 340, borderRadius: 24, padding: 24, boxShadow: "0 12px 40px rgba(0,0,0,0.25)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: selectedEvent.color === "terracotta" ? "#8B3A2A" : "#3D3680", textTransform: "uppercase" }}>
+                {selectedEvent.date}
+              </div>
+              <button 
+                onClick={() => setSelectedEvent(null)}
+                style={{ background: "#EDE8DF", border: "none", width: 28, height: 28, borderRadius: "50%", cursor: "pointer", fontSize: 12, fontWeight: "bold" }}
+              >
+                ✕
+              </button>
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "#1C1412", marginBottom: 10, fontFamily: "Mukta" }}>
+              {selectedEvent.name}
+            </div>
+            <div style={{ fontSize: 13, color: "#6B5B52", lineHeight: 1.5, marginBottom: 20 }}>
+              {selectedEvent.desc}
+            </div>
+            <button 
+              onClick={() => setSelectedEvent(null)}
+              style={{
+                width: "100%", padding: "12px", borderRadius: 12, border: "none",
+                background: selectedEvent.color === "terracotta" ? "#8B3A2A" : "#3D3680",
+                color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13
+              }}
+            >
+              {userLanguage === "Marathi" ? "बंद करा" : "Close"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
