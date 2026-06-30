@@ -61,7 +61,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(distPath));
   
   // Catch-all route to serve the React SPA
-  app.get('/*', (req: Request, res: Response) => {
+  app.get('/(.*)', (req: Request, res: Response) => {
     if (!req.path.startsWith('/api/')) {
       res.sendFile(path.join(distPath, 'index.html'));
     } else {
