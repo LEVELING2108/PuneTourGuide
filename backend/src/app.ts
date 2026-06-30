@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import placeRoutes from './routes/placeRoutes';
 import eventRoutes from './routes/eventRoutes';
 import itineraryRoutes from './routes/itineraryRoutes';
@@ -55,9 +56,11 @@ app.get('/api/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'Pune Tour Guide API is running' });
 });
 
-// Serve static assets in production
-if (process.env.NODE_ENV === 'production') {
-  const distPath = path.join(__dirname, '../../dist');
+// Serve static assets in production if frontend build exists
+const distPath = path.join(__dirname, '../../dist');
+const distExists = fs.existsSync(distPath);
+
+if (process.env.NODE_ENV === 'production' && distExists) {
   app.use(express.static(distPath));
   
   // Catch-all route to serve the React SPA
@@ -69,9 +72,13 @@ if (process.env.NODE_ENV === 'production') {
     }
   });
 } else {
-  // Development welcome route
-  app.get('/', (req: Request, res: Response) => {
-    res.send('Pune Tour Guide API is running (Development Mode)');
+  // Catch-all welcome route for API-only setups
+  app.get(/.*/, (req: Request, res: Response) => {
+    if (req.path.startsWith('/api/')) {
+      res.status(404).json({ error: 'API endpoint not found' });
+    } else {
+      res.send(`Pune Tour Guide API is running (${process.env.NODE_ENV === 'production' ? 'Production' : 'Development'} API-Only Mode)`);
+    }
   });
 }
 
