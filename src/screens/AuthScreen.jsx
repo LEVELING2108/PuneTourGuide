@@ -36,6 +36,40 @@ const authTranslations = {
     enterName: "पूर्ण नाव प्रविष्ट करा",
     enterEmail: "ईमेल प्रविष्ट करा",
     enterPassword: "पासवर्ड प्रविष्ट करा"
+  },
+  Hindi: {
+    login: "लॉगिन",
+    register: "रजिस्टर",
+    name: "पूरा नाम",
+    email: "ईमेल पता",
+    password: "पासवर्ड",
+    welcomeBack: "आपका स्वागत है",
+    getStarted: "खाता बनाएँ",
+    welcomeSubtitle: "पुणे के सांस्कृतिक गौरव का अनुभव करें 🚩",
+    dontHaveAccount: "खाता नहीं है?",
+    alreadyHaveAccount: "पहले से ही खाता है?",
+    errorOccurred: "कोई त्रुटि हुई। कृपया पुन: प्रयास करें।",
+    puneExplorer: "पुणे एक्सप्लोरर",
+    enterName: "पूरा नाम दर्ज करें",
+    enterEmail: "ईमेल दर्ज करें",
+    enterPassword: "पासवर्ड दर्ज करें"
+  },
+  Gujarati: {
+    login: "લોગિન",
+    register: "રજીસ્ટર",
+    name: "પૂરું નામ",
+    email: "ઇમેઇલ સરનામું",
+    password: "પાસવર્ડ",
+    welcomeBack: "સ્વાગત છે",
+    getStarted: "ખાતું બનાવો",
+    welcomeSubtitle: "પુણેના સાંસ્કૃતિક ગૌરવનો અનુભવ કરો 🚩",
+    dontHaveAccount: "ખાતું નથી?",
+    alreadyHaveAccount: "પહેલાથી જ ખાતું છે?",
+    errorOccurred: "કોઈ ભૂલ થઈ. કૃપા કરીને ફરી પ્રયાસ કરો.",
+    puneExplorer: "પુણે એક્સપ્લોરર",
+    enterName: "પૂરું નામ દાખલ કરો",
+    enterEmail: "ઇમેઇલ દાખલ કરો",
+    enterPassword: "પાસવર્ડ દાખલ કરો"
   }
 };
 
@@ -60,7 +94,12 @@ export default function AuthScreen({ onAuthSuccess, userLanguage, setUserLanguag
         onAuthSuccess(data.user);
       } else {
         if (!name) {
-          setError(userLanguage === "Marathi" ? "कृपया तुमचे नाव प्रविष्ट करा" : "Please enter your name");
+          const errorMsg = 
+            userLanguage === "Marathi" ? "कृपया तुमचे नाव प्रविष्ट करा" :
+            userLanguage === "Hindi" ? "कृपया अपना नाम दर्ज करें" :
+            userLanguage === "Gujarati" ? "કૃપા કરીને તમારું નામ દાખલ કરો" :
+            "Please enter your name";
+          setError(errorMsg);
           setLoading(false);
           return;
         }
@@ -81,18 +120,23 @@ export default function AuthScreen({ onAuthSuccess, userLanguage, setUserLanguag
 
       {/* Language Switcher */}
       <div style={{ position: "absolute", top: 16, right: 16, display: "inline-flex", background: "#EDE8DF", borderRadius: 10, padding: 3 }}>
-        {["English", "Marathi"].map(lang => (
+        {[
+          { code: "English", label: "English" },
+          { code: "Marathi", label: "मराठी" },
+          { code: "Hindi", label: "हिन्दी" },
+          { code: "Gujarati", label: "ગુજરાતી" }
+        ].map(lang => (
           <button
-            key={lang}
-            onClick={() => setUserLanguage(lang)}
+            key={lang.code}
+            onClick={() => setUserLanguage(lang.code)}
             style={{
               padding: "4px 10px", borderRadius: 8, border: "none", fontSize: 10, fontWeight: 700, cursor: "pointer",
-              background: userLanguage === lang ? "#fff" : "none",
-              color: userLanguage === lang ? "#8B3A2A" : "#6B5B52",
+              background: userLanguage === lang.code ? "#fff" : "none",
+              color: userLanguage === lang.code ? "#8B3A2A" : "#6B5B52",
               transition: "0.2s"
             }}
           >
-            {lang === "Marathi" ? "मराठी" : "English"}
+            {lang.label}
           </button>
         ))}
       </div>

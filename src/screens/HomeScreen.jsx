@@ -37,7 +37,12 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation,
   if (loading) {
     return (
       <div style={{ background: "#FBF8F3", minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ color: "#8B3A2A", fontWeight: 600 }}>{userLanguage === "Marathi" ? "पुणे लोड होत आहे..." : "Loading Pune..."}</div>
+        <div style={{ color: "#8B3A2A", fontWeight: 600 }}>
+          {userLanguage === "Marathi" ? "पुणे लोड होत आहे..." :
+           userLanguage === "Hindi" ? "पुणे लोड हो रहा है..." :
+           userLanguage === "Gujarati" ? "પુણે લોડ થઈ રહ્યું છે..." :
+           "Loading Pune..."}
+        </div>
       </div>
     );
   }
@@ -296,7 +301,10 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation,
                 color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13
               }}
             >
-              {userLanguage === "Marathi" ? "बंद करा" : "Close"}
+              {userLanguage === "Marathi" ? "बंद करा" :
+               userLanguage === "Hindi" ? "बंद करें" :
+               userLanguage === "Gujarati" ? "બંધ કરો" :
+               "Close"}
             </button>
           </div>
         </div>

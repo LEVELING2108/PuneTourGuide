@@ -40,7 +40,7 @@ export default function PlaceCard({ place, onClick, userLocation, userLanguage }
       {/* Info */}
       <div style={{ padding: "8px 10px 10px" }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: "#1C1412" }}>
-          {userLanguage === "Marathi" && place.name_mr ? place.name_mr : place.name}
+          {(userLanguage === "Marathi" || userLanguage === "Hindi") && place.name_mr ? place.name_mr : place.name}
         </div>
         <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 2 }}>
           ⭐ {place.rating?.toFixed(1) || "4.0"} · {formatDistance(dynamicDistance)}
@@ -61,6 +61,14 @@ export default function PlaceCard({ place, onClick, userLocation, userLanguage }
            userLanguage === "Marathi" && place.tag === "Iconic" ? "प्रसिद्ध" :
            userLanguage === "Marathi" && place.tag === "Family" ? "कौटुंबिक" :
            userLanguage === "Marathi" && place.tag === "New Discovery" ? "नवीन शोध" :
+           userLanguage === "Hindi" && place.tag === "Must Visit" ? "जरूर जाएं" :
+           userLanguage === "Hindi" && place.tag === "Iconic" ? "प्रसिद्ध" :
+           userLanguage === "Hindi" && place.tag === "Family" ? "पारिवारिक" :
+           userLanguage === "Hindi" && place.tag === "New Discovery" ? "नई खोज" :
+           userLanguage === "Gujarati" && place.tag === "Must Visit" ? "મુલાકાત લેવા જેવું" :
+           userLanguage === "Gujarati" && place.tag === "Iconic" ? "પ્રસિદ્ધ" :
+           userLanguage === "Gujarati" && place.tag === "Family" ? "કૌટુંબિક" :
+           userLanguage === "Gujarati" && place.tag === "New Discovery" ? "નવી શોધ" :
            place.tag}
         </div>
       </div>

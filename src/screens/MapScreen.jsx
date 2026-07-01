@@ -157,7 +157,12 @@ export default function MapScreen({ userLocation, userLanguage }) {
   };
 
   const handleDeleteStop = async (id) => {
-    if (confirm(userLanguage === "Marathi" ? "तुम्हाला हा थांबा काढून टाकायचा आहे का?" : "Are you sure you want to remove this stop?")) {
+    const confirmMsg = 
+      userLanguage === "Marathi" ? "तुम्हाला हा थांबा काढून टाकायचा आहे का?" :
+      userLanguage === "Hindi" ? "क्या आप इस पड़ाव को हटाना चाहते हैं?" :
+      userLanguage === "Gujarati" ? "શું તમે આ સ્ટોપને દૂર કરવા માંગો છો?" :
+      "Are you sure you want to remove this stop?";
+    if (confirm(confirmMsg)) {
       try {
         await deleteStopFromItinerary(id);
         setStops((prev) => prev.filter((s) => s.id !== id));
@@ -186,10 +191,20 @@ export default function MapScreen({ userLocation, userLanguage }) {
       });
 
       setStops((prev) => [...prev, newStop]);
-      alert(userLanguage === "Marathi" ? `${place.name_mr || place.name} सहलीत जोडले गेले!` : `${place.name} added to your Day 1 itinerary!`);
+      const addedMsg = 
+        userLanguage === "Marathi" ? `${place.name_mr || place.name} सहलीत जोडले गेले!` :
+        userLanguage === "Hindi" ? `${place.name_mr || place.name} यात्रा कार्यक्रम में जोड़ा गया!` :
+        userLanguage === "Gujarati" ? `${place.name_mr || place.name} મુસાફરી યાદીમાં ઉમેરાઈ ગયું!` :
+        `${place.name} added to your Day 1 itinerary!`;
+      alert(addedMsg);
     } catch (error) {
       console.error("Failed to add stop from map popup:", error);
-      alert(userLanguage === "Marathi" ? "सहलीत जोडण्यात अडचण आली." : "Failed to add to itinerary.");
+      const failedMsg = 
+        userLanguage === "Marathi" ? "सहलीत जोडण्यात अडचण आली." :
+        userLanguage === "Hindi" ? "यात्रा कार्यक्रम में जोड़ने में विफल।" :
+        userLanguage === "Gujarati" ? "મુસાફરી યાદીમાં ઉમેરવામાં નિષ્ફળ." :
+        "Failed to add to itinerary.";
+      alert(failedMsg);
     }
   };
 
@@ -346,7 +361,7 @@ export default function MapScreen({ userLocation, userLanguage }) {
       return `${stops.length} ${t.stops} · ${distance > 0 ? distance.toFixed(1) : "6.2"} km`;
     }
     if (selectedPlace) {
-      const name = userLanguage === "Marathi" && selectedPlace.name_mr ? selectedPlace.name_mr : selectedPlace.name;
+      const name = (userLanguage === "Marathi" || userLanguage === "Hindi") && selectedPlace.name_mr ? selectedPlace.name_mr : selectedPlace.name;
       return `${name} · ${distance > 0 ? `${distance.toFixed(1)} km` : "Calculating..."}`;
     }
     return `${places.length} ${t.popularSpots}`;

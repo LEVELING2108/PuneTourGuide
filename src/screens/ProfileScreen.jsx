@@ -87,7 +87,12 @@ export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguag
   if (loading) {
     return (
       <div style={{ background: "#FBF8F3", minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ color: colors.wadaRed, fontWeight: 600 }}>{userLanguage === "Marathi" ? "प्रोफाइल लोड होत आहे..." : "Loading profile..."}</div>
+        <div style={{ color: colors.wadaRed, fontWeight: 600 }}>
+          {userLanguage === "Marathi" ? "प्रोफाइल लोड होत आहे..." :
+           userLanguage === "Hindi" ? "प्रोफ़ाइल लोड हो रही है..." :
+           userLanguage === "Gujarati" ? "પ્રોફાઇલ લોડ થઈ રહી છે..." :
+           "Loading profile..."}
+        </div>
       </div>
     );
   }
@@ -385,19 +390,24 @@ export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguag
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: colors.inkMuted, marginBottom: 10, textTransform: "uppercase" }}>{t.language}</div>
           <div style={{ display: "inline-flex", background: colors.stoneDark, borderRadius: 12, padding: 4 }}>
-            {["English", "Marathi"].map(lang => (
+            {[
+              { code: "English", label: "English" },
+              { code: "Marathi", label: "मराठी" },
+              { code: "Hindi", label: "हिन्दी" },
+              { code: "Gujarati", label: "ગુજરાતી" }
+            ].map(lang => (
               <button
-                key={lang}
-                onClick={() => handleLanguageChange(lang)}
+                key={lang.code}
+                onClick={() => handleLanguageChange(lang.code)}
                 style={{
                   padding: "8px 16px", borderRadius: 10, border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer",
-                  background: userLanguage === lang ? "#fff" : "none",
-                  color: userLanguage === lang ? colors.wadaRed : colors.inkMuted,
-                  boxShadow: userLanguage === lang ? "0 2px 8px rgba(0,0,0,0.05)" : "none",
+                  background: userLanguage === lang.code ? "#fff" : "none",
+                  color: userLanguage === lang.code ? colors.wadaRed : colors.inkMuted,
+                  boxShadow: userLanguage === lang.code ? "0 2px 8px rgba(0,0,0,0.05)" : "none",
                   transition: "0.2s"
                 }}
               >
-                {lang === "Marathi" ? "मराठी" : "English"}
+                {lang.label}
               </button>
             ))}
           </div>
