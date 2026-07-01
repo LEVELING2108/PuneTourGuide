@@ -5,6 +5,24 @@ import { fetchPlaces, fetchUserStats } from "../data/api";
 import { colors } from "../data/tokens";
 import { translations } from "../data/translations";
 
+const languageOptions = [
+  { code: "English", label: "English" },
+  { code: "Marathi", label: "मराठी (Marathi)" },
+  { code: "Hindi", label: "हिन्दी (Hindi)" },
+  { code: "Gujarati", label: "ગુજરાતી (Gujarati)" },
+  { code: "Tamil", label: "தமிழ் (Tamil)" },
+  { code: "Telugu", label: "తెలుగు (Telugu)" },
+  { code: "Kannada", label: "ಕನ್ನಡ (Kannada)" },
+  { code: "Bengali", label: "বাংলা (Bengali)" },
+  { code: "Punjabi", label: "ਪੰਜਾਬી (Punjabi)" },
+  { code: "Malayalam", label: "മലയാളം (Malayalam)" },
+  { code: "Odia", label: "ଓଡ଼ିଆ (Odia)" },
+  { code: "Urdu", label: "اردو (Urdu)" },
+  { code: "Assamese", label: "অસમীয়া (Assamese)" },
+  { code: "Maithili", label: "मैथिली (Maithili)" },
+  { code: "Sanskrit", label: "संस्कृतम् (Sanskrit)" }
+];
+
 export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguage, setUserLanguage, onLogout }) {
   // User Personalization State
   const [userName, setUserName] = useState(() => localStorage.getItem("pune_user_name") || "Sourav Paul");
@@ -21,6 +39,7 @@ export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguag
   const [tempName, setTempName] = useState(userName);
   const [tempBio, setTempBio] = useState(userBio);
   const [tempAvatar, setTempAvatar] = useState(userAvatar);
+  const [tempLanguage, setTempLanguage] = useState(userLanguage);
 
   const t = translations[userLanguage] || translations.English;
 
@@ -65,6 +84,7 @@ export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguag
     } else {
       localStorage.removeItem("pune_user_avatar");
     }
+    setUserLanguage(tempLanguage);
     setIsEditModalOpen(false);
   };
 
@@ -79,10 +99,7 @@ export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguag
     }
   };
 
-  const handleLanguageChange = (lang) => {
-    // This updates the global state in App.jsx, which re-renders the whole app with the new language.
-    setUserLanguage(lang);
-  };
+
 
   if (loading) {
     return (
@@ -163,7 +180,7 @@ export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguag
               />
             </div>
 
-            <div style={{ marginBottom: 24 }}>
+            <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 12, fontWeight: 600, color: colors.inkMuted, marginBottom: 6 }}>{t.bio}</div>
               <input 
                 value={tempBio}
@@ -173,6 +190,24 @@ export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguag
                   fontSize: 14, outline: "none"
                 }}
               />
+            </div>
+
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: colors.inkMuted, marginBottom: 6 }}>{t.language}</div>
+              <select
+                value={tempLanguage}
+                onChange={(e) => setTempLanguage(e.target.value)}
+                style={{ 
+                  width: "100%", padding: "12px", borderRadius: 10, border: `1px solid ${colors.stoneDark}`,
+                  fontSize: 14, outline: "none", background: "#fff", cursor: "pointer"
+                }}
+              >
+                {languageOptions.map(lang => (
+                  <option key={lang.code} value={lang.code}>
+                    {lang.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div style={{ display: "flex", gap: 12 }}>
@@ -385,40 +420,15 @@ export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguag
         )}
       </div>
 
-      {/* Language Selection & Footer */}
+      {/* Footer */}
       <div style={{ padding: "24px 16px 40px", textAlign: "center", background: "#FBF8F3" }}>
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: colors.inkMuted, marginBottom: 10, textTransform: "uppercase" }}>{t.language}</div>
-          <div style={{ display: "inline-flex", background: colors.stoneDark, borderRadius: 12, padding: 4 }}>
-            {[
-              { code: "English", label: "English" },
-              { code: "Marathi", label: "मराठी" },
-              { code: "Hindi", label: "हिन्दी" },
-              { code: "Gujarati", label: "ગુજરાતી" }
-            ].map(lang => (
-              <button
-                key={lang.code}
-                onClick={() => handleLanguageChange(lang.code)}
-                style={{
-                  padding: "8px 16px", borderRadius: 10, border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer",
-                  background: userLanguage === lang.code ? "#fff" : "none",
-                  color: userLanguage === lang.code ? colors.wadaRed : colors.inkMuted,
-                  boxShadow: userLanguage === lang.code ? "0 2px 8px rgba(0,0,0,0.05)" : "none",
-                  transition: "0.2s"
-                }}
-              >
-                {lang.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
         <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
           <button 
             onClick={() => {
               setTempName(userName);
               setTempBio(userBio);
               setTempAvatar(userAvatar);
+              setTempLanguage(userLanguage);
               setIsEditModalOpen(true);
             }}
             style={{ 
