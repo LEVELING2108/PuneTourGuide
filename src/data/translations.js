@@ -89,7 +89,12 @@ export const translations = {
     bio: "Bio / Tagline",
     changePhoto: "Click to change photo",
     saveChanges: "Save Changes",
-    cancel: "Cancel"
+    cancel: "Cancel",
+    heritage: "Heritage",
+    temple: "Temple",
+    nature: "Nature",
+    food: "Food",
+    wellness: "Wellness"
   },
   Marathi: {
     // Nav
@@ -181,6 +186,205 @@ export const translations = {
     bio: "बायो / टॅगलाइन",
     changePhoto: "फोटो बदलण्यासाठी क्लिक करा",
     saveChanges: "बदल सेव्ह करा",
-    cancel: "रद्द करा"
-  }
+    cancel: "रद्द करा",
+    heritage: "वारसा",
+    temple: "मंदिर",
+    nature: "निसर्ग",
+    food: "खाद्यपदार्थ",
+    wellness: "आरोग्य"
+  },
+  Hindi: {
+    // Nav
+    home: "मुख्य",
+    explore: "खोजें",
+    map: "मानचित्र",
+    plan: "योजना",
+    profile: "प्रोफ़ाइल",
+
+    // Home
+    greeting: "पुणेकर, नमस्ते! 👋",
+    heroTitle: "हमारा पुणे",
+    heroSpan: "टूर",
+    heroSub: "महाराष्ट्र के गौरव का अनुभव करें 🚩",
+    weather: "पुणे का मौसम",
+    searchPlaceholder: "स्थानों, भोजन, कार्यक्रमों की खोज करें…",
+    seeAll: "सभी देखें",
+    popularSpots: "लोकप्रिय स्थान",
+    nearbyEvents: "आस-पास के कार्यक्रम",
+    more: "अधिक",
+    showLess: "कम देखें",
+
+    // Explore
+    exploreTitle: "पुणे का अन्वेषण करें",
+    filters: "खोज सेटिंग्स",
+    sortBy: "सॉर्ट करें",
+    priceRange: "मूल्य सीमा",
+    preferences: "प्राथमिकताएं",
+    accessible: "व्हीलचेयर अनुकूल",
+    topRated: "शीर्ष रेटेड (4.5+)",
+    apply: "फिल्टर लागू करें",
+    noPlaces: "कोई स्थान नहीं मिला। दूसरा खोज प्रयास करें।",
+    searching: "पुणे खोज रहे हैं...",
+
+    // Place Detail
+    directions: "दिशा-निर्देश",
+    share: "साझा करें",
+    save: "सहेजें",
+    saved: "सहेजा गया",
+    addToPlan: "यात्रा कार्यक्रम में जोड़ें",
+    about: "परिचय",
+    estYear: "स्थापना वर्ष",
+    entryFee: "प्रवेश शुल्क",
+    visitTime: "भ्रमण का समय",
+    info: {
+      accessible: "व्हीलचेयर अनुकूल",
+      guided: "गाइडेड टूर उपलब्ध",
+      contact: "समय के लिए संपर्क करें"
+    },
+
+    // Map
+    heritageTrail: "धरोहर मार्ग",
+    stops: "पड़ाव",
+    walking: "पैदल",
+    auto: "ऑटो",
+    driving: "ड्राइविंग",
+    loadingMap: "मानचित्र लोड हो रहा है...",
+
+    // Plan
+    myPlan: "पुणे धरोहर वीकेंड",
+    overview: "अवलोकन",
+    addStop: "पड़ाव जोड़ें",
+    planning: "यात्रा की योजना बना रहे हैं...",
+
+    // Profile
+    myDiscoveries: "मेरी खोजें",
+    badges: "बैज",
+    editProfile: "प्रोफ़ाइल संपादित करें",
+    punekarLevel: "पुणेकर स्तर",
+    communityRank: "सामुदायिक रैंक",
+    rankInPune: "पुणे में",
+    pointsBreakdown: "अंकों का विवरण",
+    placesSaved: "सहेजे गए स्थान",
+    stopsCompleted: "पूरे किए गए पड़ाव",
+    newDiscoveries: "नया शोध",
+    unlocked: "अनलॉक",
+    locked: "लॉक",
+    earnedBadges: "अर्जित बैज",
+    saveSpotsMsg: "स्थानों को यहाँ देखने के लिए सहेजें।",
+    noTreasureMsg: "आपकी तिजोरी खाली है",
+    noDiscoveriesMsg: "अभी तक कोई खोज नहीं",
+    contributionsMsg: "पुणे डेटाबेस में योगदान",
+    memberSince: "सदस्यता: जून २०२६ · आम्ही पुणे टूर",
+    language: "ऐप की भाषा",
+    points: "अंक",
+    totalPoints: "कुल अंक",
+    editProfileModal: "प्रोफ़ाइल संपादित करें",
+    displayName: "नाम",
+    bio: "बायो / टैगलाइन",
+    changePhoto: "फ़ोटो बदलने के लिए क्लिक करें",
+    saveChanges: "बदलाव सहेजें",
+    cancel: "रद्द करें",
+    heritage: "धरोहर",
+    temple: "मंदिर",
+    nature: "प्रकृति",
+    food: "भोजन",
+    wellness: "कल्याण"
+  },
+  Gujarati: {
+    // Nav
+    home: "મુખ્ય",
+    explore: "એક્સપ્લોર",
+    map: "નકશો",
+    plan: "આયોજન",
+    profile: "પ્રોફાઇલ",
+
+    // Home
+    greeting: "પુણેકર, નમસ્તે! 👋",
+    heroTitle: "આપણું પુણે",
+    heroSpan: "ટૂર",
+    heroSub: "મહારાષ્ટ્રના ગૌરવનો અનુભવ કરો 🚩",
+    weather: "પુણેનું હવામાન",
+    searchPlaceholder: "સ્થળો, ખોરાક, કાર્યક્રમો શોધો...",
+    seeAll: "બધા જુઓ",
+    popularSpots: "લોકપ્રિય સ્થળો",
+    nearbyEvents: "નજીકના કાર્યક્રમો",
+    more: "વધુ",
+    showLess: "ઓછું જુઓ",
+
+    // Explore
+    exploreTitle: "પુણે એક્સપ્લોર કરો",
+    filters: "શોધ ફિલ્ટર્સ",
+    sortBy: "ક્રમબદ્ધ કરો",
+    priceRange: "કિંમત શ્રેણી",
+    preferences: "પસંદગીઓ",
+    accessible: "વ્હીલચેર સુલભ",
+    topRated: "ટોપ રેટેડ (4.5+)",
+    apply: "ફિલ્ટર્સ લાગુ કરો",
+    noPlaces: "કોઈ સ્થળ મળ્યું નથી. બીજો સર્ચ કરો.",
+    searching: "પુણે સર્ચ કરી રહ્યું છે...",
+
+    // Place Detail
+    directions: "દિશાઓ",
+    share: "શેર કરો",
+    save: "સાચવો",
+    saved: "સાચવેલ",
+    addToPlan: "મુસાફરી યાદીમાં ઉમેરો",
+    about: "વિશે",
+    estYear: "સ્થાપના વર્ષ",
+    entryFee: "પ્રવેશ ફી",
+    visitTime: "મુલાકાત સમય",
+    info: {
+      accessible: "વ્હીલચેર સુલભ",
+      guided: "ગાઇડેડ ટૂર ઉપલબ્ધ",
+      contact: "સમય માટે સંપર્ક કરો"
+    },
+
+    // Map
+    heritageTrail: "વારસા માર્ગ",
+    stops: "સ્ટોપ્સ",
+    walking: "પગપાળા",
+    auto: "ઓટો",
+    driving: "ડ્રાઇવિંગ",
+    loadingMap: "નકશો લોડ થઈ રહ્યો છે...",
+
+    // Plan
+    myPlan: "પુણે વારસો વીકેન્ડ",
+    overview: "ઝાંખી",
+    addStop: "સ્ટોપ ઉમેરો",
+    planning: "મુસાફરીનું આયોજન થઈ રહ્યું છે...",
+
+    // Profile
+    myDiscoveries: "મારી શોધ",
+    badges: "બેજ",
+    editProfile: "પ્રોફાઇલ સંપાદિત કરો",
+    punekarLevel: "પુણેકર સ્તર",
+    communityRank: "સામુદાયિક રેન્ક",
+    rankInPune: "પુણેમાં",
+    pointsBreakdown: "પોઇન્ટ વિગત",
+    placesSaved: "સાચવેલ સ્થળો",
+    stopsCompleted: "પૂર્ણ કરેલ સ્ટોપ્સ",
+    newDiscoveries: "નવી શોધ",
+    unlocked: "અનલોક",
+    locked: "લોક",
+    earnedBadges: "મેળવેલ બેજ",
+    saveSpotsMsg: "અહીં જોવા માટે સ્થળો સાચવો.",
+    noTreasureMsg: "તમારી તિજોરી ખાલી છે",
+    noDiscoveriesMsg: "હજુ સુધી કોઈ શોધ નથી",
+    contributionsMsg: "પુણે ડેટાબેઝમાં યોગદાન",
+    memberSince: "સભ્યપદ: જૂન ૨૦૨૬ · આપણું પુણે ટૂર",
+    language: "એપ્લિકેશન ભાષા",
+    points: "પોઇન્ટ",
+    totalPoints: "કુલ પોઇન્ટ",
+    editProfileModal: "પ્રોફાઇલ્સ સંપાદિત કરો",
+    displayName: "નામ",
+    bio: "બાયો / ટેગલાઇન",
+    changePhoto: "ફોટો બદલવા માટે ક્લિક કરો",
+    saveChanges: "ફેરફારો સાચવો",
+    cancel: "રદ કરો",
+    heritage: "વારસો",
+    temple: "મંદિર",
+    nature: "કુદરત",
+    food: "ખોરાક",
+    wellness: "કલ્યાણ"
+  },
 };
