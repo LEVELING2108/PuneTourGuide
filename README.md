@@ -15,6 +15,9 @@ A modern, high-performance tour guide application for Pune, featuring an interac
 [![Redis](https://img.shields.io/badge/Redis-%23DD0031.svg?style=flat-square&logo=redis&logoColor=white)](https://redis.io/)
 [![Docker](https://img.shields.io/badge/Docker-%230db7ed.svg?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vite.dev/)
+[![PWA Ready](https://img.shields.io/badge/PWA-Ready-FF6F00?style=flat-square&logo=progressive-web-apps&logoColor=white)](#)
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployed-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com)
+[![Render Backend](https://img.shields.io/badge/Render-Active-46E3B7?style=flat-square&logo=render&logoColor=white)](https://render.com)
 
 ---
 
@@ -26,7 +29,9 @@ A modern, high-performance tour guide application for Pune, featuring an interac
 * **📋 Collapsible Turn-by-Turn Directions:** Displays turn-by-turn routing steps from OSRM directly in a scrollable list inside the app, complete with English/Marathi translations.
 * **🏆 Persistent Gamification:** User profiles save and track XP (completed stops award `+50 XP`, bookmarking a place awards `+10 XP`) persisting in the PostgreSQL database.
 * **🌲 OSM Discovery & Caching:** Queries OpenStreetMap (Overpass API) to automatically populate new coordinates, throttled by a 5-minute Redis cooldown cache per query to protect API rate limits.
-* **Dual-Language Support:** Fully localized English and Marathi (मराठी) translation support.
+* **📱 Progressive Web App (PWA) Support:** Configured for offline use with a robust `stale-while-revalidate` service worker cache, custom terracotta & gold brand launcher icons, and standalone full-screen mobile app layout.
+* **🌐 Dual-Language Support:** Fully localized English and Marathi (मराठी) translation support.
+
 
 ---
 
