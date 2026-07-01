@@ -138,3 +138,13 @@ export const optimizeItinerary = async (itineraryDayId, mode) => {
   if (!response.ok) throw new Error('Failed to optimize itinerary');
   return response.json();
 };
+
+export const generateItinerary = async (generationParams) => {
+  const response = await fetch(`${API_BASE_URL}/itinerary/generate`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(generationParams)
+  });
+  if (!response.ok) throw new Error('Failed to generate itinerary');
+  return response.json();
+};

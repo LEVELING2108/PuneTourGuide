@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import StatusBar from "../components/StatusBar";
 import { tagStyles, colors } from "../data/tokens";
-import { fetchItinerary, deleteStopFromItinerary, fetchPlaces, addStopToItinerary, optimizeItinerary } from "../data/api";
+import { fetchItinerary, deleteStopFromItinerary, fetchPlaces, addStopToItinerary, optimizeItinerary, generateItinerary } from "../data/api";
 import { translations } from "../data/translations";
 
 const localTranslations = {
@@ -20,7 +20,18 @@ const localTranslations = {
     stopsCount: "Stops",
     customDescription: "Optional Description / Note",
     confirmAdd: "Confirm Add Stop",
-    viewSummary: "View Day Summary"
+    viewSummary: "View Day Summary",
+    aiTitle: "AI Itinerary Planner 🤖",
+    aiSubtitle: "Let our AI craft your perfect custom trip!",
+    aiDays: "Number of Days",
+    aiPace: "Travel Pace",
+    aiCategories: "What are your interests?",
+    aiAccessible: "Wheelchair Accessible Spots Only",
+    aiGenerating: "Punekar AI is crafting your dream itinerary...",
+    aiGenerateBtn: "Generate Custom Plan 🤖",
+    aiTipTitle: "🤖 Punekar AI Tip",
+    relaxed: "Relaxed (3 stops/day)",
+    adventure: "Adventure (5 stops/day)"
   },
   Marathi: {
     itineraryOverview: "सहलीचा आढावा",
@@ -37,7 +48,74 @@ const localTranslations = {
     stopsCount: "थांबे",
     customDescription: "पर्यायी वर्णन / टीप",
     confirmAdd: "थांबा निश्चित करा",
-    viewSummary: "दिवसाचा सारांश पहा"
+    viewSummary: "दिवसाचा सारांश पहा",
+    aiTitle: "AI सहल नियोजन 🤖",
+    aiSubtitle: "आमच्या AI द्वारे आपली परिपूर्ण सानुकूल सहल डिझाइन करा!",
+    aiDays: "दिवसांची संख्या",
+    aiPace: "सहलीचा वेग",
+    aiCategories: "तुमच्या आवडीचे क्षेत्र?",
+    aiAccessible: "फक्त व्हीलचेअर प्रवेशयोग्य ठिकाणे",
+    aiGenerating: "पुणेकर AI आपला स्वप्नातील प्रवास नियोजित करत आहे...",
+    aiGenerateBtn: "सानुकूल सहल जनरेट करा 🤖",
+    aiTipTitle: "🤖 पुणेकर AI टीप",
+    relaxed: "संतुलित (३ थांबे/दिवस)",
+    adventure: "वेगवान (५ थांबे/दिवस)"
+  },
+  Hindi: {
+    itineraryOverview: "यात्रा कार्यक्रम का अवलोकन",
+    totalDuration: "कुल अवधि",
+    totalFees: "कुल शुल्क",
+    categoryBreakdown: "श्रेणी विवरण",
+    routeSequence: "मार्ग अनुक्रम",
+    selectTime: "समय चुनें",
+    searchPlacesPlaceholder: "पर्यटन स्थलों की खोज करें...",
+    selectPlace: "स्थान चुनें",
+    addStopButton: "पड़ाव जोड़ें",
+    successAdded: "पड़ाव सफलतापूर्वक जोड़ा गया!",
+    noStopToOverview: "अवलोकन देखने के लिए पड़ाव जोड़ें।",
+    stopsCount: "पड़ाव",
+    customDescription: "वैकल्पिक विवरण / नोट",
+    confirmAdd: "पड़ाव की पुष्टि करें",
+    viewSummary: "दिन का सारांश देखें",
+    aiTitle: "AI यात्रा योजनाकार 🤖",
+    aiSubtitle: "हमारे AI को आपके लिए एक बेहतरीन यात्रा तैयार करने दें!",
+    aiDays: "दिनों की संख्या",
+    aiPace: "यात्रा की गति",
+    aiCategories: "आपकी रुचि के क्षेत्र?",
+    aiAccessible: "केवल व्हीलचेयर अनुकूल स्थान",
+    aiGenerating: "पुणेकर AI आपकी सपनों की यात्रा की योजना बना रहा है...",
+    aiGenerateBtn: "कस्टम यात्रा तैयार करें 🤖",
+    aiTipTitle: "🤖 पुणेकर AI सुझाव",
+    relaxed: "आरामदेह (3 पड़ाव/दिन)",
+    adventure: "रोमांचक (5 पड़ाव/दिन)"
+  },
+  Gujarati: {
+    itineraryOverview: "મુસાફરી ઝાંખી",
+    totalDuration: "કુલ સમય",
+    totalFees: "કુલ ફી",
+    categoryBreakdown: "કેટેગરી વિગત",
+    routeSequence: "માર્ગ ક્રમ",
+    selectTime: "સમય પસંદ કરો",
+    searchPlacesPlaceholder: "પર્યટન સ્થળો શોધો...",
+    selectPlace: "સ્થળ પસંદ કરો",
+    addStopButton: "સ્ટોપ ઉમેરો",
+    successAdded: "સ્ટોપ સફળતાપૂર્વક ઉમેરાયો!",
+    noStopToOverview: "ઝાંખી જોવા માટે સ્ટોપ ઉમેરો.",
+    stopsCount: "સ્ટોપ્સ",
+    customDescription: "વૈકલ્પિક વર્ણન / નોંધ",
+    confirmAdd: "સ્ટોપની પુષ્ટિ કરો",
+    viewSummary: "દિવસનો સારાંશ જુઓ",
+    aiTitle: "AI મુસાફરી આયોજન 🤖",
+    aiSubtitle: "અમારા AI ને તમારી સંપૂર્ણ મુસાફરી તૈયાર કરવા દો!",
+    aiDays: "દિવસોની સંખ્યા",
+    aiPace: "મુસાફરીની ઝડપ",
+    aiCategories: "તમારા રસના વિષયો?",
+    aiAccessible: "માત્ર વ્હીલચેર સુલભ સ્થળો",
+    aiGenerating: "પુણેકર AI તમારી સપનાની મુસાફરીનું આયોજન કરી રહ્યું છે...",
+    aiGenerateBtn: "કસ્ટમ પ્લાન બનાવો 🤖",
+    aiTipTitle: "🤖 પુણેકર AI ટીપ",
+    relaxed: "આરામદાયક (૩ સ્ટોપ/દિવસ)",
+    adventure: "સાહસિક (૫ સ્ટોપ/દિવસ)"
   }
 };
 
@@ -65,6 +143,7 @@ export default function PlanScreen({ userLocation, userLanguage }) {
   // Modal States
   const [isOverviewOpen, setIsOverviewOpen] = useState(false);
   const [isAddStopOpen, setIsAddStopOpen] = useState(false);
+  const [isAiWizardOpen, setIsAiWizardOpen] = useState(false);
   
   // Add Stop States
   const [searchQuery, setSearchQuery] = useState("");
@@ -72,6 +151,13 @@ export default function PlanScreen({ userLocation, userLanguage }) {
   const [stopTime, setStopTime] = useState("10:00 AM");
   const [customDesc, setCustomDesc] = useState("");
   const [optimizing, setOptimizing] = useState(false);
+
+  // AI Generator States
+  const [aiDays, setAiDays] = useState(2);
+  const [aiPace, setAiPace] = useState("Relaxed");
+  const [aiCategories, setAiCategories] = useState(["Heritage", "Temple", "Nature", "Food", "Wellness"]);
+  const [aiAccessible, setAiAccessible] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   const t = translations[userLanguage] || translations.English;
   const lt = localTranslations[userLanguage] || localTranslations.English;
@@ -211,6 +297,42 @@ export default function PlanScreen({ userLocation, userLanguage }) {
       alert(userLanguage === "Marathi" ? "मार्ग सुधारण्यात अडचण आली." : "Failed to optimize route.");
     } finally {
       setOptimizing(false);
+    }
+  };
+
+  const handleGenerateItinerary = async () => {
+    if (aiCategories.length === 0) {
+      alert(userLanguage === "Marathi" ? "कृपया किमान एक वर्गवारी निवडा." : 
+            userLanguage === "Hindi" ? "कृपया कम से कम एक श्रेणी चुनें।" :
+            userLanguage === "Gujarati" ? "કૃપા કરીને ઓછામાં ઓછી એક કેટેગરી પસંદ કરો." :
+            "Please select at least one category.");
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const generated = await generateItinerary({
+        days: aiDays,
+        categories: aiCategories,
+        pace: aiPace,
+        accessibleOnly: aiAccessible,
+        userLanguage: userLanguage
+      });
+      setItineraryDays(generated);
+      setActiveDay(0);
+      setIsAiWizardOpen(false);
+      alert(userLanguage === "Marathi" ? "सहल यशस्वीरित्या जनरेट केली!" : 
+            userLanguage === "Hindi" ? "यात्रा सफलतापूर्वक तैयार की गई!" :
+            userLanguage === "Gujarati" ? "મુસાફરી સફળતાપૂર્વક તૈયાર કરવામાં આવી!" :
+            "Itinerary successfully generated!");
+    } catch (error) {
+      console.error("Failed to generate itinerary:", error);
+      alert(userLanguage === "Marathi" ? "सहल जनरेट करण्यात अडचण आली." : 
+            userLanguage === "Hindi" ? "यात्रा तैयार करने में विफल।" :
+            userLanguage === "Gujarati" ? "મુસાફરી તૈયાર કરવામાં નિષ્ફળ." :
+            "Failed to generate itinerary.");
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -364,6 +486,26 @@ export default function PlanScreen({ userLocation, userLanguage }) {
           </button>
         ))}
         <button
+          onClick={() => setIsAiWizardOpen(true)}
+          style={{
+            padding: "7px 16px",
+            borderRadius: 20,
+            fontSize: 11,
+            fontWeight: 600,
+            border: "none",
+            cursor: "pointer",
+            background: "linear-gradient(135deg, #FFB03A, #C46348)",
+            color: "#fff",
+            whiteSpace: "nowrap",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
+          }}
+        >
+          {userLanguage === "Marathi" ? "AI नियोजन 🤖" :
+           userLanguage === "Hindi" ? "AI योजनाकार 🤖" :
+           userLanguage === "Gujarati" ? "AI આયોજન 🤖" :
+           "AI Planner 🤖"}
+        </button>
+        <button
           onClick={() => setIsOverviewOpen(true)}
           style={{
             padding: "7px 16px",
@@ -452,7 +594,7 @@ export default function PlanScreen({ userLocation, userLanguage }) {
                 <div style={{ fontSize: 11, color: "#6B5B52", marginTop: 4, lineHeight: 1.5 }}>
                   {userLanguage === "Marathi" && stop.desc_mr ? stop.desc_mr : stop.desc}
                 </div>
-                <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
                   {Array.isArray(stop.tags) && stop.tags.map((tag, idx) => {
                     const style = tagStyles[tag.type] || tagStyles.neutral;
                     return (
@@ -472,6 +614,23 @@ export default function PlanScreen({ userLocation, userLanguage }) {
                     );
                   })}
                 </div>
+                {Array.isArray(stop.tags) && stop.tags.find(t => t.type === "ai")?.reason && (
+                  <div style={{
+                    marginTop: 10,
+                    padding: "10px 12px",
+                    borderRadius: 10,
+                    background: "#FDF9F2",
+                    borderLeft: `3px solid #D4AF37`,
+                    fontSize: 11,
+                    color: "#6B5B52",
+                    lineHeight: 1.4
+                  }}>
+                    <strong style={{ color: "#B87318", display: "block", marginBottom: 3 }}>
+                      {lt.aiTipTitle}
+                    </strong>
+                    {stop.tags.find(t => t.type === "ai").reason}
+                  </div>
+                )}
               </div>
             </div>
           ))
@@ -768,6 +927,161 @@ export default function PlanScreen({ userLocation, userLanguage }) {
                     style={{ flex: 1, padding: 12, borderRadius: 12, border: "none", background: colors.wadaRed, color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13 }}
                   >
                     {lt.confirmAdd}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 🤖 AI ITINERARY GENERATOR WIZARD MODAL */}
+      {isAiWizardOpen && (
+        <div 
+          className="custom-modal-fade"
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 1000,
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+            backdropFilter: "blur(4px)"
+          }}
+        >
+          <div 
+            className="custom-modal-slide"
+            style={{ 
+              background: "#fff", width: "100%", maxWidth: 380, borderRadius: 24, 
+              padding: 24, boxShadow: "0 12px 40px rgba(0,0,0,0.25)", maxHeight: "90vh", overflowY: "auto"
+            }}
+          >
+            {/* Header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: colors.ink }}>{lt.aiTitle}</div>
+                <div style={{ fontSize: 11, color: colors.inkMuted }}>{lt.aiSubtitle}</div>
+              </div>
+              <button 
+                onClick={() => setIsAiWizardOpen(false)}
+                disabled={generating}
+                style={{ background: colors.stoneDark, border: "none", width: 32, height: 32, borderRadius: "50%", cursor: "pointer", fontSize: 14, fontWeight: "bold" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {generating ? (
+              <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                <div style={{ fontSize: 40, marginBottom: 16, animation: "spin 2s linear infinite" }}>⚙️</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: colors.wadaRed }}>{lt.aiGenerating}</div>
+                <style>{`
+                  @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                  }
+                `}</style>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                {/* Number of Days */}
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: colors.inkMuted, marginBottom: 8 }}>{lt.aiDays}</div>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    {[1, 2, 3].map(d => (
+                      <button
+                        key={d}
+                        onClick={() => setAiDays(d)}
+                        style={{
+                          flex: 1, padding: "10px", borderRadius: 12, fontSize: 12, fontWeight: 700,
+                          border: "none", cursor: "pointer",
+                          background: aiDays === d ? colors.wadaRed : colors.stoneDark,
+                          color: aiDays === d ? "#fff" : colors.ink,
+                          transition: "0.2s"
+                        }}
+                      >
+                        {d} {d === 1 ? (userLanguage === "Marathi" ? "दिवस" : "Day") : (userLanguage === "Marathi" ? "दिवस" : "Days")}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Travel Pace */}
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: colors.inkMuted, marginBottom: 8 }}>{lt.aiPace}</div>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    {["Relaxed", "Adventure"].map(pace => (
+                      <button
+                        key={pace}
+                        onClick={() => setAiPace(pace)}
+                        style={{
+                          flex: 1, padding: "10px", borderRadius: 12, fontSize: 12, fontWeight: 700,
+                          border: "none", cursor: "pointer",
+                          background: aiPace === pace ? colors.wadaRed : colors.stoneDark,
+                          color: aiPace === pace ? "#fff" : colors.ink,
+                          transition: "0.2s"
+                        }}
+                      >
+                        {pace === "Relaxed" ? lt.relaxed : lt.adventure}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Categories Checkboxes */}
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: colors.inkMuted, marginBottom: 8 }}>{lt.aiCategories}</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {["Heritage", "Temple", "Nature", "Food", "Wellness"].map(cat => {
+                      const isSelected = aiCategories.includes(cat);
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => {
+                            setAiCategories(prev => 
+                              isSelected ? prev.filter(c => c !== cat) : [...prev, cat]
+                            );
+                          }}
+                          style={{
+                            padding: "6px 12px", borderRadius: 10, fontSize: 11, fontWeight: 600,
+                            border: isSelected ? "none" : `1px solid ${colors.stoneDark}`, cursor: "pointer",
+                            background: isSelected ? colors.paithaniGold : "none",
+                            color: isSelected ? "#fff" : colors.inkMuted,
+                            transition: "0.2s",
+                            display: "flex", alignItems: "center", gap: 4
+                          }}
+                        >
+                          <span>{getCategoryEmoji(cat)}</span>
+                          <span>{userLanguage === "Marathi" ? (translations.Marathi[cat.toLowerCase()] || cat) : cat}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Wheelchair accessibility */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 14, background: colors.stone, border: "1px solid #EDE8DF" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 18 }}>♿</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: colors.ink }}>{lt.aiAccessible}</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={aiAccessible}
+                    onChange={(e) => setAiAccessible(e.target.checked)}
+                    style={{ width: 18, height: 18, accentColor: colors.wadaRed, cursor: "pointer" }}
+                  />
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+                  <button 
+                    onClick={() => setIsAiWizardOpen(false)}
+                    style={{ flex: 1, padding: 12, borderRadius: 12, border: `1px solid ${colors.stoneDark}`, background: "none", fontWeight: 700, cursor: "pointer", fontSize: 13 }}
+                  >
+                    {t.cancel || "Cancel"}
+                  </button>
+                  <button 
+                    onClick={handleGenerateItinerary}
+                    style={{ flex: 1, padding: 12, borderRadius: 12, border: "none", background: "linear-gradient(135deg, #FFB03A, #8B3A2A)", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13 }}
+                  >
+                    {lt.aiGenerateBtn}
                   </button>
                 </div>
               </div>
