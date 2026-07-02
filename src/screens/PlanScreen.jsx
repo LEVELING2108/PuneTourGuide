@@ -191,7 +191,12 @@ export default function PlanScreen({ userLocation, userLanguage, weatherData, on
     return day.stops.some(stop => {
       let isNature = false;
       if (Array.isArray(stop.tags)) {
-        isNature = stop.tags.some(t => t.label === 'Nature' || t.type === 'nature');
+        isNature = stop.tags.some(t => {
+          if (typeof t === 'string') {
+            return t.toLowerCase() === 'nature';
+          }
+          return t && (t.label === 'Nature' || t.type === 'nature');
+        });
       }
       if (isNature) return true;
       const n = (stop.name || '').toLowerCase();
@@ -480,24 +485,18 @@ export default function PlanScreen({ userLocation, userLanguage, weatherData, on
             <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: 8 }}>
               <span>{t.myPlan}</span>
               <span
-                onClick={onWeatherToggle}
                 style={{
                   fontSize: 10,
                   background: "rgba(255,255,255,0.15)",
                   border: "1px solid rgba(255,255,255,0.2)",
                   borderRadius: 12,
                   padding: "2px 8px",
-                  cursor: "pointer",
                   color: "#fff",
                   fontWeight: 600,
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 3,
-                  transition: "background 0.2s"
+                  gap: 3
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.25)"}
-                onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.15)"}
-                title="Click to toggle simulated weather"
               >
                 {weatherData?.weather === "Sunny" ? "☀️" : "🌧️"} {weatherData?.temp}°C
               </span>
@@ -738,7 +737,10 @@ export default function PlanScreen({ userLocation, userLanguage, weatherData, on
                 </div>
                 <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
                   {Array.isArray(stop.tags) && stop.tags.map((tag, idx) => {
-                    const style = tagStyles[tag.type] || tagStyles.neutral;
+                    const isStr = typeof tag === 'string';
+                    const label = isStr ? tag : tag.label;
+                    const type = isStr ? tag.toLowerCase() : (tag.type || 'neutral');
+                    const style = tagStyles[type] || tagStyles.neutral;
                     return (
                       <div
                         key={idx}
@@ -751,7 +753,7 @@ export default function PlanScreen({ userLocation, userLanguage, weatherData, on
                           color: style.color,
                         }}
                       >
-                        {tag.label}
+                        {label}
                       </div>
                     );
                   })}
