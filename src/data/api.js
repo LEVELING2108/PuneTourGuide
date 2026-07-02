@@ -148,3 +148,28 @@ export const generateItinerary = async (generationParams) => {
   if (!response.ok) throw new Error('Failed to generate itinerary');
   return response.json();
 };
+
+export const fetchWeather = async () => {
+  const response = await fetch(`${API_BASE_URL}/weather`, { headers: getHeaders() });
+  if (!response.ok) throw new Error('Failed to fetch weather status');
+  return response.json();
+};
+
+export const toggleWeather = async () => {
+  const response = await fetch(`${API_BASE_URL}/weather/toggle`, {
+    method: 'POST',
+    headers: getHeaders()
+  });
+  if (!response.ok) throw new Error('Failed to toggle weather status');
+  return response.json();
+};
+
+export const adaptItineraryForWeather = async (itineraryDayId, userLanguage) => {
+  const response = await fetch(`${API_BASE_URL}/itinerary/adapt-weather`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ itineraryDayId, userLanguage })
+  });
+  if (!response.ok) throw new Error('Failed to adapt itinerary for weather');
+  return response.json();
+};

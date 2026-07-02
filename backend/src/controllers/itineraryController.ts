@@ -465,6 +465,181 @@ Do not include any conversational markdown tags or prefix/suffix. Just return th
   }
 };
 
+
+export const adaptWeather = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { itineraryDayId, userLanguage } = req.body;
+    const userId = req.user.id;
+    const lang = userLanguage || 'English';
+
+    const day = await prisma.itineraryDay.findFirst({
+      where: { id: Number(itineraryDayId), userId }
+    });
+
+    if (!day) {
+      return res.status(403).json({ error: 'Unauthorized or day not found' });
+    }
+
+    const stops = await prisma.itineraryStop.findMany({
+      where: { itineraryDayId: Number(itineraryDayId) },
+      orderBy: { order: 'asc' }
+    });
+
+    const isOutdoor = (name: string, description: string, tagsJson: any): boolean => {
+      const n = (name || '').toLowerCase();
+      const d = (description || '').toLowerCase();
+      
+      let hasNatureTag = false;
+      if (Array.isArray(tagsJson)) {
+        hasNatureTag = tagsJson.some((t: any) => t.label === 'Nature' || t.type === 'nature');
+      }
+
+      if (hasNatureTag) return true;
+
+      const outdoorKeywords = [
+        'fort', 'trek', 'hill', 'lake', 'tekdi', 'valley', 'outdoor', 
+        'garden', 'waterfall', 'viewpoint', 'zoo', 'park', 'caves', 'trail'
+      ];
+      return outdoorKeywords.some(kw => n.includes(kw) || d.includes(kw));
+    };
+
+    const allPlaces = await prisma.place.findMany();
+
+    const indoorCandidates = allPlaces.filter(p => {
+      const outdoor = isOutdoor(p.name, p.description, [{ label: p.category, type: p.category.toLowerCase() }]);
+      return !outdoor && p.category !== 'Nature';
+    });
+
+    let swappedCount = 0;
+    const swappedInfo: string[] = [];
+
+    const currentStopNames = new Set(stops.map(s => s.name.toLowerCase()));
+
+    for (const stop of stops) {
+      if (isOutdoor(stop.name, stop.desc, stop.tags)) {
+        const category = (Array.isArray(stop.tags) && (stop.tags as any[]).find((t: any) => t.type !== 'ai' && t.type !== 'weather')?.label) || 'Heritage';
+        
+        let candidate = indoorCandidates.find(c => c.category === category && !currentStopNames.has(c.name.toLowerCase()));
+        if (!candidate) {
+          candidate = indoorCandidates
+            .filter(c => !currentStopNames.has(c.name.toLowerCase()))
+            .sort((a, b) => b.rating - a.rating)[0];
+        }
+
+        if (candidate) {
+          currentStopNames.add(candidate.name.toLowerCase());
+          swappedCount++;
+          swappedInfo.push(`${stop.name} ➡️ ${candidate.name}`);
+
+          let newDesc = '';
+          let newDescMr = '';
+          const originalName = stop.name;
+          const originalNameMr = stop.name_mr || stop.name;
+
+          if (lang === 'Marathi') {
+            newDesc = `[हवामान इशारा] पावसामुळे ${originalNameMr} ऐवजी ${candidate.name_mr || candidate.name} मध्ये बदलले आहे. ${candidate.description_mr || candidate.description}`;
+            newDescMr = newDesc;
+          } else if (lang === 'Hindi') {
+            newDesc = `[मौसम चेतावनी] बारिश के कारण ${originalName} के स्थान पर ${candidate.name} को चुना गया है। ${candidate.description}`;
+            newDescMr = `[मौसम चेतावनी] बारिश के कारण ${originalNameMr} के स्थान पर ${candidate.name_mr || candidate.name} को चुना गया है। ${candidate.description_mr || candidate.description}`;
+          } else if (lang === 'Gujarati') {
+            newDesc = `[હવામાન ચેતવણી] વરસાદને કારણે ${originalName} ની જગ્યાએ ${candidate.name} પસંદ કરવામાં આવ્યું છે. ${candidate.description}`;
+            newDescMr = newDesc;
+          } else {
+            newDesc = `[Weather Alert] Swapped ${originalName} for ${candidate.name} due to rain in Pune. ${candidate.description}`;
+            newDescMr = candidate.description_mr || '';
+          }
+
+          const tags = [
+            { label: candidate.category, type: candidate.category.toLowerCase() },
+            { label: "🌦️ Weather Swap", type: "weather", original: stop.name }
+          ];
+
+          await prisma.itineraryStop.update({
+            where: { id: stop.id },
+            data: {
+              name: candidate.name,
+              name_mr: candidate.name_mr || candidate.name,
+              desc: newDesc,
+              desc_mr: newDescMr,
+              dotColor: getCategoryColor(candidate.category),
+              tags: tags
+            }
+          });
+        }
+      }
+    }
+
+    if (swappedCount > 0) {
+      const updatedStops = await prisma.itineraryStop.findMany({
+        where: { itineraryDayId: Number(itineraryDayId) }
+      });
+
+      const places = await prisma.place.findMany({
+        where: {
+          name: {
+            in: updatedStops.map(s => s.name),
+            mode: 'insensitive'
+          }
+        }
+      });
+
+      const stopsWithCoords = updatedStops.map(stop => {
+        const matchedPlace = places.find(p => p.name.toLowerCase() === stop.name.toLowerCase());
+        return {
+          stop,
+          lat: matchedPlace?.latitude,
+          lng: matchedPlace?.longitude
+        };
+      }).filter(s => s.lat !== null && s.lng !== null && s.lat !== undefined && s.lng !== undefined);
+
+      if (stopsWithCoords.length >= 2) {
+        try {
+          const coordsStr = stopsWithCoords.map(s => `${s.lng},${s.lat}`).join(';');
+          const url = `https://router.project-osrm.org/trip/v1/driving/${coordsStr}?source=first&destination=any&roundtrip=false`;
+          const response = await axios.get(url);
+          if (response.data?.code === 'Ok' && response.data?.waypoints) {
+            const sortedWaypoints = [...response.data.waypoints].sort((a: any, b: any) => a.trips_index - b.trips_index);
+            for (let i = 0; i < sortedWaypoints.length; i++) {
+              const wp = sortedWaypoints[i];
+              const stopItem = stopsWithCoords[wp.waypoint_index];
+              await prisma.itineraryStop.update({
+                where: { id: stopItem.stop.id },
+                data: { order: i }
+              });
+            }
+          }
+        } catch (osrmError) {
+          console.error("OSRM Trip Optimization failed during weather adaptation:", osrmError);
+        }
+      }
+    }
+
+    const finalDay = await prisma.itineraryDay.findUnique({
+      where: { id: Number(itineraryDayId) },
+      include: {
+        stops: {
+          orderBy: { order: 'asc' }
+        }
+      }
+    });
+
+    res.json({
+      success: true,
+      swappedCount,
+      swappedInfo,
+      day: finalDay
+    });
+  } catch (error) {
+    console.error("Failed to adapt itinerary for weather:", error);
+    res.status(500).json({ error: 'Failed to adapt itinerary for weather' });
+  }
+};
+
 const getCategoryColor = (category: string) => {
   switch (category) {
     case "Heritage": return "#8B3A2A";
@@ -475,3 +650,4 @@ const getCategoryColor = (category: string) => {
     default: return "#6B5B52";
   }
 };
+
