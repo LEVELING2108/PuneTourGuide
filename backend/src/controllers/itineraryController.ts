@@ -495,7 +495,12 @@ export const adaptWeather = async (req: AuthRequest, res: Response) => {
       
       let hasNatureTag = false;
       if (Array.isArray(tagsJson)) {
-        hasNatureTag = tagsJson.some((t: any) => t.label === 'Nature' || t.type === 'nature');
+        hasNatureTag = tagsJson.some((t: any) => {
+          if (typeof t === 'string') {
+            return t.toLowerCase() === 'nature';
+          }
+          return t && (t.label === 'Nature' || t.type === 'nature');
+        });
       }
 
       if (hasNatureTag) return true;
@@ -521,7 +526,18 @@ export const adaptWeather = async (req: AuthRequest, res: Response) => {
 
     for (const stop of stops) {
       if (isOutdoor(stop.name, stop.desc, stop.tags)) {
-        const category = (Array.isArray(stop.tags) && (stop.tags as any[]).find((t: any) => t.type !== 'ai' && t.type !== 'weather')?.label) || 'Heritage';
+        let category = 'Heritage';
+        if (Array.isArray(stop.tags)) {
+          const catTag = (stop.tags as any[]).find((t: any) => {
+            if (typeof t === 'string') {
+              return t !== 'ai' && t !== 'weather';
+            }
+            return t && t.type !== 'ai' && t.type !== 'weather';
+          });
+          if (catTag) {
+            category = typeof catTag === 'string' ? catTag : (catTag.label || 'Heritage');
+          }
+        }
         
         let candidate = indoorCandidates.find(c => c.category === category && !currentStopNames.has(c.name.toLowerCase()));
         if (!candidate) {

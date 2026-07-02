@@ -87,7 +87,6 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation,
             {t.heroSub}
           </div>
           <div
-            onClick={onWeatherToggle}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -99,7 +98,6 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation,
               padding: "5px 12px",
               fontSize: 12,
               color: "#fff",
-              cursor: "pointer",
             }}
           >
             {weatherData?.weather === "Sunny" ? "☀️" : "🌧️"} {weatherData?.temp}°C · {t.weather} ({weatherData?.weather === "Sunny" ? (userLanguage === "Marathi" ? "उष्ण" : userLanguage === "Hindi" ? "धूप" : userLanguage === "Gujarati" ? "તડકો" : "Sunny") : (userLanguage === "Marathi" ? "पाऊस" : userLanguage === "Hindi" ? "बारिश" : userLanguage === "Gujarati" ? "વરસાદ" : "Rainy")})
