@@ -8,6 +8,7 @@ import placeRoutes from './routes/placeRoutes';
 import eventRoutes from './routes/eventRoutes';
 import itineraryRoutes from './routes/itineraryRoutes';
 import userRoutes from './routes/userRoutes';
+import weatherRoutes from './routes/weatherRoutes';
 
 dotenv.config();
 
@@ -50,6 +51,7 @@ app.use('/api/places', placeRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/itinerary', itineraryRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/weather', weatherRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req: Request, res: Response) => {

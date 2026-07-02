@@ -8,7 +8,7 @@ import PlaceDetailScreen from "./screens/PlaceDetailScreen";
 import AuthScreen from "./screens/AuthScreen";
 import BottomNav from "./components/BottomNav";
 import { useUserLocation } from "./hooks/useUserLocation";
-import { logoutUser } from "./data/api";
+import { logoutUser, fetchWeather, toggleWeather } from "./data/api";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("home");
@@ -16,6 +16,7 @@ export default function App() {
   const [exploreParams, setExploreParams] = useState({});
   const { location: userLocation } = useUserLocation();
   const [userLanguage, setUserLanguage] = useState(() => localStorage.getItem("pune_user_lang") || "English");
+  const [weatherData, setWeatherData] = useState({ weather: "Sunny", temp: 32 });
   
   const [user, setUser] = useState(() => {
     const token = localStorage.getItem("pune_auth_token");
@@ -26,6 +27,29 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("pune_user_lang", userLanguage);
   }, [userLanguage]);
+
+  useEffect(() => {
+    if (user) {
+      const loadWeather = async () => {
+        try {
+          const data = await fetchWeather();
+          setWeatherData(data);
+        } catch (err) {
+          console.error("Failed to load initial weather:", err);
+        }
+      };
+      loadWeather();
+    }
+  }, [user]);
+
+  const handleWeatherToggle = async () => {
+    try {
+      const data = await toggleWeather();
+      setWeatherData(data);
+    } catch (err) {
+      console.error("Failed to toggle weather status:", err);
+    }
+  };
 
   const handlePlaceSelect = (place) => {
     setSelectedPlace(place);
@@ -51,19 +75,19 @@ export default function App() {
   const renderScreen = () => {
     switch (activeTab) {
       case "home":
-        return <HomeScreen onPlaceSelect={handlePlaceSelect} onSearchClick={handleSearchClick} userLocation={userLocation} userLanguage={userLanguage} />;
+        return <HomeScreen onPlaceSelect={handlePlaceSelect} onSearchClick={handleSearchClick} userLocation={userLocation} userLanguage={userLanguage} weatherData={weatherData} onWeatherToggle={handleWeatherToggle} />;
       case "explore":
         return <ExploreScreen onPlaceSelect={handlePlaceSelect} initialParams={exploreParams} userLocation={userLocation} userLanguage={userLanguage} />;
       case "map":
-        return <MapScreen userLocation={userLocation} userLanguage={userLanguage} />;
+        return <MapScreen userLocation={userLocation} userLanguage={userLanguage} weatherData={weatherData} />;
       case "plan":
-        return <PlanScreen userLocation={userLocation} userLanguage={userLanguage} />;
+        return <PlanScreen userLocation={userLocation} userLanguage={userLanguage} weatherData={weatherData} onWeatherToggle={handleWeatherToggle} />;
       case "profile":
         return <ProfileScreen onPlaceSelect={handlePlaceSelect} userLocation={userLocation} userLanguage={userLanguage} setUserLanguage={setUserLanguage} onLogout={handleLogout} />;
       case "detail":
         return <PlaceDetailScreen place={selectedPlace} onBack={handleBack} userLocation={userLocation} userLanguage={userLanguage} />;
       default:
-        return <HomeScreen onPlaceSelect={handlePlaceSelect} onSearchClick={handleSearchClick} userLocation={userLocation} userLanguage={userLanguage} />;
+        return <HomeScreen onPlaceSelect={handlePlaceSelect} onSearchClick={handleSearchClick} userLocation={userLocation} userLanguage={userLanguage} weatherData={weatherData} onWeatherToggle={handleWeatherToggle} />;
     }
   };
 

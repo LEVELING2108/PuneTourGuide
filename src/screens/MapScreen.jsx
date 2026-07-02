@@ -57,7 +57,7 @@ function RecenterMap({ center }) {
   return null;
 }
 
-export default function MapScreen({ userLocation, userLanguage }) {
+export default function MapScreen({ userLocation, userLanguage, weatherData }) {
   const [mode, setMode] = useState("Walking");
   const [activeFilter, setActiveFilter] = useState("All");
   const [stops, setStops] = useState([]);
@@ -394,8 +394,25 @@ export default function MapScreen({ userLocation, userLanguage }) {
       {/* Header */}
       <div style={{ background: "#FBF8F3", padding: "10px 16px 8px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: "#1C1412", flex: 1 }}>
-            {stops.length > 0 ? t.heritageTrail : t.map}
+          <div style={{ fontSize: 18, fontWeight: 700, color: "#1C1412", flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
+            <span>{stops.length > 0 ? t.heritageTrail : t.map}</span>
+            {weatherData && (
+              <span
+                style={{
+                  fontSize: 10,
+                  background: weatherData.weather === "Sunny" ? "#FEF3C7" : "#DBEAFE",
+                  color: weatherData.weather === "Sunny" ? "#92400E" : "#1E40AF",
+                  borderRadius: 10,
+                  padding: "2px 8px",
+                  fontWeight: 600,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 3,
+                }}
+              >
+                {weatherData.weather === "Sunny" ? "☀️" : "🌧️"} {weatherData.temp}°C
+              </span>
+            )}
           </div>
           <div style={{ fontSize: 11, color: "#8B3A2A", fontWeight: 600 }}>
             {getSubHeaderLabel()}

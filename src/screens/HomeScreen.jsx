@@ -5,7 +5,7 @@ import { categories } from "../data/puneData";
 import { fetchPlaces, fetchEvents } from "../data/api";
 import { translations } from "../data/translations";
 
-export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation, userLanguage }) {
+export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation, userLanguage, weatherData, onWeatherToggle }) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [places, setPlaces] = useState([]);
   const [events, setEvents] = useState([]);
@@ -87,6 +87,7 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation,
             {t.heroSub}
           </div>
           <div
+            onClick={onWeatherToggle}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -98,9 +99,10 @@ export default function HomeScreen({ onPlaceSelect, onSearchClick, userLocation,
               padding: "5px 12px",
               fontSize: 12,
               color: "#fff",
+              cursor: "pointer",
             }}
           >
-            ☀️ 32°C · {t.weather}
+            {weatherData?.weather === "Sunny" ? "☀️" : "🌧️"} {weatherData?.temp}°C · {t.weather} ({weatherData?.weather === "Sunny" ? (userLanguage === "Marathi" ? "उष्ण" : userLanguage === "Hindi" ? "धूप" : userLanguage === "Gujarati" ? "તડકો" : "Sunny") : (userLanguage === "Marathi" ? "पाऊस" : userLanguage === "Hindi" ? "बारिश" : userLanguage === "Gujarati" ? "વરસાદ" : "Rainy")})
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import StatusBar from "../components/StatusBar";
 import { tagStyles, colors } from "../data/tokens";
-import { fetchItinerary, deleteStopFromItinerary, fetchPlaces, addStopToItinerary, optimizeItinerary, generateItinerary } from "../data/api";
+import { fetchItinerary, deleteStopFromItinerary, fetchPlaces, addStopToItinerary, optimizeItinerary, generateItinerary, adaptItineraryForWeather } from "../data/api";
 import { translations } from "../data/translations";
 
 const localTranslations = {
@@ -134,7 +134,7 @@ const parseVisitTime = (time) => {
   return 1; // default fallback 1 hour
 };
 
-export default function PlanScreen({ userLocation, userLanguage }) {
+export default function PlanScreen({ userLocation, userLanguage, weatherData, onWeatherToggle }) {
   const [activeDay, setActiveDay] = useState(0);
   const [itineraryDays, setItineraryDays] = useState([]);
   const [places, setPlaces] = useState([]);
@@ -158,6 +158,7 @@ export default function PlanScreen({ userLocation, userLanguage }) {
   const [aiCategories, setAiCategories] = useState(["Heritage", "Temple", "Nature", "Food", "Wellness"]);
   const [aiAccessible, setAiAccessible] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [adaptingWeather, setAdaptingWeather] = useState(false);
 
   const t = translations[userLanguage] || translations.English;
   const lt = localTranslations[userLanguage] || localTranslations.English;
@@ -180,6 +181,53 @@ export default function PlanScreen({ userLocation, userLanguage }) {
     };
     loadData();
   }, []);
+
+  const hasOutdoorStops = (day) => {
+    if (!day || !Array.isArray(day.stops)) return false;
+    const outdoorKeywords = [
+      'fort', 'trek', 'hill', 'lake', 'tekdi', 'valley', 'outdoor', 
+      'garden', 'waterfall', 'viewpoint', 'zoo', 'park', 'caves', 'trail'
+    ];
+    return day.stops.some(stop => {
+      let isNature = false;
+      if (Array.isArray(stop.tags)) {
+        isNature = stop.tags.some(t => t.label === 'Nature' || t.type === 'nature');
+      }
+      if (isNature) return true;
+      const n = (stop.name || '').toLowerCase();
+      const d = (stop.desc || '').toLowerCase();
+      return outdoorKeywords.some(kw => n.includes(kw) || d.includes(kw));
+    });
+  };
+
+  const handleAdaptWeather = async (dayId) => {
+    setAdaptingWeather(true);
+    try {
+      const response = await adaptItineraryForWeather(dayId, userLanguage);
+      if (response.success && response.swappedCount > 0) {
+        const updatedData = await fetchItinerary();
+        setItineraryDays(updatedData);
+        let msg = '';
+        if (userLanguage === 'Marathi') {
+          msg = `यशस्वीरित्या ${response.swappedCount} ठिकाणे बदलली: ${response.swappedInfo.join(', ')}`;
+        } else if (userLanguage === 'Hindi') {
+          msg = `सफलतापूर्वक ${response.swappedCount} स्थान बदले गए: ${response.swappedInfo.join(', ')}`;
+        } else if (userLanguage === 'Gujarati') {
+          msg = `સફળતાપૂર્વક ${response.swappedCount} સ્ટોપ્સ બદલાયા: ${response.swappedInfo.join(', ')}`;
+        } else {
+          msg = `Successfully swapped ${response.swappedCount} spots: ${response.swappedInfo.join(', ')}`;
+        }
+        alert(msg);
+      } else {
+        alert(userLanguage === 'Marathi' ? "कोणतेही बदल आवश्यक नाहीत किंवा इनडोर पर्याय आढळले नाहीत." : "No outdoor stops found or no indoor alternatives available.");
+      }
+    } catch (err) {
+      console.error("Failed to adapt weather:", err);
+      alert(userLanguage === 'Marathi' ? "मार्ग बदलण्यात अयशस्वी" : "Failed to adapt itinerary");
+    } finally {
+      setAdaptingWeather(false);
+    }
+  };
 
   const getCategoryColor = (category) => {
     switch (category) {
@@ -429,8 +477,30 @@ export default function PlanScreen({ userLocation, userLanguage }) {
       >
         <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>
-              {t.myPlan}
+            <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: 8 }}>
+              <span>{t.myPlan}</span>
+              <span
+                onClick={onWeatherToggle}
+                style={{
+                  fontSize: 10,
+                  background: "rgba(255,255,255,0.15)",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  borderRadius: 12,
+                  padding: "2px 8px",
+                  cursor: "pointer",
+                  color: "#fff",
+                  fontWeight: 600,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 3,
+                  transition: "background 0.2s"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.25)"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.15)"}
+                title="Click to toggle simulated weather"
+              >
+                {weatherData?.weather === "Sunny" ? "☀️" : "🌧️"} {weatherData?.temp}°C
+              </span>
             </div>
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginTop: 3 }}>
               {day.stops.length} {t.stops} · Pune, MH
@@ -545,6 +615,78 @@ export default function PlanScreen({ userLocation, userLanguage }) {
 
       {/* Timeline */}
       <div style={{ padding: "24px 20px", background: "#fff", borderTopLeftRadius: 30, borderTopRightRadius: 30, marginTop: -20, position: "relative", zIndex: 5 }}>
+        {weatherData?.weather === "Rainy" && hasOutdoorStops(day) && (
+          <div
+            style={{
+              background: "linear-gradient(135deg, #FFF5F5 0%, #FFF0F0 100%)",
+              border: "1px solid #FEB2B2",
+              borderRadius: 14,
+              padding: 16,
+              marginBottom: 20,
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 24 }}>🌧️</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#C53030" }}>
+                  {userLanguage === "Marathi" ? "पुण्यात पाऊस सुरू आहे!" : 
+                   userLanguage === "Hindi" ? "पुणे में बारिश हो रही है!" :
+                   userLanguage === "Gujarati" ? "પુણેમાં વરસાદ પડી રહ્યો છે!" :
+                   "It's Raining in Pune!"}
+                </div>
+                <div style={{ fontSize: 11, color: "#9B2C2C", marginTop: 2, lineHeight: 1.4 }}>
+                  {userLanguage === "Marathi" ? "तुमच्या प्रवासात बाहेरील ठिकाणे समाविष्ट आहेत. निसरडे रस्ते टाळण्यासाठी घरातील सुरक्षित ठिकाणी बदला." : 
+                   userLanguage === "Hindi" ? "आपकी यात्रा में बाहरी स्थान शामिल हैं। फिसलन वाले रास्तों से बचने के लिए इनडोर स्थानों पर स्विच करें।" :
+                   userLanguage === "Gujarati" ? "તમારા પ્રવાસમાં બહારના સ્થળો શામેલ છે. ઇન્ડોર સ્થળો પર બદલો." :
+                   "Your active day includes outdoor stops. We recommend swapping them for indoor alternatives to stay dry."}
+                </div>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => handleAdaptWeather(day.id)}
+              disabled={adaptingWeather}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                background: "#E53E3E",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                boxShadow: "0 2px 4px rgba(229,62,62,0.2)",
+                transition: "background 0.2s"
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "#C53030"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "#E53E3E"}
+            >
+              {adaptingWeather ? (
+                userLanguage === "Marathi" ? "मार्ग जुळवत आहे..." : "Adapting Route..."
+              ) : (
+                <>
+                  <span>🌦️</span>
+                  <span>
+                    {userLanguage === "Marathi" ? "हवामानानुसार मार्ग बदला (घरातील पर्याय)" : 
+                     userLanguage === "Hindi" ? "मौसम के अनुसार बदलें (इनडोर विकल्प)" :
+                     userLanguage === "Gujarati" ? "હવામાન અનુકૂલન (ઇન્ડોર વિકલ્પો)" :
+                     "Adapt Route for Weather (Indoor Swap)"}
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
         {day.stops.length === 0 ? (
           <div style={{ padding: "40px 0", textAlign: "center", color: colors.inkMuted }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>📅</div>
