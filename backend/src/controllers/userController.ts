@@ -173,7 +173,7 @@ export const getUserStats = async (req: AuthRequest, res: Response) => {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const savedCount = await prisma.place.count({ where: { isSaved: true } });
+    const savedCount = await prisma.savedPlace.count({ where: { userId } });
     const discoveredCount = await prisma.place.count({ where: { NOT: { osmId: null } } });
     
     // Count stops completed by this specific user

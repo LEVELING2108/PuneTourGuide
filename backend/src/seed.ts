@@ -218,6 +218,7 @@ async function main() {
   console.log('Start seeding...');
 
   // Clear existing data
+  await prisma.savedPlace.deleteMany();
   await prisma.itineraryStop.deleteMany();
   await prisma.itineraryDay.deleteMany();
   await prisma.event.deleteMany();

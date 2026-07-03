@@ -35,6 +35,7 @@ model Place {
   latitude    Float?
   longitude   Float?
   location    Unsupported("geometry(Point, 4326)")?
+  savedBy     SavedPlace[]
 }
 
 model Event {
@@ -55,6 +56,7 @@ model User {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   itineraryDays ItineraryDay[]
+  savedPlaces   SavedPlace[]
 }
 
 model ItineraryDay {
@@ -80,3 +82,15 @@ model ItineraryStop {
   order          Int          @default(0)
   itineraryDay   ItineraryDay @relation(fields: [itineraryDayId], references: [id], onDelete: Cascade)
 }
+
+model SavedPlace {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  placeId   Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, placeId])
+}
+

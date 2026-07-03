@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -226,33 +226,37 @@ export default function MapScreen({ userLocation, userLanguage, weatherData }) {
   };
 
   // Build points for a route if we have itinerary stops that map to database places
-  const routePoints = stops
-    .map((stop) => {
-      const matchedPlace = places.find(
-        (p) => p.name.toLowerCase() === stop.name.toLowerCase()
-      );
-      if (matchedPlace?.latitude && matchedPlace?.longitude) {
-        return [matchedPlace.latitude, matchedPlace.longitude];
-      }
-      return null;
-    })
-    .filter(Boolean);
+  const routePoints = useMemo(() => {
+    return stops
+      .map((stop) => {
+        const matchedPlace = places.find(
+          (p) => p.name.toLowerCase() === stop.name.toLowerCase()
+        );
+        if (matchedPlace?.latitude && matchedPlace?.longitude) {
+          return [matchedPlace.latitude, matchedPlace.longitude];
+        }
+        return null;
+      })
+      .filter(Boolean);
+  }, [stops, places]);
 
   // Dynamic Routing Logic & Mode Scenario Calculations
-  let points = [];
-  let isItineraryRoute = false;
+  const isItineraryRoute = stops.length > 0;
 
-  if (stops.length > 0) {
-    points = routePoints;
-    isItineraryRoute = true;
-  } else if (selectedPlace?.latitude && selectedPlace?.longitude) {
-    if (userLocation?.latitude && userLocation?.longitude) {
-      points = [
-        [userLocation.latitude, userLocation.longitude],
-        [selectedPlace.latitude, selectedPlace.longitude]
-      ];
+  const points = useMemo(() => {
+    if (stops.length > 0) {
+      return routePoints;
     }
-  }
+    if (selectedPlace?.latitude && selectedPlace?.longitude) {
+      if (userLocation?.latitude && userLocation?.longitude) {
+        return [
+          [userLocation.latitude, userLocation.longitude],
+          [selectedPlace.latitude, selectedPlace.longitude]
+        ];
+      }
+    }
+    return [];
+  }, [stops.length, routePoints, selectedPlace, userLocation]);
 
   // Calculate dynamic physical distance
   let calculatedDistance = 0;

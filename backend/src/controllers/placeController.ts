@@ -36,77 +36,77 @@ const saveDiscoveredPlaces = async (discoveredPlaces: any[]) => {
 export const getAllPlaces = async (req: Request, res: Response) => {
   try {
     const { category, q, isSaved, isDiscovered } = req.query;
+    const userId = (req as AuthRequest).user?.id;
     
-    // Generate a unique cache key based on query parameters
-    const cacheKey = `places:v5:${category || 'all'}:${q || 'none'}:${isSaved || 'any'}:${isDiscovered || 'any'}`;
+    // Generate a unique cache key based on query parameters (excluding user-specific states)
+    const cacheKey = `places:v5:${category || 'all'}:${q || 'none'}:${isDiscovered || 'any'}`;
     
     // Check cache first
-    const cachedPlaces = await getCachedData<any[]>(cacheKey);
-    if (cachedPlaces) {
-      console.log('Serving from Redis cache:', cacheKey);
-      return res.json(cachedPlaces);
-    }
+    let places = await getCachedData<any[]>(cacheKey);
+    if (!places) {
+      let where: any = {};
+      
+      if (category && category !== 'All') {
+        where.category = String(category);
+      }
+      
+      if (q) {
+        where.OR = [
+          { name: { contains: String(q), mode: 'insensitive' } },
+          { description: { contains: String(q), mode: 'insensitive' } }
+        ];
+      }
 
-    let where: any = {};
-    
-    if (category && category !== 'All') {
-      where.category = String(category);
-    }
-    
-    if (q) {
-      where.OR = [
-        { name: { contains: String(q), mode: 'insensitive' } },
-        { description: { contains: String(q), mode: 'insensitive' } }
-      ];
-    }
-    
-    if (isSaved === 'true') {
-      where.isSaved = true;
-    }
+      if (isDiscovered === 'true') {
+        where.NOT = { osmId: null };
+      }
+      
+      places = await prisma.place.findMany({
+        where,
+        orderBy: { rating: 'desc' }
+      });
 
-    if (isDiscovered === 'true') {
-      where.NOT = { osmId: null };
+      // Save to cache for 1 hour
+      await setCachedData(cacheKey, places, 3600);
     }
-    
-    let places = await prisma.place.findMany({
-      where,
-      orderBy: { rating: 'desc' }
-    });
 
     // Auto-Discovery Logic: If search query provided and few results - run in background
-    if (q && places.length < 5 && !isSaved) {
+    if (q && places.length < 5 && isSaved !== 'true') {
       searchOSMPlaces(String(q))
         .then(discovered => saveDiscoveredPlaces(discovered))
         .catch(err => console.error('Background search discovery error:', err));
     }
 
     // Category Population Logic: Ensure at least 10 places in a category - run in background
-    if (category && category !== 'All' && places.length < 10 && !q && !isSaved) {
+    if (category && category !== 'All' && places.length < 10 && !q && isSaved !== 'true') {
       console.log(`Low count for category ${category} (${places.length}). Hydrating in background...`);
       fetchOSMPlacesByCategory(String(category))
         .then(discovered => saveDiscoveredPlaces(discovered))
         .catch(err => console.error('Background category discovery error:', err));
     }
 
-    // Nearby search enhancement: If user coordinates are provided, sort by real physical distance using PostGIS
-    const { lat, lng } = req.query;
-    if (lat && lng && places.length > 0) {
-      // Use raw SQL to get places sorted by PostGIS distance
-      const nearbyPlaces: any[] = await prisma.$queryRaw`
-        SELECT *, ST_DistanceSphere(location, ST_SetSRID(ST_MakePoint(${Number(lng)}, ${Number(lat)}), 4326)) as "dist"
-        FROM "Place"
-        WHERE "category" = ${category && category !== 'All' ? category : "Heritage"} -- example filter logic
-        ORDER BY "dist" ASC
-        LIMIT 10
-      `;
-      // Note: This is a specialized nearby query. For now, we'll keep the standard return
-      // but the database is now ready for high-perf nearby searches.
+    // Fetch user saved place IDs for dynamic hydration
+    let savedIdsSet = new Set<number>();
+    if (userId) {
+      const savedRelation = await prisma.savedPlace.findMany({
+        where: { userId },
+        select: { placeId: true }
+      });
+      savedRelation.forEach(r => savedIdsSet.add(r.placeId));
     }
 
-    // Save to cache for 1 hour
-    await setCachedData(cacheKey, places, 3600);
+    // Hydrate the isSaved status dynamically
+    let hydratedPlaces = places.map(p => ({
+      ...p,
+      isSaved: savedIdsSet.has(p.id)
+    }));
 
-    res.json(places);
+    // Filter by saved state if requested
+    if (isSaved === 'true') {
+      hydratedPlaces = hydratedPlaces.filter(p => p.isSaved);
+    }
+
+    res.json(hydratedPlaces);
   } catch (error) {
     console.error('Error in getAllPlaces:', error);
     res.status(500).json({ error: 'Failed to fetch places' });
@@ -118,16 +118,31 @@ export const getPlaceById = async (req: Request, res: Response) => {
     const { id } = req.params;
     const cacheKey = `place:detail:${id}`;
 
-    const cachedPlace = await getCachedData<any>(cacheKey);
-    if (cachedPlace) return res.json(cachedPlace);
+    let place = await getCachedData<any>(cacheKey);
+    if (!place) {
+      place = await prisma.place.findUnique({
+        where: { id: Number(id) }
+      });
+      if (!place) return res.status(404).json({ error: 'Place not found' });
+      await setCachedData(cacheKey, place, 3600);
+    }
 
-    const place = await prisma.place.findUnique({
-      where: { id: Number(id) }
-    });
-    if (!place) return res.status(404).json({ error: 'Place not found' });
+    // Hydrate user-specific saved state dynamically
+    const userId = (req as AuthRequest).user?.id;
+    let isSaved = false;
+    if (userId) {
+      const savedRelation = await prisma.savedPlace.findUnique({
+        where: {
+          userId_placeId: {
+            userId,
+            placeId: Number(id)
+          }
+        }
+      });
+      isSaved = !!savedRelation;
+    }
 
-    await setCachedData(cacheKey, place, 3600);
-    res.json(place);
+    res.json({ ...place, isSaved });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch place' });
   }
@@ -143,7 +158,7 @@ export const toggleSavePlace = async (req: AuthRequest, res: Response) => {
     const { isSaved } = req.body;
     const userId = req.user.id;
 
-    // Check current save state to award XP only on new saves
+    // Check place existence
     const place = await prisma.place.findUnique({
       where: { id: Number(id) }
     });
@@ -152,12 +167,39 @@ export const toggleSavePlace = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Place not found' });
     }
 
-    const justSaved = Boolean(isSaved) && !place.isSaved;
-
-    const updatedPlace = await prisma.place.update({
-      where: { id: Number(id) },
-      data: { isSaved: Boolean(isSaved) }
+    // Check if relation already exists for this specific user
+    const existingSave = await prisma.savedPlace.findUnique({
+      where: {
+        userId_placeId: {
+          userId,
+          placeId: Number(id)
+        }
+      }
     });
+
+    const justSaved = Boolean(isSaved) && !existingSave;
+
+    if (Boolean(isSaved)) {
+      if (!existingSave) {
+        await prisma.savedPlace.create({
+          data: {
+            userId,
+            placeId: Number(id)
+          }
+        });
+      }
+    } else {
+      if (existingSave) {
+        await prisma.savedPlace.delete({
+          where: {
+            userId_placeId: {
+              userId,
+              placeId: Number(id)
+            }
+          }
+        });
+      }
+    }
 
     if (justSaved) {
       await prisma.user.update({
@@ -167,12 +209,12 @@ export const toggleSavePlace = async (req: AuthRequest, res: Response) => {
       console.log(`[XP] User ${userId} gained +10 XP for saving place: ${place.name}`);
     }
 
-    // Invalidate relevant caches
-    await invalidateCache('places:*');
+    // Invalidate details cache
     await invalidateCache(`place:detail:${id}`);
 
-    res.json(updatedPlace);
+    res.json({ ...place, isSaved: Boolean(isSaved) });
   } catch (error) {
+    console.error('Failed to toggle save status:', error);
     res.status(500).json({ error: 'Failed to toggle save status' });
   }
 };
