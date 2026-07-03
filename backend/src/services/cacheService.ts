@@ -22,6 +22,9 @@ redis.on('error', (err) => {
 });
 
 export const getCachedData = async <T>(key: string): Promise<T | null> => {
+  if (redis.status !== 'ready') {
+    return null;
+  }
   try {
     const data = await redis.get(key);
     return data ? JSON.parse(data) : null;
@@ -32,6 +35,9 @@ export const getCachedData = async <T>(key: string): Promise<T | null> => {
 };
 
 export const setCachedData = async (key: string, data: any, ttlSeconds: number = 3600): Promise<void> => {
+  if (redis.status !== 'ready') {
+    return;
+  }
   try {
     await redis.set(key, JSON.stringify(data), 'EX', ttlSeconds);
   } catch (err) {
@@ -40,6 +46,9 @@ export const setCachedData = async (key: string, data: any, ttlSeconds: number =
 };
 
 export const invalidateCache = async (pattern: string): Promise<void> => {
+  if (redis.status !== 'ready') {
+    return;
+  }
   try {
     const keys = await redis.keys(pattern);
     if (keys.length > 0) {
