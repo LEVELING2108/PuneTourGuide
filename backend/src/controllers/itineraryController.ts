@@ -13,7 +13,13 @@ export const getItinerary = async (req: AuthRequest, res: Response) => {
 
     const userId = req.user.id;
 
-    const itinerary = await prisma.itineraryDay.findMany({
+    // Check if user exists in database to handle stale tokens
+    const userExists = await prisma.user.findUnique({ where: { id: userId } });
+    if (!userExists) {
+      return res.status(401).json({ error: 'User session invalid' });
+    }
+
+    let itinerary = await prisma.itineraryDay.findMany({
       where: { userId },
       include: {
         stops: {
@@ -22,6 +28,71 @@ export const getItinerary = async (req: AuthRequest, res: Response) => {
       },
       orderBy: { day: 'asc' }
     });
+
+    // Self-healing: if user has no itinerary days, auto-create and seed them
+    if (itinerary.length === 0) {
+      const day1 = await prisma.itineraryDay.create({
+        data: {
+          day: 1,
+          label: "Day 1 · Sat",
+          userId
+        }
+      });
+      const day2 = await prisma.itineraryDay.create({
+        data: {
+          day: 2,
+          label: "Day 2 · Sun",
+          userId
+        }
+      });
+
+      await prisma.itineraryStop.createMany({
+        data: [
+          {
+            itineraryDayId: day1.id,
+            time: "09:00 AM",
+            name: "Shaniwar Wada",
+            name_mr: "शनिवार वाडा",
+            desc: "Explore the primary fortress seat of the Peshwas.",
+            desc_mr: "पेशव्यांचे मुख्य ऐतिहासिक निवासस्थान एक्सप्लोर करा.",
+            dotColor: "#8B3A2A",
+            tags: [{ label: "Heritage", type: "heritage" }]
+          },
+          {
+            itineraryDayId: day1.id,
+            time: "11:30 AM",
+            name: "Dagdusheth Halwai Ganpati",
+            name_mr: "दगडूशेठ हलवाई गणपती",
+            desc: "Pay a visit to the most celebrated golden Ganpati temple in Pune.",
+            desc_mr: "पुण्यातील सर्वात प्रसिद्ध सोन्याच्या गणपती मंदिराला भेट द्या.",
+            dotColor: "#B87318",
+            tags: [{ label: "Temple", type: "neutral" }]
+          },
+          {
+            itineraryDayId: day2.id,
+            time: "08:30 AM",
+            name: "Pataleshwar Caves",
+            name_mr: "पाताळेश्वर लेणी",
+            desc: "Marvel at the ancient 8th-century rock-cut monolithic Shiva shrine.",
+            desc_mr: "८ व्या शतकातील प्राचीन पाताळेश्वर शिव मंदिराला भेट द्या.",
+            dotColor: "#4A6741",
+            tags: [{ label: "Heritage", type: "heritage" }]
+          }
+        ]
+      });
+
+      // Refetch the newly created itinerary
+      itinerary = await prisma.itineraryDay.findMany({
+        where: { userId },
+        include: {
+          stops: {
+            orderBy: { order: 'asc' }
+          }
+        },
+        orderBy: { day: 'asc' }
+      });
+    }
+
     res.json(itinerary);
   } catch (error) {
     console.error("Failed to fetch itinerary:", error);
