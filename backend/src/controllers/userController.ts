@@ -59,7 +59,7 @@ export const registerUser = async (req: Request, res: Response) => {
           desc: "Explore the primary fortress seat of the Peshwas.",
           desc_mr: "पेशव्यांचे मुख्य ऐतिहासिक निवासस्थान एक्सप्लोर करा.",
           dotColor: "#8B3A2A",
-          tags: JSON.stringify([{ label: "Heritage", type: "heritage" }])
+          tags: [{ label: "Heritage", type: "heritage" }]
         },
         {
           itineraryDayId: day1.id,
@@ -69,7 +69,7 @@ export const registerUser = async (req: Request, res: Response) => {
           desc: "Pay a visit to the most celebrated golden Ganpati temple in Pune.",
           desc_mr: "पुण्यातील सर्वात प्रसिद्ध सोन्याच्या गणपती मंदिराला भेट द्या.",
           dotColor: "#B87318",
-          tags: JSON.stringify([{ label: "Temple", type: "neutral" }])
+          tags: [{ label: "Temple", type: "neutral" }]
         },
         {
           itineraryDayId: day2.id,
@@ -79,7 +79,7 @@ export const registerUser = async (req: Request, res: Response) => {
           desc: "Marvel at the ancient 8th-century rock-cut monolithic Shiva shrine.",
           desc_mr: "८ व्या शतकातील प्राचीन पाताळेश्वर शिव मंदिराला भेट द्या.",
           dotColor: "#4A6741",
-          tags: JSON.stringify([{ label: "Heritage", type: "heritage" }])
+          tags: [{ label: "Heritage", type: "heritage" }]
         }
       ]
     });
