@@ -175,19 +175,25 @@ export default function MapScreen({ userLocation, userLanguage, weatherData }) {
 
   const handleAddPlaceToItinerary = async (place) => {
     try {
-      const itinerary = await fetchItinerary();
-      const day1 = itinerary.find(d => d.day === 1);
-      if (!day1) throw new Error("Day 1 itinerary day not found");
+      let day1Id = null;
+      try {
+        const itinerary = await fetchItinerary();
+        const day1 = Array.isArray(itinerary) ? itinerary.find(d => d.day === 1) : null;
+        if (day1) day1Id = day1.id;
+      } catch (e) {
+        console.warn("MapScreen fetchItinerary warning:", e);
+      }
 
+      const cat = place.category || "Heritage";
       const newStop = await addStopToItinerary({
-        itineraryDayId: day1.id,
+        itineraryDayId: day1Id,
         name: place.name,
         name_mr: place.name_mr || place.name,
         time: "TBD",
-        desc: place.description,
-        desc_mr: place.description_mr || place.description,
-        dotColor: getCategoryColor(place.category),
-        tags: [{ label: place.category, type: place.category.toLowerCase() }]
+        desc: place.description || "",
+        desc_mr: place.description_mr || place.description || "",
+        dotColor: getCategoryColor(cat),
+        tags: [{ label: cat, type: cat.toLowerCase() }]
       });
 
       setStops((prev) => [...prev, newStop]);
