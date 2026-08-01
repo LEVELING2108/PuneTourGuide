@@ -24,31 +24,42 @@ export default function PlaceDetailScreen({ place, onBack, userLocation, userLan
     }
   };
 
+  const [isAdding, setIsAdding] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
+
   const handleAddToItinerary = async () => {
+    if (isAdding) return;
+    setIsAdding(true);
     try {
       // 1. Fetch current itinerary to find the real ID for "Day 1"
-      const itinerary = await fetchItinerary();
-      const day1 = itinerary.find(d => d.day === 1);
-      
-      if (!day1) {
-        throw new Error("Day 1 itinerary record not found in database.");
+      let day1Id = null;
+      try {
+        const itinerary = await fetchItinerary();
+        const day1 = Array.isArray(itinerary) ? itinerary.find(d => d.day === 1) : null;
+        if (day1) day1Id = day1.id;
+      } catch (e) {
+        console.warn("Could not fetch itinerary day1, backend fallback will handle it:", e);
       }
 
-      // 2. Add the stop using the dynamic ID
+      // 2. Add the stop using the dynamic ID or fallback
       await addStopToItinerary({
-        itineraryDayId: day1.id,
+        itineraryDayId: day1Id,
         name: place.name,
         name_mr: place.name_mr || place.name,
         time: "TBD",
-        desc: place.description,
-        desc_mr: place.description_mr || place.description,
+        desc: place.description || "",
+        desc_mr: place.description_mr || place.description || "",
         dotColor: "#8B3A2A",
-        tags: [{ label: place.category, type: place.category.toLowerCase() }]
+        tags: [{ label: place.category || "Heritage", type: (place.category || "heritage").toLowerCase() }]
       });
-      alert(userLanguage === "Marathi" ? `${place.name_mr || place.name} सहलीत जोडले गेले!` : `${place.name} added to your Day 1 itinerary!`);
+
+      setIsAdded(true);
+      setTimeout(() => setIsAdded(false), 3000);
     } catch (error) {
       console.error("Failed to add to itinerary:", error);
       alert(userLanguage === "Marathi" ? "सहलीत जोडण्यात अडचण आली." : "Failed to add to itinerary. Please try again.");
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -238,9 +249,10 @@ export default function PlaceDetailScreen({ place, onBack, userLocation, userLan
         {/* CTA */}
         <button
           onClick={handleAddToItinerary}
+          disabled={isAdding}
           style={{
             width: "100%",
-            background: "#8B3A2A",
+            background: isAdded ? "#15803D" : isAdding ? "#A855F7" : "#8B3A2A",
             color: "#fff",
             border: "none",
             borderRadius: 14,
@@ -249,14 +261,21 @@ export default function PlaceDetailScreen({ place, onBack, userLocation, userLan
             fontWeight: 600,
             textAlign: "center",
             marginTop: 16,
-            cursor: "pointer",
+            cursor: isAdding ? "wait" : "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             gap: 6,
+            transition: "all 0.2s ease",
           }}
         >
-          📅 {t.addToPlan}
+          {isAdded ? (
+            userLanguage === "Marathi" ? "✓ सहलीत जोडले गेले!" : "✓ Added to Day 1 Itinerary!"
+          ) : isAdding ? (
+            userLanguage === "Marathi" ? "जोडत आहे..." : "Adding..."
+          ) : (
+            `📅 ${t.addToPlan}`
+          )}
         </button>
       </div>
     </div>

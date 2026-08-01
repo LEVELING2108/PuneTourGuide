@@ -152,25 +152,32 @@ export const addStopToItinerary = async (req: AuthRequest, res: Response) => {
     const { itineraryDayId, name, name_mr, time, desc, desc_mr, dotColor, tags } = req.body;
     const userId = req.user.id;
 
-    // Ensure ownership of the itinerary day
-    const day = await prisma.itineraryDay.findUnique({
-      where: { id: Number(itineraryDayId) }
-    });
+    let targetDayId = Number(itineraryDayId);
+    let day = targetDayId ? await prisma.itineraryDay.findUnique({ where: { id: targetDayId } }) : null;
 
+    // Fallback: If day is missing or does not belong to user, find/create user's Day 1
     if (!day || day.userId !== userId) {
-      return res.status(403).json({ error: 'Unauthorized to add stops to this day' });
+      let userDay1 = await prisma.itineraryDay.findFirst({
+        where: { userId, day: 1 }
+      });
+      if (!userDay1) {
+        userDay1 = await prisma.itineraryDay.create({
+          data: { day: 1, label: "Day 1 · Sat", userId }
+        });
+      }
+      targetDayId = userDay1.id;
     }
 
     const newStop = await prisma.itineraryStop.create({
       data: {
-        name,
-        name_mr,
-        time,
-        desc,
-        desc_mr,
-        dotColor,
-        itineraryDayId: Number(itineraryDayId),
-        tags: tags || []
+        name: String(name || 'Custom Stop'),
+        name_mr: name_mr ? String(name_mr) : String(name || 'Custom Stop'),
+        time: String(time || 'TBD'),
+        desc: String(desc || ''),
+        desc_mr: desc_mr ? String(desc_mr) : String(desc || ''),
+        dotColor: String(dotColor || '#8B3A2A'),
+        itineraryDayId: targetDayId,
+        tags: Array.isArray(tags) ? tags : []
       }
     });
     res.json(newStop);
