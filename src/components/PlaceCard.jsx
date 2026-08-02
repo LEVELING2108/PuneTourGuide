@@ -1,8 +1,8 @@
+import { memo } from "react";
 import { tagColorMap } from "../data/tokens";
 import { calculateDistance, formatDistance } from "../utils/location";
-import { translations } from "../data/translations";
 
-export default function PlaceCard({ place, onClick, userLocation, userLanguage }) {
+const PlaceCard = memo(function PlaceCard({ place, onClick, userLocation, userLanguage }) {
   const tagStyle = tagColorMap[place.tagColor] || tagColorMap.terracotta;
 
   const dynamicDistance = userLocation
@@ -74,4 +74,6 @@ export default function PlaceCard({ place, onClick, userLocation, userLanguage }
       </div>
     </div>
   );
-}
+});
+
+export default PlaceCard;

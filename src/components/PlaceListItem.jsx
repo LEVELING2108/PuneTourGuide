@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { tagColorMap, categoryColors } from "../data/tokens";
 import { calculateDistance, formatDistance } from "../utils/location";
 
-export default function PlaceListItem({ place, onClick, userLocation, userLanguage }) {
+const PlaceListItem = memo(function PlaceListItem({ place, onClick, userLocation, userLanguage }) {
   const catStyle = categoryColors[place.category] || categoryColors.default;
   const tagStyle = tagColorMap[place.tagColor] || tagColorMap.terracotta;
 
@@ -96,4 +97,6 @@ export default function PlaceListItem({ place, onClick, userLocation, userLangua
       </div>
     </div>
   );
-}
+});
+
+export default PlaceListItem;
