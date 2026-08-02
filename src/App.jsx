@@ -1,13 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import HomeScreen from "./screens/HomeScreen";
-import ExploreScreen from "./screens/ExploreScreen";
-import MapScreen from "./screens/MapScreen";
-import PlanScreen from "./screens/PlanScreen";
-import ProfileScreen from "./screens/ProfileScreen";
-import PlaceDetailScreen from "./screens/PlaceDetailScreen";
 import BottomNav from "./components/BottomNav";
 import { useUserLocation } from "./hooks/useUserLocation";
 import { logoutUser, fetchWeather, toggleWeather } from "./data/api";
+
+const ExploreScreen = lazy(() => import("./screens/ExploreScreen"));
+const MapScreen = lazy(() => import("./screens/MapScreen"));
+const PlanScreen = lazy(() => import("./screens/PlanScreen"));
+const ProfileScreen = lazy(() => import("./screens/ProfileScreen"));
+const PlaceDetailScreen = lazy(() => import("./screens/PlaceDetailScreen"));
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("home");
@@ -108,7 +109,13 @@ export default function App() {
 
         {/* Screen content */}
         <div className="flex-1 relative overflow-hidden">
-          {renderScreen()}
+          <Suspense fallback={
+            <div style={{ background: "#FBF8F3", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ color: "#8B3A2A", fontWeight: 600, fontSize: 13 }}>Loading Pune Explorer...</div>
+            </div>
+          }>
+            {renderScreen()}
+          </Suspense>
         </div>
 
         {/* Bottom nav — hidden on detail screen */}

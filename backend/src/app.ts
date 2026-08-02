@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
@@ -14,6 +15,9 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Enable HTTP response Gzip compression
+app.use(compression());
 
 // Configure secure helmet headers with custom CSP for Leaflet maps and Google Fonts in production
 app.use(

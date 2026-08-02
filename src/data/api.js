@@ -1,5 +1,35 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
+// ── Client-Side In-Memory Cache ───────────────────────────
+const apiCache = new Map();
+const CACHE_TTL_MS = 45 * 1000; // 45 seconds TTL
+
+const getCached = (key) => {
+  const item = apiCache.get(key);
+  if (!item) return null;
+  if (Date.now() - item.timestamp > CACHE_TTL_MS) {
+    apiCache.delete(key);
+    return null;
+  }
+  return item.data;
+};
+
+const setCache = (key, data) => {
+  apiCache.set(key, { timestamp: Date.now(), data });
+};
+
+export const clearApiCache = (prefix = '') => {
+  if (!prefix) {
+    apiCache.clear();
+    return;
+  }
+  for (const key of apiCache.keys()) {
+    if (key.startsWith(prefix)) {
+      apiCache.delete(key);
+    }
+  }
+};
+
 const getHeaders = (extraHeaders = {}) => {
   const token = localStorage.getItem('pune_auth_token');
   const headers = {
@@ -13,6 +43,7 @@ const getHeaders = (extraHeaders = {}) => {
 };
 
 export const loginUser = async (email, password) => {
+  clearApiCache();
   const response = await fetch(`${API_BASE_URL}/user/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -33,6 +64,7 @@ export const loginUser = async (email, password) => {
 };
 
 export const registerUser = async (name, email, password) => {
+  clearApiCache();
   const response = await fetch(`${API_BASE_URL}/user/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -53,6 +85,7 @@ export const registerUser = async (name, email, password) => {
 };
 
 export const logoutUser = () => {
+  clearApiCache();
   localStorage.removeItem('pune_auth_token');
   localStorage.removeItem('pune_user_name');
   localStorage.removeItem('pune_user_bio');
@@ -67,21 +100,38 @@ export const fetchPlaces = async (params = {}) => {
   if (params.isDiscovered) query.append('isDiscovered', 'true');
   
   const url = `${API_BASE_URL}/places?${query.toString()}`;
+  const cached = getCached(url);
+  if (cached) return cached;
+
   const response = await fetch(url, { headers: getHeaders() });
   if (!response.ok) throw new Error('Failed to fetch places');
-  return response.json();
+  const data = await response.json();
+  setCache(url, data);
+  return data;
 };
 
 export const fetchEvents = async () => {
-  const response = await fetch(`${API_BASE_URL}/events`, { headers: getHeaders() });
+  const cacheKey = `${API_BASE_URL}/events`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
+  const response = await fetch(cacheKey, { headers: getHeaders() });
   if (!response.ok) throw new Error('Failed to fetch events');
-  return response.json();
+  const data = await response.json();
+  setCache(cacheKey, data);
+  return data;
 };
 
 export const fetchItinerary = async () => {
-  const response = await fetch(`${API_BASE_URL}/itinerary`, { headers: getHeaders() });
+  const cacheKey = `${API_BASE_URL}/itinerary`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
+  const response = await fetch(cacheKey, { headers: getHeaders() });
   if (!response.ok) throw new Error('Failed to fetch itinerary');
-  return response.json();
+  const data = await response.json();
+  setCache(cacheKey, data);
+  return data;
 };
 
 export const updateStopStatus = async (id, done) => {
@@ -91,6 +141,7 @@ export const updateStopStatus = async (id, done) => {
     body: JSON.stringify({ done })
   });
   if (!response.ok) throw new Error('Failed to update stop status');
+  clearApiCache('http');
   return response.json();
 };
 
@@ -101,6 +152,7 @@ export const addStopToItinerary = async (stopData) => {
     body: JSON.stringify(stopData)
   });
   if (!response.ok) throw new Error('Failed to add stop');
+  clearApiCache('http');
   return response.json();
 };
 
@@ -110,6 +162,7 @@ export const deleteStopFromItinerary = async (id) => {
     headers: getHeaders()
   });
   if (!response.ok) throw new Error('Failed to delete stop');
+  clearApiCache('http');
   return response.json();
 };
 
@@ -120,13 +173,20 @@ export const toggleSavePlace = async (id, isSaved) => {
     body: JSON.stringify({ isSaved })
   });
   if (!response.ok) throw new Error('Failed to toggle save status');
+  clearApiCache('http');
   return response.json();
 };
 
 export const fetchUserStats = async () => {
-  const response = await fetch(`${API_BASE_URL}/user/stats`, { headers: getHeaders() });
+  const cacheKey = `${API_BASE_URL}/user/stats`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
+  const response = await fetch(cacheKey, { headers: getHeaders() });
   if (!response.ok) throw new Error('Failed to fetch user stats');
-  return response.json();
+  const data = await response.json();
+  setCache(cacheKey, data);
+  return data;
 };
 
 export const optimizeItinerary = async (itineraryDayId, mode) => {
@@ -136,6 +196,7 @@ export const optimizeItinerary = async (itineraryDayId, mode) => {
     body: JSON.stringify({ itineraryDayId, mode })
   });
   if (!response.ok) throw new Error('Failed to optimize itinerary');
+  clearApiCache('http');
   return response.json();
 };
 
@@ -146,13 +207,20 @@ export const generateItinerary = async (generationParams) => {
     body: JSON.stringify(generationParams)
   });
   if (!response.ok) throw new Error('Failed to generate itinerary');
+  clearApiCache('http');
   return response.json();
 };
 
 export const fetchWeather = async () => {
-  const response = await fetch(`${API_BASE_URL}/weather`, { headers: getHeaders() });
+  const cacheKey = `${API_BASE_URL}/weather`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
+  const response = await fetch(cacheKey, { headers: getHeaders() });
   if (!response.ok) throw new Error('Failed to fetch weather status');
-  return response.json();
+  const data = await response.json();
+  setCache(cacheKey, data);
+  return data;
 };
 
 export const toggleWeather = async () => {
@@ -161,6 +229,7 @@ export const toggleWeather = async () => {
     headers: getHeaders()
   });
   if (!response.ok) throw new Error('Failed to toggle weather status');
+  clearApiCache('http');
   return response.json();
 };
 
@@ -171,5 +240,6 @@ export const adaptItineraryForWeather = async (itineraryDayId, userLanguage) => 
     body: JSON.stringify({ itineraryDayId, userLanguage })
   });
   if (!response.ok) throw new Error('Failed to adapt itinerary for weather');
+  clearApiCache('http');
   return response.json();
 };

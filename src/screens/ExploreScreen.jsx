@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import StatusBar from "../components/StatusBar";
 import PlaceListItem from "../components/PlaceListItem";
 import { categories } from "../data/puneData";
@@ -56,19 +56,21 @@ export default function ExploreScreen({ onPlaceSelect, initialParams = {}, userL
     return () => clearTimeout(timeoutId);
   }, [activeFilter, search]);
 
-  const filteredAndSortedPlaces = [...places]
-    .filter(p => {
-      if (onlyAccessible && !p.accessible) return false;
-      if (onlyTopRated && p.rating < 4.5) return false;
-      if (priceFilter === "Free" && p.entryFee !== "Free" && p.entryFee !== "—") return false;
-      if (priceFilter === "Paid" && (p.entryFee === "Free" || p.entryFee === "—")) return false;
-      return true;
-    })
-    .sort((a, b) => {
-      if (sortBy === "rating") return b.rating - a.rating;
-      if (sortBy === "name") return a.name.localeCompare(b.name);
-      return 0;
-    });
+  const filteredAndSortedPlaces = useMemo(() => {
+    return [...places]
+      .filter(p => {
+        if (onlyAccessible && !p.accessible) return false;
+        if (onlyTopRated && p.rating < 4.5) return false;
+        if (priceFilter === "Free" && p.entryFee !== "Free" && p.entryFee !== "—") return false;
+        if (priceFilter === "Paid" && (p.entryFee === "Free" || p.entryFee === "—")) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === "rating") return b.rating - a.rating;
+        if (sortBy === "name") return a.name.localeCompare(b.name);
+        return 0;
+      });
+  }, [places, onlyAccessible, onlyTopRated, priceFilter, sortBy]);
 
   if (loading && places.length === 0) {
     return (
