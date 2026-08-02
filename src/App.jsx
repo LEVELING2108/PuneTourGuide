@@ -5,7 +5,6 @@ import MapScreen from "./screens/MapScreen";
 import PlanScreen from "./screens/PlanScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import PlaceDetailScreen from "./screens/PlaceDetailScreen";
-import AuthScreen from "./screens/AuthScreen";
 import BottomNav from "./components/BottomNav";
 import { useUserLocation } from "./hooks/useUserLocation";
 import { logoutUser, fetchWeather, toggleWeather } from "./data/api";
@@ -19,9 +18,8 @@ export default function App() {
   const [weatherData, setWeatherData] = useState({ weather: "Sunny", temp: 32 });
   
   const [user, setUser] = useState(() => {
-    const token = localStorage.getItem("pune_auth_token");
-    const name = localStorage.getItem("pune_user_name");
-    return token ? { name } : null;
+    const name = localStorage.getItem("pune_user_name") || "Explorer";
+    return { name };
   });
 
   useEffect(() => {
@@ -29,18 +27,16 @@ export default function App() {
   }, [userLanguage]);
 
   useEffect(() => {
-    if (user) {
-      const loadWeather = async () => {
-        try {
-          const data = await fetchWeather();
-          setWeatherData(data);
-        } catch (err) {
-          console.error("Failed to load initial weather:", err);
-        }
-      };
-      loadWeather();
-    }
-  }, [user]);
+    const loadWeather = async () => {
+      try {
+        const data = await fetchWeather();
+        setWeatherData(data);
+      } catch (err) {
+        console.error("Failed to load initial weather:", err);
+      }
+    };
+    loadWeather();
+  }, []);
 
   const handleWeatherToggle = async () => {
     try {
@@ -68,7 +64,7 @@ export default function App() {
 
   const handleLogout = () => {
     logoutUser();
-    setUser(null);
+    setUser({ name: "Explorer" });
     setActiveTab("home");
   };
 
@@ -90,33 +86,6 @@ export default function App() {
         return <HomeScreen onPlaceSelect={handlePlaceSelect} onSearchClick={handleSearchClick} userLocation={userLocation} userLanguage={userLanguage} weatherData={weatherData} onWeatherToggle={handleWeatherToggle} />;
     }
   };
-
-  if (!user) {
-    return (
-      <div className="flex justify-center items-stretch sm:items-start min-h-screen bg-white sm:bg-gray-100 sm:py-8">
-        <div
-          className="relative bg-[#FBF8F3] overflow-hidden flex flex-col w-full h-[100dvh] sm:h-auto sm:w-[375px] sm:min-h-[812px] sm:rounded-[40px] sm:border-2 sm:border-[#D1CBC0]"
-          style={{
-            fontFamily: "'Inter', sans-serif",
-          }}
-        >
-          {/* Notch - hidden on mobile device screens */}
-          <div
-            className="mx-auto z-10 hidden sm:block"
-            style={{
-              width: 126,
-              height: 28,
-              background: "#1a1a1a",
-              borderRadius: "0 0 18px 18px",
-            }}
-          />
-          <div className="flex-1 relative overflow-hidden">
-            <AuthScreen onAuthSuccess={setUser} userLanguage={userLanguage} setUserLanguage={setUserLanguage} />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex justify-center items-stretch sm:items-start min-h-screen bg-white sm:bg-gray-100 sm:py-8">
