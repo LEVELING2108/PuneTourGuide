@@ -1,6 +1,6 @@
 # 🏰 Pune Explorer
 
-A modern, high-performance tour guide application for Pune, featuring an interactive map, dynamic itineraries, auto-discovery caching, and gamification.
+A modern, high-performance tour guide web application for Pune, featuring interactive maps, dynamic itinerary planning, OpenStreetMap auto-discovery, weather-adaptive routing, and gamification.
 
 ---
 
@@ -16,60 +16,143 @@ A modern, high-performance tour guide application for Pune, featuring an interac
 [![Docker](https://img.shields.io/badge/Docker-%230db7ed.svg?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vite.dev/)
 [![PWA Ready](https://img.shields.io/badge/PWA-Ready-FF6F00?style=flat-square&logo=progressive-web-apps&logoColor=white)](#)
-[![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployed-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com)
-[![Render Backend](https://img.shields.io/badge/Render-Active-46E3B7?style=flat-square&logo=render&logoColor=white)](https://render.com)
 
 ---
 
 ## ✨ Core Features
 
-* **🔑 User Authentication (JWT & Hashed Passwords):** Full registration and login screen (localized in English/Marathi). JWT bearer tokens protect user data, and new registrations are pre-seeded with custom Day 1 & Day 2 tourist itineraries.
-* **⚡ Route Sequence Optimization (OSRM Trip API):** Solves the Traveling Salesperson Problem (TSP) on the fly for your active stops. Clicking **Optimize Route ⚡** sorts stops in the database by their physically shortest route (keeping the first stop fixed).
-* **⛶ Immersive Map UI/UX:** Features a floating expand/collapse button to scale the map to full layout height, numbered pin badges (`①`, `②`, `③`) for stops, and flowing polyline animation showing travel direction.
-* **📋 Collapsible Turn-by-Turn Directions:** Displays turn-by-turn routing steps from OSRM directly in a scrollable list inside the app, complete with English/Marathi translations.
-* **🏆 Persistent Gamification:** User profiles save and track XP (completed stops award `+50 XP`, bookmarking a place awards `+10 XP`) persisting in the PostgreSQL database.
-* **🌲 OSM Discovery & Caching:** Queries OpenStreetMap (Overpass API) to automatically populate new coordinates, throttled by a 5-minute Redis cooldown cache per query to protect API rate limits.
-* **📱 Progressive Web App (PWA) Support:** Configured for offline use with a robust `stale-while-revalidate` service worker cache, custom terracotta & gold brand launcher icons, and standalone full-screen mobile app layout.
-* **🌐 Dual-Language Support:** Fully localized English and Marathi (मराठी) translation support.
-
+* **📱 Immediate Dashboard Access:** Direct entry to the main dashboard without mandatory authentication barriers.
+* **⚡ Route Sequence Optimization (OSRM Trip API):** Solves the Traveling Salesperson Problem (TSP) on the fly for active itinerary stops, ordering them by the shortest physical distance.
+* **⛶ Interactive Map UI/UX:** Full-screen Leaflet integration with customizable pin badges (`①`, `②`, `③`), category filtering, and turn-by-turn routing polylines.
+* **📋 Turn-by-Turn Routing & Directions:** Step-by-step navigation instructions from OSRM displayed directly inside the app, localized in 15+ languages.
+* **🏆 Persistent Gamification & Punekar Levels:** Tracks XP (`+50 XP` per stop, `+10 XP` per saved spot) and ranks users with titles such as *Navin Punekar*, *Shiledar*, and *Puneri Legend*.
+* **🌲 OpenStreetMap (OSRM & Overpass) Sourcing:** Queries live tourist destinations (Heritage, Nature, Temple, Food, Wellness) with strict negative filtering against non-tourist locations.
+* **📱 Progressive Web App (PWA) Support:** Service worker caching, offline capability, standalone mobile app layout, and brand icons.
+* **🌐 Multilingual Localization:** Full translation support for English, Marathi (मराठी), Hindi, Gujarati, Tamil, Telugu, and 9+ regional languages.
 
 ---
 
-## 🚀 Setup & Execution
+## 🛠️ Local Setup Guide
 
-### 1. Database & Cache Services
-Spin up PostgreSQL (with PostGIS) and Redis in Docker:
+Follow these steps to run Pune Explorer locally on your development machine.
+
+### 📋 Prerequisites
+
+Ensure you have the following installed on your system:
+- **Node.js** (v18.0 or higher) & **npm**
+- **PostgreSQL** database (v14+ recommended, with PostGIS extension for spatial queries)
+- **Redis** server (optional, used for Overpass API rate-limit caching)
+- **Git**
+
+---
+
+### 1️⃣ Clone the Repository
+
 ```bash
-docker-compose up -d
+git clone https://github.com/LEVELING2108/PuneTourGuide.git
+cd "Pune Tour Guide"
 ```
 
-### 2. Run Backend API
-Create `backend/.env` file:
+---
+
+### 2️⃣ Environment Variables Setup
+
+#### **Backend (`backend/.env`)**
+Create a `.env` file inside the `backend/` directory:
+
 ```env
-DATABASE_URL="postgresql://postgres:Pune%400804@localhost:5432/Pune_Tour_Guide?schema=public"
+# Database connection string (PostgreSQL with PostGIS)
+DATABASE_URL="postgresql://postgres:your_password@localhost:5432/pune_tour_guide?schema=public"
+
+# Server Port
 PORT=3001
+
+# Secret key for JWT signing
 JWT_SECRET="pune_explorer_super_secret_key"
+
+# Redis connection URL (optional for caching)
 REDIS_URL="redis://127.0.0.1:6379"
 ```
-Install dependencies, run migrations, and start the development server:
-```bash
-cd backend
-npm install
-npx prisma migrate dev --name init
-npx ts-node src/seed.ts
-npm run dev
-```
 
-### 3. Run Frontend Web App
-Configure root `.env` environment variables:
+#### **Frontend (`.env`)**
+Create a `.env` file in the root project directory:
+
 ```env
+# API URL pointing to the local Node/Express server
 VITE_API_BASE_URL=http://localhost:3001/api
 ```
-Install dependencies and run the Vite dev server:
+
+---
+
+### 3️⃣ Backend Setup & Database Migration
+
+Navigate to the backend directory, install dependencies, run Prisma migrations, and seed initial data:
+
 ```bash
+# Navigate to backend
+cd backend
+
+# Install node dependencies
 npm install
+
+# Generate Prisma Client & Run Database Migrations
+npx prisma generate
+npx prisma migrate dev --name init
+
+# Seed database with initial tourist places, events, and default itineraries
+npx ts-node src/seed.ts
+
+# Start backend server in development mode (with nodemon)
 npm run dev
 ```
 
-* **Frontend Port:** `http://localhost:5173/`
-* **Backend API Port:** `http://localhost:3001/`
+*The backend server will run on `http://localhost:3001`.*
+
+---
+
+### 4️⃣ Frontend Setup & Execution
+
+Open a new terminal window in the project root directory and start the Vite dev server:
+
+```bash
+# From project root directory
+npm install
+
+# Start Vite dev server
+npm run dev
+```
+
+*The frontend application will open on `http://localhost:5173`.*
+
+---
+
+### 5️⃣ Quick Verification & Scripts
+
+You can also run all-in-one scripts from the root directory:
+
+| Command | Description |
+| :--- | :--- |
+| `npm run dev` | Starts Vite frontend dev server |
+| `npm run build` | Builds production frontend bundle (`dist/`) |
+| `npm run build:backend` | Compiles backend TypeScript to JavaScript (`backend/dist/`) |
+| `npm run build:all` | Installs, generates Prisma client, and builds both backend & frontend |
+| `npm run prisma:generate` | Generates Prisma client inside `backend/` |
+| `npm run prisma:deploy` | Deploys Prisma migrations to database |
+
+---
+
+## 🌐 API Ports & Services Summary
+
+| Component | URL / Address | Description |
+| :--- | :--- | :--- |
+| **Frontend Web App** | `http://localhost:5173` | React 18 + Vite local UI |
+| **Backend Express API** | `http://localhost:3001/api` | REST API Endpoints |
+| **PostgreSQL Database** | `localhost:5432` | Main database (`pune_tour_guide`) |
+| **Redis Cache** | `localhost:6379` | Key-value store (prefix `places:v5:`) |
+
+---
+
+## 📜 License & Sourcing
+
+- **Map & Geocoding Data:** [OpenStreetMap](https://www.openstreetmap.org/) via Overpass API & OSRM.
+- **Project License:** Open-source under ISC License.
