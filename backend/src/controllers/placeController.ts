@@ -1,10 +1,24 @@
 import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import { PrismaClient } from '@prisma/client';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../config/jwt';
 import { searchOSMPlaces, fetchOSMPlacesByCategory } from '../services/overpassService';
 import { getCachedData, setCachedData, invalidateCache } from '../services/cacheService';
 
 const prisma = new PrismaClient();
+
+const getOptionalUserId = (req: Request): number | null => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: number; email: string };
+    return decoded.id;
+  } catch {
+    return null;
+  }
+};
 
 const saveDiscoveredPlaces = async (discoveredPlaces: any[]) => {
   if (discoveredPlaces.length === 0) return;
@@ -36,77 +50,96 @@ const saveDiscoveredPlaces = async (discoveredPlaces: any[]) => {
 export const getAllPlaces = async (req: Request, res: Response) => {
   try {
     const { category, q, isSaved, isDiscovered } = req.query;
-    
-    // Generate a unique cache key based on query parameters
-    const cacheKey = `places:v5:${category || 'all'}:${q || 'none'}:${isSaved || 'any'}:${isDiscovered || 'any'}`;
-    
-    // Check cache first
-    const cachedPlaces = await getCachedData<any[]>(cacheKey);
-    if (cachedPlaces) {
-      console.log('Serving from Redis cache:', cacheKey);
-      return res.json(cachedPlaces);
-    }
+    const currentUserId = getOptionalUserId(req);
 
-    let where: any = {};
-    
-    if (category && category !== 'All') {
-      where.category = String(category);
-    }
-    
-    if (q) {
-      where.OR = [
-        { name: { contains: String(q), mode: 'insensitive' } },
-        { description: { contains: String(q), mode: 'insensitive' } }
-      ];
-    }
-    
+    // 1. User-scoped bookmarks request: Never share or contaminate global catalog cache
     if (isSaved === 'true') {
-      where.isSaved = true;
-    }
+      if (!currentUserId) {
+        return res.json([]);
+      }
 
-    if (isDiscovered === 'true') {
-      where.NOT = { osmId: null };
+      const userSavedRecords = await prisma.userSavedPlace.findMany({
+        where: { userId: currentUserId },
+        include: { place: true },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      const savedPlaces = userSavedRecords.map((record) => ({
+        ...record.place,
+        isSaved: true
+      }));
+
+      return res.json(savedPlaces);
     }
     
-    let places = await prisma.place.findMany({
-      where,
-      orderBy: { rating: 'desc' }
-    });
+    // 2. Global Catalog Cache Key (independent of user bookmark mutations)
+    const cacheKey = `places:v5:${category || 'all'}:${q || 'none'}:${isDiscovered || 'any'}`;
+    
+    // Check cache first for catalog queries
+    let places = await getCachedData<any[]>(cacheKey);
+    if (!places) {
+      let where: any = {};
+      
+      if (category && category !== 'All') {
+        where.category = String(category);
+      }
+      
+      if (q) {
+        where.OR = [
+          { name: { contains: String(q), mode: 'insensitive' } },
+          { description: { contains: String(q), mode: 'insensitive' } }
+        ];
+      }
+
+      if (isDiscovered === 'true') {
+        where.NOT = { osmId: null };
+      }
+      
+      places = await prisma.place.findMany({
+        where,
+        orderBy: { rating: 'desc' }
+      });
+
+      // Cache raw catalog results for 1 hour
+      if (places.length > 0) {
+        await setCachedData(cacheKey, places, 3600);
+      }
+    }
 
     // Auto-Discovery Logic: If search query provided and few results - run in background
-    if (q && places.length < 5 && !isSaved) {
+    if (q && places.length < 5) {
       searchOSMPlaces(String(q))
         .then(discovered => saveDiscoveredPlaces(discovered))
         .catch(err => console.error('Background search discovery error:', err));
     }
 
     // Category Population Logic: Ensure at least 10 places in a category - run in background
-    if (category && category !== 'All' && places.length < 10 && !q && !isSaved) {
+    if (category && category !== 'All' && places.length < 10 && !q) {
       console.log(`Low count for category ${category} (${places.length}). Hydrating in background...`);
       fetchOSMPlacesByCategory(String(category))
         .then(discovered => saveDiscoveredPlaces(discovered))
         .catch(err => console.error('Background category discovery error:', err));
     }
 
-    // Nearby search enhancement: If user coordinates are provided, sort by real physical distance using PostGIS
-    const { lat, lng } = req.query;
-    if (lat && lng && places.length > 0) {
-      // Use raw SQL to get places sorted by PostGIS distance
-      const nearbyPlaces: any[] = await prisma.$queryRaw`
-        SELECT *, ST_DistanceSphere(location, ST_SetSRID(ST_MakePoint(${Number(lng)}, ${Number(lat)}), 4326)) as "dist"
-        FROM "Place"
-        WHERE "category" = ${category && category !== 'All' ? category : "Heritage"} -- example filter logic
-        ORDER BY "dist" ASC
-        LIMIT 10
-      `;
-      // Note: This is a specialized nearby query. For now, we'll keep the standard return
-      // but the database is now ready for high-perf nearby searches.
+    // 3. User bookmark personalization in-memory
+    let userSavedPlaceIds = new Set<number>();
+    if (currentUserId && places.length > 0) {
+      const userSaves = await prisma.userSavedPlace.findMany({
+        where: {
+          userId: currentUserId,
+          placeId: { in: places.map(p => p.id) }
+        },
+        select: { placeId: true }
+      });
+      userSavedPlaceIds = new Set(userSaves.map(s => s.placeId));
     }
 
-    // Save to cache for 1 hour
-    await setCachedData(cacheKey, places, 3600);
+    const decoratedPlaces = places.map(p => ({
+      ...p,
+      isSaved: userSavedPlaceIds.has(p.id)
+    }));
 
-    res.json(places);
+    res.json(decoratedPlaces);
   } catch (error) {
     console.error('Error in getAllPlaces:', error);
     res.status(500).json({ error: 'Failed to fetch places' });
@@ -116,18 +149,35 @@ export const getAllPlaces = async (req: Request, res: Response) => {
 export const getPlaceById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const currentUserId = getOptionalUserId(req);
     const cacheKey = `place:detail:${id}`;
 
-    const cachedPlace = await getCachedData<any>(cacheKey);
-    if (cachedPlace) return res.json(cachedPlace);
+    let place = await getCachedData<any>(cacheKey);
+    if (!place) {
+      place = await prisma.place.findUnique({
+        where: { id: Number(id) }
+      });
+      if (!place) return res.status(404).json({ error: 'Place not found' });
+      await setCachedData(cacheKey, place, 3600);
+    }
 
-    const place = await prisma.place.findUnique({
-      where: { id: Number(id) }
+    let isSavedForUser = false;
+    if (currentUserId) {
+      const userSave = await prisma.userSavedPlace.findUnique({
+        where: {
+          userId_placeId: {
+            userId: currentUserId,
+            placeId: Number(id)
+          }
+        }
+      });
+      isSavedForUser = Boolean(userSave);
+    }
+
+    res.json({
+      ...place,
+      isSaved: isSavedForUser
     });
-    if (!place) return res.status(404).json({ error: 'Place not found' });
-
-    await setCachedData(cacheKey, place, 3600);
-    res.json(place);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch place' });
   }
@@ -142,37 +192,60 @@ export const toggleSavePlace = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const { isSaved } = req.body;
     const userId = req.user.id;
+    const placeId = Number(id);
 
-    // Check current save state to award XP only on new saves
     const place = await prisma.place.findUnique({
-      where: { id: Number(id) }
+      where: { id: placeId }
     });
 
     if (!place) {
       return res.status(404).json({ error: 'Place not found' });
     }
 
-    const justSaved = Boolean(isSaved) && !place.isSaved;
-
-    const updatedPlace = await prisma.place.update({
-      where: { id: Number(id) },
-      data: { isSaved: Boolean(isSaved) }
+    const shouldSave = Boolean(isSaved);
+    const existingSave = await prisma.userSavedPlace.findUnique({
+      where: {
+        userId_placeId: {
+          userId,
+          placeId
+        }
+      }
     });
 
-    if (justSaved) {
+    if (shouldSave && !existingSave) {
+      await prisma.userSavedPlace.create({
+        data: {
+          userId,
+          placeId
+        }
+      });
+
+      // Award XP (+10 XP) for new user bookmark
       await prisma.user.update({
         where: { id: userId },
         data: { xp: { increment: 10 } }
       });
       console.log(`[XP] User ${userId} gained +10 XP for saving place: ${place.name}`);
+    } else if (!shouldSave && existingSave) {
+      await prisma.userSavedPlace.delete({
+        where: {
+          userId_placeId: {
+            userId,
+            placeId
+          }
+        }
+      });
     }
 
-    // Invalidate relevant caches
-    await invalidateCache('places:*');
-    await invalidateCache(`place:detail:${id}`);
+    // Invalidate single place detail cache only (never purge entire catalog cache)
+    await invalidateCache(`place:detail:${placeId}`);
 
-    res.json(updatedPlace);
+    res.json({
+      ...place,
+      isSaved: shouldSave
+    });
   } catch (error) {
+    console.error('Failed to toggle save status:', error);
     res.status(500).json({ error: 'Failed to toggle save status' });
   }
 };
