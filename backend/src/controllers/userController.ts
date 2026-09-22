@@ -3,9 +3,9 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { AuthRequest } from '../middleware/auth';
+import { JWT_SECRET } from '../config/jwt';
 
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'pune_tour_guide_secret_key';
 
 export const registerUser = async (req: Request, res: Response) => {
   try {

@@ -134,7 +134,7 @@ const parseVisitTime = (time) => {
   return 1; // default fallback 1 hour
 };
 
-export default function PlanScreen({ userLocation, userLanguage, weatherData, onWeatherToggle }) {
+export default function PlanScreen({ userLocation, userLanguage, weatherData, onWeatherToggle, onOpenAuth, user }) {
   const [activeDay, setActiveDay] = useState(0);
   const [itineraryDays, setItineraryDays] = useState([]);
   const [places, setPlaces] = useState([]);
@@ -166,13 +166,14 @@ export default function PlanScreen({ userLocation, userLanguage, weatherData, on
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
+      const token = localStorage.getItem("pune_auth_token");
       try {
         const [itineraryData, placesData] = await Promise.all([
-          fetchItinerary(),
+          token ? fetchItinerary().catch(() => []) : Promise.resolve([]),
           fetchPlaces()
         ]);
-        setItineraryDays(itineraryData);
-        setPlaces(placesData);
+        setItineraryDays(itineraryData || []);
+        setPlaces(placesData || []);
       } catch (error) {
         console.error("Failed to load plan screen data:", error);
       } finally {
@@ -180,7 +181,7 @@ export default function PlanScreen({ userLocation, userLanguage, weatherData, on
       }
     };
     loadData();
-  }, []);
+  }, [user]);
 
   const hasOutdoorStops = (day) => {
     if (!day || !Array.isArray(day.stops)) return false;
@@ -398,9 +399,38 @@ export default function PlanScreen({ userLocation, userLanguage, weatherData, on
   }
 
   if (itineraryDays.length === 0) {
+    const token = localStorage.getItem("pune_auth_token");
     return (
-      <div style={{ background: "#FBF8F3", minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ color: "#8B3A2A", fontWeight: 600 }}>{userLanguage === "Marathi" ? "सहलीचा कार्यक्रम सापडला नाही." : "No itinerary found."}</div>
+      <div style={{ background: "#FBF8F3", minHeight: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24, textAlign: "center" }}>
+        <div style={{ fontSize: 44, marginBottom: 12 }}>🚩</div>
+        <div style={{ color: "#1C1412", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>
+          {token
+            ? (userLanguage === "Marathi" ? "सहलीचा कार्यक्रम सापडला नाही." : "No itinerary found.")
+            : (userLanguage === "Marathi" ? "आपली पुणे सहल नियोजित करा" : "Plan Your Pune Journey")}
+        </div>
+        <p style={{ color: "#6B5B52", fontSize: 13, maxWidth: 280, marginBottom: 20, lineHeight: 1.5 }}>
+          {token
+            ? (userLanguage === "Marathi" ? "सहल तयार करण्यासाठी थांबे जोडा किंवा AI प्लॅनर वापरा." : "Add stops to your plan or use the AI planner to craft your itinerary.")
+            : (userLanguage === "Marathi" ? "आपले आवडते थांबे सेव्ह करण्यासाठी आणि AI द्वारे सहल आखण्यासाठी लॉगिन करा." : "Log in or register to create custom AI itineraries, save stops, and track your trip progress.")}
+        </p>
+        {!token && onOpenAuth && (
+          <button
+            onClick={onOpenAuth}
+            style={{
+              background: "#8B3A2A",
+              color: "#fff",
+              border: "none",
+              borderRadius: 12,
+              padding: "10px 24px",
+              fontWeight: 700,
+              fontSize: 13,
+              cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(139, 58, 42, 0.2)"
+            }}
+          >
+            {userLanguage === "Marathi" ? "लॉगिन / नोंदणी करा 🚩" : "Log In / Register 🚩"}
+          </button>
+        )}
       </div>
     );
   }

@@ -73,7 +73,7 @@ const authTranslations = {
   }
 };
 
-export default function AuthScreen({ onAuthSuccess, userLanguage, setUserLanguage }) {
+export default function AuthScreen({ onAuthSuccess, userLanguage, setUserLanguage, onClose }) {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -117,6 +117,31 @@ export default function AuthScreen({ onAuthSuccess, userLanguage, setUserLanguag
   return (
     <div style={{ background: "#FBF8F3", height: "100%", display: "flex", flexDirection: "column", justifyCenter: "center", justifyContent: "center", padding: 24, position: "relative" }}>
       <StatusBar light={false} />
+
+      {onClose && (
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: 16,
+            left: 16,
+            background: "#EDE8DF",
+            border: "none",
+            borderRadius: "50%",
+            width: 32,
+            height: 32,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            fontSize: 14,
+            color: "#6B5B52"
+          }}
+          title="Continue as Guest"
+        >
+          ✕
+        </button>
+      )}
 
       {/* Language Switcher */}
       <div style={{ position: "absolute", top: 16, right: 16, display: "inline-flex", background: "#EDE8DF", borderRadius: 10, padding: 3 }}>
@@ -278,6 +303,25 @@ export default function AuthScreen({ onAuthSuccess, userLanguage, setUserLanguag
           </>
         )}
       </div>
+
+      {onClose && (
+        <div style={{ textAlign: "center", marginTop: 14 }}>
+          <button
+            onClick={onClose}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#8B3A2A",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              textDecoration: "underline"
+            }}
+          >
+            {userLanguage === "Marathi" ? "लॉगिन न करता पुढे जा (अतिथी)" : "Continue as Guest Explorer"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

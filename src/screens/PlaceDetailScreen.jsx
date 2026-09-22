@@ -4,7 +4,7 @@ import { addStopToItinerary, toggleSavePlace, fetchItinerary } from "../data/api
 import { calculateDistance, formatDistance } from "../utils/location";
 import { translations } from "../data/translations";
 
-export default function PlaceDetailScreen({ place, onBack, userLocation, userLanguage }) {
+export default function PlaceDetailScreen({ place, onBack, userLocation, userLanguage, onOpenAuth, user }) {
   const [isSaved, setIsSaved] = useState(place?.isSaved || false);
 
   if (!place) return null;
@@ -16,6 +16,11 @@ export default function PlaceDetailScreen({ place, onBack, userLocation, userLan
     : null;
 
   const handleToggleSave = async () => {
+    const token = localStorage.getItem("pune_auth_token");
+    if (!token) {
+      if (onOpenAuth) onOpenAuth();
+      return;
+    }
     try {
       const updated = await toggleSavePlace(place.id, !isSaved);
       setIsSaved(updated.isSaved);
@@ -28,6 +33,11 @@ export default function PlaceDetailScreen({ place, onBack, userLocation, userLan
   const [isAdded, setIsAdded] = useState(false);
 
   const handleAddToItinerary = async () => {
+    const token = localStorage.getItem("pune_auth_token");
+    if (!token) {
+      if (onOpenAuth) onOpenAuth();
+      return;
+    }
     if (isAdding) return;
     setIsAdding(true);
     try {
