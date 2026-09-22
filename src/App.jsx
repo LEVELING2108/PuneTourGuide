@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import HomeScreen from "./screens/HomeScreen";
 import BottomNav from "./components/BottomNav";
+import AuthScreen from "./screens/AuthScreen";
 import { useUserLocation } from "./hooks/useUserLocation";
 import { logoutUser, fetchWeather, toggleWeather } from "./data/api";
 
@@ -17,10 +18,12 @@ export default function App() {
   const { location: userLocation } = useUserLocation();
   const [userLanguage, setUserLanguage] = useState(() => localStorage.getItem("pune_user_lang") || "English");
   const [weatherData, setWeatherData] = useState({ weather: "Sunny", temp: 32 });
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   
   const [user, setUser] = useState(() => {
+    const token = localStorage.getItem("pune_auth_token");
     const name = localStorage.getItem("pune_user_name") || "Explorer";
-    return { name };
+    return token ? { name, token } : null;
   });
 
   useEffect(() => {
@@ -65,8 +68,21 @@ export default function App() {
 
   const handleLogout = () => {
     logoutUser();
-    setUser({ name: "Explorer" });
+    setUser(null);
     setActiveTab("home");
+  };
+
+  const handleOpenAuth = () => {
+    setIsAuthModalOpen(true);
+  };
+
+  const handleAuthSuccess = (userData) => {
+    setUser({
+      name: userData?.name || localStorage.getItem("pune_user_name") || "Explorer",
+      email: userData?.email,
+      token: localStorage.getItem("pune_auth_token")
+    });
+    setIsAuthModalOpen(false);
   };
 
   const renderScreen = () => {
@@ -78,11 +94,11 @@ export default function App() {
       case "map":
         return <MapScreen userLocation={userLocation} userLanguage={userLanguage} weatherData={weatherData} />;
       case "plan":
-        return <PlanScreen userLocation={userLocation} userLanguage={userLanguage} weatherData={weatherData} onWeatherToggle={handleWeatherToggle} />;
+        return <PlanScreen userLocation={userLocation} userLanguage={userLanguage} weatherData={weatherData} onWeatherToggle={handleWeatherToggle} onOpenAuth={handleOpenAuth} user={user} />;
       case "profile":
-        return <ProfileScreen onPlaceSelect={handlePlaceSelect} userLocation={userLocation} userLanguage={userLanguage} setUserLanguage={setUserLanguage} onLogout={handleLogout} />;
+        return <ProfileScreen onPlaceSelect={handlePlaceSelect} userLocation={userLocation} userLanguage={userLanguage} setUserLanguage={setUserLanguage} onLogout={handleLogout} onOpenAuth={handleOpenAuth} user={user} />;
       case "detail":
-        return <PlaceDetailScreen place={selectedPlace} onBack={handleBack} userLocation={userLocation} userLanguage={userLanguage} />;
+        return <PlaceDetailScreen place={selectedPlace} onBack={handleBack} userLocation={userLocation} userLanguage={userLanguage} onOpenAuth={handleOpenAuth} user={user} />;
       default:
         return <HomeScreen onPlaceSelect={handlePlaceSelect} onSearchClick={handleSearchClick} userLocation={userLocation} userLanguage={userLanguage} weatherData={weatherData} onWeatherToggle={handleWeatherToggle} />;
     }
@@ -116,6 +132,18 @@ export default function App() {
           }>
             {renderScreen()}
           </Suspense>
+
+          {/* Auth Modal Overlay */}
+          {isAuthModalOpen && (
+            <div className="absolute inset-0 z-50 bg-[#FBF8F3]">
+              <AuthScreen
+                onAuthSuccess={handleAuthSuccess}
+                onClose={() => setIsAuthModalOpen(false)}
+                userLanguage={userLanguage}
+                setUserLanguage={setUserLanguage}
+              />
+            </div>
+          )}
         </div>
 
         {/* Bottom nav — hidden on detail screen */}

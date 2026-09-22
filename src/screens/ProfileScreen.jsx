@@ -23,10 +23,11 @@ const languageOptions = [
   { code: "Sanskrit", label: "संस्कृतम् (Sanskrit)" }
 ];
 
-export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguage, setUserLanguage, onLogout }) {
+export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguage, setUserLanguage, onLogout, onOpenAuth, user }) {
+  const token = localStorage.getItem("pune_auth_token");
   // User Personalization State
-  const [userName, setUserName] = useState(() => localStorage.getItem("pune_user_name") || "Sourav Paul");
-  const [userBio, setUserBio] = useState(() => localStorage.getItem("pune_user_bio") || "Local Guide · Pune Explorer");
+  const [userName, setUserName] = useState(() => localStorage.getItem("pune_user_name") || (token ? "Explorer" : (userLanguage === "Marathi" ? "अतिथी पुणेकर" : "Guest Explorer")));
+  const [userBio, setUserBio] = useState(() => localStorage.getItem("pune_user_bio") || (token ? "Local Guide · Pune Explorer" : (userLanguage === "Marathi" ? "पुणे दर्शन अतिथी" : "Exploring Pune's Rich Heritage")));
   const [userAvatar, setUserAvatar] = useState(() => localStorage.getItem("pune_user_avatar") || null);
   
   const [savedPlaces, setSavedPlaces] = useState([]);
@@ -46,11 +47,12 @@ export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguag
   useEffect(() => {
     const loadProfileData = async () => {
       setLoading(true);
+      const authToken = localStorage.getItem("pune_auth_token");
       try {
         const [savedData, discoveredData, statsData] = await Promise.all([
           fetchPlaces({ isSaved: true }),
           fetchPlaces({ isDiscovered: true }),
-          fetchUserStats()
+          authToken ? fetchUserStats().catch(() => ({ totalPoints: 0, savedCount: 0, completedStops: 0, discoveredCount: 0 })) : Promise.resolve({ totalPoints: 0, savedCount: 0, completedStops: 0, discoveredCount: 0 })
         ]);
         setSavedPlaces(savedData);
         setDiscoveredPlaces(discoveredData);
@@ -62,7 +64,7 @@ export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguag
       }
     };
     loadProfileData();
-  }, []);
+  }, [user]);
 
   const getPunekarLevel = (pts) => {
     if (pts >= 1000) return { title: userLanguage === "Marathi" ? "पुणेरी लिजेंड" : "PUNERI LEGEND", icon: "👑", rank: 5 };
@@ -422,32 +424,54 @@ export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguag
 
       {/* Footer */}
       <div style={{ padding: "24px 16px 40px", textAlign: "center", background: "#FBF8F3" }}>
-        <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-          <button 
-            onClick={() => {
-              setTempName(userName);
-              setTempBio(userBio);
-              setTempAvatar(userAvatar);
-              setTempLanguage(userLanguage);
-              setIsEditModalOpen(true);
-            }}
-            style={{ 
-              background: "none", border: `1px solid ${colors.stoneDark}`, borderRadius: 10,
-              padding: "8px 20px", fontSize: 12, fontWeight: 600, color: colors.inkMuted, cursor: "pointer"
-            }}
-          >
-            {t.editProfile}
-          </button>
-          <button 
-            onClick={onLogout}
-            style={{ 
-              background: "none", border: `1px solid ${colors.wadaRed}`, borderRadius: 10,
-              padding: "8px 20px", fontSize: 12, fontWeight: 600, color: colors.wadaRed, cursor: "pointer"
-            }}
-          >
-            {userLanguage === "Marathi" ? "लॉगआउट" : "Logout"}
-          </button>
-        </div>
+        {token ? (
+          <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+            <button 
+              onClick={() => {
+                setTempName(userName);
+                setTempBio(userBio);
+                setTempAvatar(userAvatar);
+                setTempLanguage(userLanguage);
+                setIsEditModalOpen(true);
+              }}
+              style={{ 
+                background: "none", border: `1px solid ${colors.stoneDark}`, borderRadius: 10,
+                padding: "8px 20px", fontSize: 12, fontWeight: 600, color: colors.inkMuted, cursor: "pointer"
+              }}
+            >
+              {t.editProfile}
+            </button>
+            <button 
+              onClick={onLogout}
+              style={{ 
+                background: "none", border: `1px solid ${colors.wadaRed}`, borderRadius: 10,
+                padding: "8px 20px", fontSize: 12, fontWeight: 600, color: colors.wadaRed, cursor: "pointer"
+              }}
+            >
+              {userLanguage === "Marathi" ? "लॉगआउट" : "Logout"}
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+            <p style={{ fontSize: 12, color: colors.inkMuted, maxWidth: 280, margin: "0 auto" }}>
+              {userLanguage === "Marathi" 
+                ? "आपले गुण आणि सेव्ह केलेली ठिकाणे सुरक्षित ठेवण्यासाठी लॉगिन करा." 
+                : "Log in or register to sync your bookmarks, record visited spots, and earn Punekar XP!"}
+            </p>
+            {onOpenAuth && (
+              <button 
+                onClick={onOpenAuth}
+                style={{ 
+                  background: colors.wadaRed, border: "none", borderRadius: 12,
+                  padding: "10px 24px", fontSize: 13, fontWeight: 700, color: "#fff", cursor: "pointer",
+                  boxShadow: "0 4px 12px rgba(139, 58, 42, 0.2)"
+                }}
+              >
+                {userLanguage === "Marathi" ? "लॉगिन / नोंदणी करा 🚩" : "Log In / Register 🚩"}
+              </button>
+            )}
+          </div>
+        )}
         <div style={{ fontSize: 10, color: colors.inkMuted, marginTop: 12 }}>
           {t.memberSince}
         </div>

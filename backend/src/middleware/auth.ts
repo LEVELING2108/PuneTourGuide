@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'pune_tour_guide_secret_key';
+import { JWT_SECRET } from '../config/jwt';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -14,8 +13,7 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    req.user = { id: 1, email: 'guest@punetourguide.com' };
-    return next();
+    return res.status(401).json({ error: 'Authorization token required' });
   }
 
   const token = authHeader.split(' ')[1];
@@ -25,7 +23,6 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
     req.user = decoded;
     next();
   } catch (error) {
-    req.user = { id: 1, email: 'guest@punetourguide.com' };
-    next();
+    return res.status(401).json({ error: 'Invalid or expired token' });
   }
 };
