@@ -98,15 +98,21 @@ export const fetchPlaces = async (params = {}) => {
   if (params.q) query.append('q', params.q);
   if (params.isSaved) query.append('isSaved', 'true');
   if (params.isDiscovered) query.append('isDiscovered', 'true');
+  if (params.bbox) query.append('bbox', params.bbox);
+  if (params.live) query.append('live', 'true');
   
   const url = `${API_BASE_URL}/places?${query.toString()}`;
-  const cached = getCached(url);
-  if (cached) return cached;
+  if (!params.live) {
+    const cached = getCached(url);
+    if (cached) return cached;
+  }
 
   const response = await fetch(url, { headers: getHeaders() });
   if (!response.ok) throw new Error('Failed to fetch places');
   const data = await response.json();
-  setCache(url, data);
+  if (!params.live) {
+    setCache(url, data);
+  }
   return data;
 };
 
