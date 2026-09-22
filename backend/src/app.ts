@@ -10,6 +10,7 @@ import eventRoutes from './routes/eventRoutes';
 import itineraryRoutes from './routes/itineraryRoutes';
 import userRoutes from './routes/userRoutes';
 import weatherRoutes from './routes/weatherRoutes';
+import { globalApiLimiter, authLimiter, aiGenerationLimiter } from './middleware/rateLimit';
 
 dotenv.config();
 
@@ -41,14 +42,36 @@ app.use(
   })
 );
 
-app.use(cors());
-app.use(express.json());
+const allowedOrigins = process.env.CLIENT_ORIGINS
+  ? process.env.CLIENT_ORIGINS.split(',').map((o) => o.trim())
+  : ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:5173'];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+        callback(null, true);
+      } else {
+        callback(new Error(`Origin ${origin} not allowed by CORS`));
+      }
+    },
+    credentials: true,
+  })
+);
+
+app.use(express.json({ limit: '1mb' }));
 
 // Request Logger Middleware
 app.use((req, res, next) => {
   console.log(`[API] ${req.method} ${req.path}`, req.body);
   next();
 });
+
+// Rate limiting middleware
+app.use('/api', globalApiLimiter);
+app.use('/api/user/login', authLimiter);
+app.use('/api/user/register', authLimiter);
+app.use('/api/itinerary/generate', aiGenerationLimiter);
 
 // Routes
 app.use('/api/places', placeRoutes);

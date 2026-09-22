@@ -74,12 +74,27 @@ const mapEmoji = (category: string): string => {
   }
 };
 
+/**
+ * Safely escapes user search queries for interpolation into Overpass QL regular expressions.
+ * Trims input, limits length to prevent ReDoS, and escapes Overpass and Regex metacharacters.
+ */
+export const escapeOverpassRegex = (input: string): string => {
+  if (!input || typeof input !== 'string') return '';
+  const trimmed = input.trim().slice(0, 80);
+  return trimmed.replace(/[\\^$*+?.()|[\]{}"']/g, '\\$&');
+};
+
 export const searchOSMPlaces = async (query: string): Promise<any[]> => {
-  const cooldownKey = `places:discovery:cooldown:search:${query.toLowerCase().trim()}`;
+  const sanitizedQuery = escapeOverpassRegex(query);
+  if (!sanitizedQuery) {
+    return [];
+  }
+
+  const cooldownKey = `places:discovery:cooldown:search:${sanitizedQuery.toLowerCase()}`;
   try {
     const isCooldownActive = await redis.get(cooldownKey);
     if (isCooldownActive) {
-      console.log(`[OSM] Discovery cooldown active for search query: ${query}. Skipping query.`);
+      console.log(`[OSM] Discovery cooldown active for search query: ${sanitizedQuery}. Skipping query.`);
       return [];
     }
     await redis.set(cooldownKey, 'true', 'EX', 300); // 5 min cooldown
@@ -90,12 +105,12 @@ export const searchOSMPlaces = async (query: string): Promise<any[]> => {
   const overpassQuery = `
     [out:json][timeout:25];
     (
-      node["name"~"${query}",i]["tourism"](${PUNE_BBOX});
-      node["name"~"${query}",i]["historic"](${PUNE_BBOX});
-      node["name"~"${query}",i]["amenity"~"restaurant|cafe|place_of_worship"](${PUNE_BBOX});
-      way["name"~"${query}",i]["tourism"](${PUNE_BBOX});
-      way["name"~"${query}",i]["historic"](${PUNE_BBOX});
-      way["name"~"${query}",i]["amenity"~"restaurant|cafe|place_of_worship"](${PUNE_BBOX});
+      node["name"~"${sanitizedQuery}",i]["tourism"](${PUNE_BBOX});
+      node["name"~"${sanitizedQuery}",i]["historic"](${PUNE_BBOX});
+      node["name"~"${sanitizedQuery}",i]["amenity"~"restaurant|cafe|place_of_worship"](${PUNE_BBOX});
+      way["name"~"${sanitizedQuery}",i]["tourism"](${PUNE_BBOX});
+      way["name"~"${sanitizedQuery}",i]["historic"](${PUNE_BBOX});
+      way["name"~"${sanitizedQuery}",i]["amenity"~"restaurant|cafe|place_of_worship"](${PUNE_BBOX});
     );
     out center;
   `;
