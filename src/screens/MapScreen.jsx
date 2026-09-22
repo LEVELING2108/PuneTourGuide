@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import StatusBar from "../components/StatusBar";
@@ -57,6 +57,22 @@ function RecenterMap({ center }) {
   return null;
 }
 
+// Track viewport bounds on pan / zoom to support live map place retrieval
+function MapBoundsTracker({ onBoundsChange }) {
+  const map = useMapEvents({
+    moveend: () => {
+      const bounds = map.getBounds();
+      onBoundsChange({
+        south: Number(bounds.getSouth().toFixed(5)),
+        west: Number(bounds.getWest().toFixed(5)),
+        north: Number(bounds.getNorth().toFixed(5)),
+        east: Number(bounds.getEast().toFixed(5)),
+      });
+    },
+  });
+  return null;
+}
+
 export default function MapScreen({ userLocation, userLanguage, weatherData }) {
   const [mode, setMode] = useState("Walking");
   const [activeFilter, setActiveFilter] = useState("All");
@@ -69,12 +85,48 @@ export default function MapScreen({ userLocation, userLanguage, weatherData }) {
   const [routeStats, setRouteStats] = useState({ distanceKm: 0, durationSec: 0 });
   const [completedStopId, setCompletedStopId] = useState(null);
 
+  // Live Map Viewport Retrieval State
+  const [currentBounds, setCurrentBounds] = useState(null);
+  const [hasMoved, setHasMoved] = useState(false);
+  const [isSearchingArea, setIsSearchingArea] = useState(false);
+
   // New Map Improvements State
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [directions, setDirections] = useState([]);
   const [showDirections, setShowDirections] = useState(false);
 
   const t = translations[userLanguage] || translations.English;
+
+  const handleBoundsChange = (bounds) => {
+    setCurrentBounds(bounds);
+    setHasMoved(true);
+  };
+
+  const handleSearchThisArea = async () => {
+    if (!currentBounds) return;
+    setIsSearchingArea(true);
+    try {
+      const bboxStr = `${currentBounds.south},${currentBounds.west},${currentBounds.north},${currentBounds.east}`;
+      const livePlaces = await fetchPlaces({
+        category: activeFilter,
+        bbox: bboxStr,
+        live: true
+      });
+      if (livePlaces && livePlaces.length > 0) {
+        setPlaces((prev) => {
+          const map = new Map();
+          prev.forEach((p) => map.set(p.id || p.osmId, p));
+          livePlaces.forEach((p) => map.set(p.id || p.osmId, p));
+          return Array.from(map.values());
+        });
+      }
+      setHasMoved(false);
+    } catch (err) {
+      console.error("Failed to retrieve live map places:", err);
+    } finally {
+      setIsSearchingArea(false);
+    }
+  };
 
   // Custom marker creators with dynamic numbered badges for itinerary stops
   const createCustomIcon = (color, emoji, stopNumber = null) =>
@@ -121,8 +173,12 @@ export default function MapScreen({ userLocation, userLanguage, weatherData }) {
           setStops(itineraryData[0].stops || []);
         }
 
-        // Fetch all tourist places
-        const placesData = await fetchPlaces({ category: activeFilter });
+        // Fetch all tourist places (scoped to current viewport bounds if set)
+        const params = { category: activeFilter };
+        if (currentBounds) {
+          params.bbox = `${currentBounds.south},${currentBounds.west},${currentBounds.north},${currentBounds.east}`;
+        }
+        const placesData = await fetchPlaces(params);
         setPlaces(placesData || []);
       } catch (error) {
         console.error("Failed to load map data:", error);
@@ -540,6 +596,71 @@ export default function MapScreen({ userLocation, userLanguage, weatherData }) {
           {isMapExpanded ? "Collapse ⛶" : "Expand ⛶"}
         </button>
 
+        {/* Floating "Search This Area" Pill */}
+        {hasMoved && currentBounds && (
+          <button
+            onClick={handleSearchThisArea}
+            disabled={isSearchingArea}
+            style={{
+              position: "absolute",
+              top: 14,
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 1000,
+              backgroundColor: "rgba(255, 255, 255, 0.96)",
+              backdropFilter: "blur(6px)",
+              color: "#8B3A2A",
+              border: "1.5px solid rgba(139, 58, 42, 0.25)",
+              borderRadius: 20,
+              padding: "6px 16px",
+              fontSize: 12,
+              fontWeight: 700,
+              boxShadow: "0 4px 14px rgba(0,0,0,0.18)",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              cursor: isSearchingArea ? "default" : "pointer",
+              transition: "all 0.2s ease"
+            }}
+          >
+            {isSearchingArea ? (
+              <>
+                <span style={{ display: "inline-block", width: 12, height: 12, border: "2px solid #8B3A2A", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite" }}></span>
+                <span>{userLanguage === "Marathi" ? "नकाशावरून शोधत आहे..." : "Retrieving from map..."}</span>
+              </>
+            ) : (
+              <>
+                <span>🌐</span>
+                <span>{userLanguage === "Marathi" ? "या भागात शोधा" : "Search This Area"}</span>
+              </>
+            )}
+          </button>
+        )}
+
+        {/* Live OpenStreetMap Status Indicator */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 10,
+            left: 10,
+            zIndex: 1000,
+            backgroundColor: "rgba(255, 255, 255, 0.92)",
+            backdropFilter: "blur(4px)",
+            padding: "4px 9px",
+            borderRadius: 12,
+            fontSize: 10,
+            fontWeight: 600,
+            color: "#4A6741",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+            display: "flex",
+            alignItems: "center",
+            gap: 5
+          }}
+        >
+          <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", backgroundColor: "#22C55E" }}></span>
+          <span>{userLanguage === "Marathi" ? "थेट नकाशा माहिती" : "Live Map Active"}</span>
+        </div>
+
         <MapContainer
           center={mapCenter}
           zoom={13}
@@ -552,6 +673,7 @@ export default function MapScreen({ userLocation, userLanguage, weatherData }) {
           />
 
           <RecenterMap center={mapCenter} />
+          <MapBoundsTracker onBoundsChange={handleBoundsChange} />
 
           {/* User Location Marker */}
           {userLocation?.latitude && userLocation?.longitude && (

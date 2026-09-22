@@ -1,11 +1,21 @@
 import axios from 'axios';
 import redis from './cacheService';
 
-const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter'
+];
 
-// Bounding box for Pune (approx)
-// south, west, north, east
-const PUNE_BBOX = '18.41,73.71,18.65,74.01';
+// Expanded Bounding box for Pune metropolitan area (south, west, north, east)
+const PUNE_BBOX = '18.30,73.65,18.75,74.15';
+
+export interface BoundingBox {
+  south: number;
+  west: number;
+  north: number;
+  east: number;
+}
 
 export interface OSMPlace {
   id: number;
@@ -293,15 +303,16 @@ export const searchOSMPlaces = async (query: string): Promise<any[]> => {
   return executeOverpassQuery(overpassQuery);
 };
 
-export const fetchOSMPlacesByCategory = async (category: string): Promise<any[]> => {
-  const cooldownKey = `places:discovery:cooldown:cat:${category.toLowerCase()}`;
+export const fetchOSMPlacesByCategory = async (category: string, customBbox?: string): Promise<any[]> => {
+  const targetBbox = customBbox || PUNE_BBOX;
+  const cooldownKey = `places:discovery:cooldown:cat:${category.toLowerCase()}:${targetBbox}`;
   try {
     const isCooldownActive = await redis.get(cooldownKey);
     if (isCooldownActive) {
       console.log(`[OSM] Discovery cooldown active for category ${category}. Skipping query.`);
       return [];
     }
-    await redis.set(cooldownKey, 'true', 'EX', 300); // 5 min cooldown
+    await redis.set(cooldownKey, 'true', 'EX', 120); // 2 min cooldown
   } catch (err) {
     console.error('Redis error checking discovery category cooldown:', err);
   }
@@ -309,99 +320,217 @@ export const fetchOSMPlacesByCategory = async (category: string): Promise<any[]>
   let categoryFilter = '';
   switch (category) {
     case 'Heritage':
-      categoryFilter = 'node["historic"]; way["historic"]; node["tourism"="museum"]; way["tourism"="museum"];';
+      categoryFilter = `
+        node["historic"](${targetBbox});
+        way["historic"](${targetBbox});
+        node["tourism"="museum"](${targetBbox});
+        way["tourism"="museum"](${targetBbox});
+      `;
       break;
     case 'Temple':
-      categoryFilter = 'node["amenity"="place_of_worship"]; way["amenity"="place_of_worship"];';
+      categoryFilter = `
+        node["amenity"="place_of_worship"](${targetBbox});
+        way["amenity"="place_of_worship"](${targetBbox});
+      `;
       break;
     case 'Nature':
-      categoryFilter = 'node["leisure"~"park|nature_reserve"]; way["leisure"~"park|nature_reserve"]; node["tourism"~"zoo|viewpoint"]; way["tourism"~"zoo|viewpoint"];';
+      categoryFilter = `
+        node["leisure"~"park|nature_reserve|garden"](${targetBbox});
+        way["leisure"~"park|nature_reserve|garden"](${targetBbox});
+        node["tourism"~"zoo|viewpoint"](${targetBbox});
+        way["tourism"~"zoo|viewpoint"](${targetBbox});
+      `;
       break;
     case 'Food':
-      categoryFilter = 'node["amenity"~"restaurant|cafe"]; way["amenity"~"restaurant|cafe"];';
+      categoryFilter = `
+        node["amenity"~"restaurant|cafe"](${targetBbox});
+        way["amenity"~"restaurant|cafe"](${targetBbox});
+      `;
       break;
     case 'Wellness':
-      categoryFilter = 'node["amenity"="spa"]; way["amenity"="spa"]; node["leisure"="resort"]; way["leisure"="resort"]; node["name"~"Spa|Wellness",i]; way["name"~"Spa|Wellness",i];';
+      categoryFilter = `
+        node["amenity"="spa"](${targetBbox});
+        way["amenity"="spa"](${targetBbox});
+        node["leisure"="resort"](${targetBbox});
+        way["leisure"="resort"](${targetBbox});
+        node["name"~"Spa|Wellness|Yoga|Ayurveda|Meditation",i](${targetBbox});
+        way["name"~"Spa|Wellness|Yoga|Ayurveda|Meditation",i](${targetBbox});
+      `;
       break;
     default:
-      categoryFilter = 'node["tourism"="attraction"]; way["tourism"="attraction"];';
+      categoryFilter = `
+        node["tourism"="attraction"](${targetBbox});
+        way["tourism"="attraction"](${targetBbox});
+      `;
   }
 
   const overpassQuery = `
     [out:json][timeout:25];
     (
-      ${categoryFilter.split(';').filter(f => f.trim()).map(f => `${f.trim()}(${PUNE_BBOX});`).join('\n      ')}
+      ${categoryFilter.trim()}
     );
-    out center 20;
+    out center 30;
   `;
 
   return executeOverpassQuery(overpassQuery);
 };
 
-const executeOverpassQuery = async (query: string): Promise<any[]> => {
-  try {
-    const response = await axios.post(OVERPASS_URL, `data=${encodeURIComponent(query)}`, {
-      headers: {
-        'User-Agent': 'PuneTourGuideApp/1.0',
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    });
-    const elements = response.data.elements || [];
+/**
+ * Live Map Viewport Retrieval:
+ * Fetches real tourist spots within the user's visible map bounding box.
+ */
+export const fetchOSMPlacesInBounds = async (bbox: BoundingBox, category?: string): Promise<any[]> => {
+  // Validate and clamp coordinates to Pune metropolitan region
+  const south = Math.max(18.20, Math.min(bbox.south, bbox.north));
+  const north = Math.min(18.90, Math.max(bbox.south, bbox.north));
+  const west = Math.max(73.50, Math.min(bbox.west, bbox.east));
+  const east = Math.min(74.25, Math.max(bbox.west, bbox.east));
 
-    return elements
-      .map((el: any) => {
-        if (!el.tags || !el.tags.name) return null;
+  const bboxStr = `${south},${west},${north},${east}`;
 
-        const category = mapCategory(el.tags);
-        if (category === 'Skip') return null;
-
-        // Robust Way and Node coordinate support:
-        // - 'node' provides el.lat and el.lon directly
-        // - 'way' with 'out center' provides el.center.lat and el.center.lon as the centroid
-        const latitude =
-          el.lat != null ? Number(el.lat) : el.center?.lat != null ? Number(el.center.lat) : null;
-        const longitude =
-          el.lon != null ? Number(el.lon) : el.center?.lon != null ? Number(el.center.lon) : null;
-
-        if (latitude === null || longitude === null || isNaN(latitude) || isNaN(longitude)) {
-          return null;
-        }
-
-        // Bounding check for Pune Region
-        if (latitude < 18.25 || latitude > 18.85 || longitude < 73.55 || longitude > 74.20) {
-          return null;
-        }
-
-        return {
-          osmId: String(el.id),
-          name: el.tags.name.trim(),
-          emoji: mapEmoji(category),
-          category: category,
-          rating: Number((4.1 + Math.random() * 0.7).toFixed(2)),
-          latitude,
-          longitude,
-          distance: "Calculating...",
-          entryFee: "Check locally",
-          estYear: el.tags.start_date || "—",
-          visitTime: "1-2h",
-          hours: el.tags.opening_hours || "Contact for hours",
-          phone: el.tags.phone || el.tags['contact:phone'] || "—",
-          address: el.tags['addr:street']
-            ? `${el.tags['addr:street']}, Pune`
-            : el.tags['addr:city']
-            ? `${el.tags['addr:city']}, Pune`
-            : "Pune, Maharashtra",
-          accessible: el.tags.wheelchair === 'yes',
-          guidedTours: false,
-          tag: "New Discovery",
-          tagColor: "indigo",
-          bgColor: "#ECEAF8",
-          description: el.tags.description || `Discovered tourist spot in Pune: ${el.tags.name}.`
-        };
-      })
-      .filter((p: any) => p !== null && p.name && p.latitude && p.longitude);
-  } catch (error) {
-    console.error('Overpass API error:', error);
-    return [];
+  let categoryFilter = '';
+  switch (category) {
+    case 'Heritage':
+      categoryFilter = `
+        node["historic"](${bboxStr});
+        way["historic"](${bboxStr});
+        node["tourism"="museum"](${bboxStr});
+        way["tourism"="museum"](${bboxStr});
+      `;
+      break;
+    case 'Temple':
+      categoryFilter = `
+        node["amenity"="place_of_worship"](${bboxStr});
+        way["amenity"="place_of_worship"](${bboxStr});
+      `;
+      break;
+    case 'Nature':
+      categoryFilter = `
+        node["leisure"~"park|nature_reserve|garden"](${bboxStr});
+        way["leisure"~"park|nature_reserve|garden"](${bboxStr});
+        node["tourism"~"zoo|viewpoint"](${bboxStr});
+        way["tourism"~"zoo|viewpoint"](${bboxStr});
+        node["natural"~"water|peak"](${bboxStr});
+        way["natural"~"water|peak"](${bboxStr});
+      `;
+      break;
+    case 'Food':
+      categoryFilter = `
+        node["amenity"~"restaurant|cafe"](${bboxStr});
+        way["amenity"~"restaurant|cafe"](${bboxStr});
+        node["shop"~"bakery|ice_cream"](${bboxStr});
+        way["shop"~"bakery|ice_cream"](${bboxStr});
+      `;
+      break;
+    case 'Wellness':
+      categoryFilter = `
+        node["amenity"="spa"](${bboxStr});
+        way["amenity"="spa"](${bboxStr});
+        node["leisure"="resort"](${bboxStr});
+        way["leisure"="resort"](${bboxStr});
+        node["name"~"Spa|Wellness|Yoga|Ayurveda|Meditation",i](${bboxStr});
+        way["name"~"Spa|Wellness|Yoga|Ayurveda|Meditation",i](${bboxStr});
+      `;
+      break;
+    default:
+      // Live map scan across all 5 high-quality tourist categories
+      categoryFilter = `
+        node["historic"](${bboxStr});
+        way["historic"](${bboxStr});
+        node["tourism"~"attraction|museum|viewpoint|zoo"](${bboxStr});
+        way["tourism"~"attraction|museum|viewpoint|zoo"](${bboxStr});
+        node["amenity"="place_of_worship"](${bboxStr});
+        way["amenity"="place_of_worship"](${bboxStr});
+        node["leisure"~"park|nature_reserve|garden|resort"](${bboxStr});
+        way["leisure"~"park|nature_reserve|garden|resort"](${bboxStr});
+        node["amenity"~"restaurant|cafe|spa"](${bboxStr});
+        way["amenity"~"restaurant|cafe|spa"](${bboxStr});
+      `;
   }
+
+  const query = `
+    [out:json][timeout:25];
+    (
+      ${categoryFilter.trim()}
+    );
+    out center 40;
+  `;
+
+  return executeOverpassQuery(query);
+};
+
+export const executeOverpassQuery = async (query: string): Promise<any[]> => {
+  let lastError: any = null;
+
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      const response = await axios.post(endpoint, `data=${encodeURIComponent(query)}`, {
+        headers: {
+          'User-Agent': 'PuneTourGuideApp/1.0',
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        timeout: 15000
+      });
+      const elements = response.data?.elements || [];
+
+      return elements
+        .map((el: any) => {
+          if (!el.tags || !el.tags.name) return null;
+
+          const category = mapCategory(el.tags);
+          if (category === 'Skip') return null;
+
+          // Robust Way and Node coordinate support:
+          // - 'node' provides el.lat and el.lon directly
+          // - 'way' with 'out center' provides el.center.lat and el.center.lon as the centroid
+          const latitude =
+            el.lat != null ? Number(el.lat) : el.center?.lat != null ? Number(el.center.lat) : null;
+          const longitude =
+            el.lon != null ? Number(el.lon) : el.center?.lon != null ? Number(el.center.lon) : null;
+
+          if (latitude === null || longitude === null || isNaN(latitude) || isNaN(longitude)) {
+            return null;
+          }
+
+          // Bounding check for Pune Region (expanded to encompass Sinhagad, Khadakwasla, PCMC)
+          if (latitude < 18.20 || latitude > 18.90 || longitude < 73.50 || longitude > 74.25) {
+            return null;
+          }
+
+          return {
+            osmId: String(el.id),
+            name: el.tags.name.trim(),
+            emoji: mapEmoji(category),
+            category: category,
+            rating: Number((4.1 + Math.random() * 0.7).toFixed(2)),
+            latitude,
+            longitude,
+            distance: "Calculating...",
+            entryFee: "Check locally",
+            estYear: el.tags.start_date || "—",
+            visitTime: "1-2h",
+            hours: el.tags.opening_hours || "Contact for hours",
+            phone: el.tags.phone || el.tags['contact:phone'] || "—",
+            address: el.tags['addr:street']
+              ? `${el.tags['addr:street']}, Pune`
+              : el.tags['addr:city']
+              ? `${el.tags['addr:city']}, Pune`
+              : "Pune, Maharashtra",
+            accessible: el.tags.wheelchair === 'yes',
+            guidedTours: false,
+            tag: "Live Discovery",
+            tagColor: "indigo",
+            bgColor: "#ECEAF8",
+            description: el.tags.description || `Discovered tourist spot in Pune: ${el.tags.name}.`
+          };
+        })
+        .filter((p: any) => p !== null && p.name && p.latitude && p.longitude);
+    } catch (error: any) {
+      console.warn(`[OSM] Request failed on ${endpoint}: ${error.message}. Retrying mirror...`);
+      lastError = error;
+    }
+  }
+
+  console.error('[OSM] All Overpass API mirrors failed:', lastError?.message);
+  return [];
 };
