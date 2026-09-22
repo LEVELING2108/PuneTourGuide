@@ -111,7 +111,10 @@ export const isNonTouristLocation = (tags: any = {}): boolean => {
   ];
 
   for (const kw of nonTouristKeywords) {
-    if (name.includes(kw)) {
+    // Word-boundary check: ensures 'mart' doesn't match inside 'Samarth', 'atm' doesn't match inside 'Mahatma', etc.
+    const escapedKw = kw.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(`(^|[^a-zA-Z0-9])${escapedKw}([^a-zA-Z0-9]|$)`, 'i');
+    if (regex.test(name)) {
       return true;
     }
   }
