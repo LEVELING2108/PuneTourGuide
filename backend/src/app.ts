@@ -13,9 +13,11 @@ import weatherRoutes from './routes/weatherRoutes';
 import { globalApiLimiter, authLimiter, aiGenerationLimiter } from './middleware/rateLimit';
 
 dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../backend/.env') });
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 // Enable HTTP response Gzip compression
 app.use(compression());
