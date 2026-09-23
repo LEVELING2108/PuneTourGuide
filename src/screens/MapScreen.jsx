@@ -166,11 +166,18 @@ export default function MapScreen({ userLocation, userLanguage, weatherData }) {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
+      const token = localStorage.getItem("pune_auth_token");
       try {
-        // Fetch itinerary stops
-        const itineraryData = await fetchItinerary();
-        if (itineraryData && itineraryData.length > 0) {
-          setStops(itineraryData[0].stops || []);
+        // Fetch itinerary stops (only for authenticated users)
+        if (token) {
+          try {
+            const itineraryData = await fetchItinerary();
+            if (itineraryData && itineraryData.length > 0) {
+              setStops(itineraryData[0].stops || []);
+            }
+          } catch (err) {
+            console.warn("Could not load itinerary stops:", err);
+          }
         }
 
         // Fetch all tourist places (scoped to current viewport bounds if set)

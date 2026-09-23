@@ -5,20 +5,27 @@ dotenv.config();
 
 const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 
+let hasLoggedRedisError = false;
+
 const redis = new Redis(redisUrl, {
-  maxRetriesPerRequest: 3,
+  maxRetriesPerRequest: 1,
+  lazyConnect: true,
   retryStrategy: (times) => {
-    const delay = Math.min(times * 50, 2000);
-    return delay;
+    if (times > 3) return null; // Stop retrying if unavailable, fallback to DB
+    return Math.min(times * 200, 1000);
   },
 });
 
 redis.on('connect', () => {
+  hasLoggedRedisError = false;
   console.log('Connected to Redis');
 });
 
 redis.on('error', (err) => {
-  console.error('Redis connection error:', err);
+  if (!hasLoggedRedisError) {
+    console.warn(`[Cache] Redis unavailable at ${redisUrl} (${err.message}). Falling back to direct database queries.`);
+    hasLoggedRedisError = true;
+  }
 });
 
 export const getCachedData = async <T>(key: string): Promise<T | null> => {
