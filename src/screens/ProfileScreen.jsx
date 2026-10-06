@@ -37,6 +37,7 @@ export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguag
   const [activeSubTab, setActiveTab] = useState("bookmarks"); // 'bookmarks', 'discoveries', 'activity'
   
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isContributorsModalOpen, setIsContributorsModalOpen] = useState(false);
   const [tempName, setTempName] = useState(userName);
   const [tempBio, setTempBio] = useState(userBio);
   const [tempAvatar, setTempAvatar] = useState(userAvatar);
@@ -472,10 +473,166 @@ export default function ProfileScreen({ onPlaceSelect, userLocation, userLanguag
             )}
           </div>
         )}
-        <div style={{ fontSize: 10, color: colors.inkMuted, marginTop: 12 }}>
+        {/* Version & Contributor Acknowledgements Banner */}
+        <div style={{ 
+          marginTop: 20, 
+          padding: "16px 14px", 
+          background: "#fff", 
+          borderRadius: 14, 
+          border: `1px solid ${colors.stoneDark}`,
+          boxShadow: "0 2px 6px rgba(0,0,0,0.02)",
+          textAlign: "center"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 6 }}>
+            <span style={{ 
+              fontSize: 10, 
+              fontWeight: 700, 
+              padding: "2px 8px", 
+              borderRadius: 6, 
+              background: colors.wadaRedLight, 
+              color: colors.wadaRed,
+              letterSpacing: "0.5px"
+            }}>
+              {t.versionText || "Version 1.1.0"}
+            </span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: colors.ink }}>
+              Pune Explorer
+            </span>
+          </div>
+
+          <p style={{ fontSize: 11, color: colors.inkMuted, margin: "6px 0 10px", lineHeight: 1.4, maxWidth: 300, marginLeft: "auto", marginRight: "auto" }}>
+            {t.thankYouContributors}
+          </p>
+
+          <button
+            onClick={() => setIsContributorsModalOpen(true)}
+            style={{
+              background: colors.stone,
+              border: `1px solid ${colors.stoneDark}`,
+              borderRadius: 8,
+              padding: "6px 14px",
+              fontSize: 11,
+              fontWeight: 600,
+              color: colors.wadaRed,
+              cursor: "pointer",
+              transition: "all 0.2s ease"
+            }}
+          >
+            🤝 {t.viewContributors}
+          </button>
+        </div>
+
+        <div style={{ fontSize: 10, color: colors.inkMuted, marginTop: 14 }}>
           {t.memberSince}
         </div>
       </div>
+
+      {/* Contributors & Acknowledgements Modal */}
+      {isContributorsModalOpen && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9999,
+          background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center", padding: 16
+        }}>
+          <div style={{
+            background: "#fff", borderRadius: 16, maxWidth: 440, width: "100%",
+            maxHeight: "85vh", overflowY: "auto", padding: 24, boxShadow: "0 10px 25px rgba(0,0,0,0.15)"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+              <div>
+                <div style={{ display: "inline-block", fontSize: 10, fontWeight: 700, background: colors.paithaniGold, color: "#fff", padding: "2px 8px", borderRadius: 4, marginBottom: 6 }}>
+                  RELEASE v1.1.0
+                </div>
+                <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: colors.ink }}>
+                  {t.contributorsModalTitle}
+                </h3>
+                <p style={{ margin: "4px 0 0", fontSize: 12, color: colors.inkMuted }}>
+                  {t.contributorsModalSubtitle}
+                </p>
+              </div>
+              <button
+                onClick={() => setIsContributorsModalOpen(false)}
+                style={{ background: "none", border: "none", fontSize: 20, color: colors.inkMuted, cursor: "pointer", padding: "4px 8px" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Contributor Cards */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+              <div style={{
+                padding: "12px 14px", borderRadius: 10, background: colors.stone, border: `1px solid ${colors.stoneDark}`,
+                display: "flex", alignItems: "center", gap: 12
+              }}>
+                <div style={{ fontSize: 24 }}>✨</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: colors.ink }}>
+                    {t.contributorSanika}
+                  </div>
+                  <div style={{ fontSize: 11, color: colors.inkMuted, marginTop: 2 }}>
+                    {t.contributorSanikaRole}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{
+                padding: "12px 14px", borderRadius: 10, background: colors.stone, border: `1px solid ${colors.stoneDark}`,
+                display: "flex", alignItems: "center", gap: 12
+              }}>
+                <div style={{ fontSize: 24 }}>🚩</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: colors.ink }}>
+                    {t.contributorSourav}
+                  </div>
+                  <div style={{ fontSize: 11, color: colors.inkMuted, marginTop: 2 }}>
+                    {t.contributorSouravRole}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{
+                padding: "12px 14px", borderRadius: 10, background: colors.stone, border: `1px solid ${colors.stoneDark}`,
+                display: "flex", alignItems: "center", gap: 12
+              }}>
+                <div style={{ fontSize: 24 }}>🗺️</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: colors.ink }}>
+                    {t.contributorOsm}
+                  </div>
+                  <div style={{ fontSize: 11, color: colors.inkMuted, marginTop: 2 }}>
+                    {t.contributorOsmRole}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div style={{ marginTop: 20, display: "flex", gap: 10 }}>
+              <a
+                href="https://github.com/LEVELING2108/PuneTourGuide"
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  flex: 1, textAlign: "center", textDecoration: "none",
+                  background: colors.wadaRed, color: "#fff", padding: "10px", borderRadius: 10,
+                  fontSize: 12, fontWeight: 700, display: "inline-block"
+                }}
+              >
+                🐙 {t.githubRepo}
+              </a>
+              <button
+                onClick={() => setIsContributorsModalOpen(false)}
+                style={{
+                  padding: "10px 18px", borderRadius: 10, border: `1px solid ${colors.stoneDark}`,
+                  background: colors.stone, color: colors.ink, fontSize: 12, fontWeight: 600, cursor: "pointer"
+                }}
+              >
+                {t.close}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

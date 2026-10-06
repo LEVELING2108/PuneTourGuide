@@ -4,10 +4,11 @@ A modern, high-performance tour guide web application for Pune, featuring intera
 
 ---
 
-### **[Backend Architecture](./BACKEND.md)** · **[Contribution Guidelines](./CONTRIBUTING.md)**
+### **[Backend Architecture](./BACKEND.md)** · **[Contribution Guidelines](./CONTRIBUTING.md)** · **[Changelog](./CHANGELOG.md)**
 
 ---
 
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg?style=flat-square)](./CHANGELOG.md)
 [![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -171,7 +172,21 @@ You can also run all-in-one scripts from the root directory:
 
 ---
 
+## 🤝 Contributors & Special Thanks
+
+A huge **thank you** to all contributors who have dedicated their time, knowledge, and code to making **Pune Explorer** an open-source, tourist-first platform!
+
+### 🌟 Project Contributors
+
+* **[Sourav Suman (@LEVELING2108)](https://github.com/LEVELING2108)** — Project creator & maintainer: core architecture, live OpenStreetMap viewport discovery engine, dual node/way spatial centroid processing, strict negative keyword filtering, itinerary TSP optimization, and security hardening.
+* **[Sanika Darekar (@sanikadarekar)](https://github.com/sanikadarekar)** — Key contributor: Multi-container Docker Compose setup (`PostgreSQL + PostGIS` & `Redis`), developer-first [`CONTRIBUTING.md`](./CONTRIBUTING.md) guidelines, synchronized backend schemas & API endpoint specifications, and root environment configurations.
+
+We warmly welcome all contributions! Whether reporting bugs, refining Marathi/Hindi translations, adding hidden gems of Pune, or writing code, check out our **[Contribution Guidelines](./CONTRIBUTING.md)** and **[Changelog](./CHANGELOG.md)**.
+
+---
+
 ## 📜 License & Sourcing
 
 - **Map & Geocoding Data:** [OpenStreetMap](https://www.openstreetmap.org/) via Overpass API & OSRM.
 - **Project License:** Open-source under ISC License.
+
