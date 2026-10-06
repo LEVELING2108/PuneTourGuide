@@ -54,7 +54,7 @@ All protected endpoints require an `Authorization` header containing `Bearer <JW
 
 ### 🔑 Authentication (`/api/user`)
 - `POST   /api/user/register`  
-  Registers a new user and pre-seeds standard Day 1 & Day 2 travel itineraries.
+  Registers a new user, hashes password, awards +150 sign-up XP, and pre-seeds standard Day 1 & Day 2 travel itineraries.
 - `POST   /api/user/login`  
   Verifies credentials, returning user profile details and JWT token.
 - `GET    /api/user/me` (Protected)  
@@ -64,11 +64,11 @@ All protected endpoints require an `Authorization` header containing `Bearer <JW
 
 ### 🏰 Places (`/api/places`)
 - `GET    /api/places`  
-  Fetches all spots (supports `?category=Heritage|Temple|Nature|Food|Wellness` & search query `?q=`).
+  Fetches spots (supports `?category=Heritage|Temple|Nature|Food|Wellness`, search `?q=`, `?isSaved=true`, `?bbox=south,west,north,east`, and `?live=true`).
 - `GET    /api/places/:id`  
   Fetches individual tourist details.
 - `PATCH  /api/places/:id/save` (Protected)  
-  Toggles saved/bookmarked state. Increments profile XP by `+10 XP` on a new save.
+  Toggles saved/bookmarked state in `UserSavedPlace`. Increments user XP by `+10 XP` on a new bookmark.
 
 ### 📅 Itineraries & Stops (`/api/itinerary`)
 - `GET    /api/itinerary` (Protected)  
@@ -76,35 +76,101 @@ All protected endpoints require an `Authorization` header containing `Bearer <JW
 - `POST   /api/itinerary/stops` (Protected)  
   Adds a new custom stop to the active day.
 - `PATCH  /api/itinerary/stops/:id` (Protected)  
-  Toggles stop checkbox status. Checking off a stop increments profile XP by `+50 XP`.
+  Toggles stop checkbox status. Checking off a stop increments user XP by `+50 XP`.
 - `DELETE /api/itinerary/stops/:id` (Protected)  
   Deletes the specified itinerary stop.
 - `POST   /api/itinerary/optimize` (Protected)  
   Solves the Traveling Salesperson Problem (TSP) for active day stops using the OSRM Trip API (starting at the first stop). Updates stop `order` fields in the database.
+- `POST   /api/itinerary/generate` (Protected)  
+  Generates a custom multi-day travel itinerary using Gemini 1.5 Flash (with rating-based fallback) based on duration, pace, accessibility, and category interests.
+- `POST   /api/itinerary/adapt-weather` (Protected)  
+  Analyzes itinerary stops for outdoor attractions (forts, treks, gardens) and swaps them with indoor cultural spots during rainy weather, followed by OSRM sequence re-optimization.
+
+### 🎭 Events (`/api/events`)
+- `GET    /api/events`  
+  Fetches curated Pune cultural events and annual festivals (Ganesh Utsav, Sawai Gandharva, Pune Festival).
+
+### ☀️ Weather (`/api/weather`)
+- `GET    /api/weather`  
+  Fetches live Pune weather and temperature from Open-Meteo API, mapped to 'Sunny' or 'Rainy' conditions.
+- `POST   /api/weather/toggle`  
+  Developer and testing endpoint to toggle weather override in cache.
 
 ---
 
 ## Active Prisma Database Schema
 
 ```prisma
-model User {
-  id        Int            @id @default(autoincrement())
-  email     String         @unique
-  password  String
+model Place {
+  id             Int              @id @default(autoincrement())
+  name           String
+  name_mr        String?
+  emoji          String
+  category       String
+  rating         Float
+  distance       String
+  entryFee       String
+  estYear        String
+  visitTime      String
+  hours          String
+  phone          String
+  address        String
+  accessible     Boolean
+  guidedTours    Boolean
+  tag            String
+  tagColor       String
+  bgColor        String
+  description    String
+  description_mr String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  isSaved        Boolean          @default(false)
+  osmId          String?          @unique
+  latitude       Float?
+  longitude      Float?
+  location       Unsupported("geometry(Point, 4326)")?
+  savedBy        UserSavedPlace[]
+}
+
+model Event {
+  id        Int      @id @default(autoincrement())
+  date      String
   name      String
-  xp        Int            @default(0)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  days      ItineraryDay[]
+  desc      String
+  color     String
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id            Int              @id @default(autoincrement())
+  name          String
+  email         String           @unique
+  password      String
+  xp            Int              @default(0)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  itineraryDays ItineraryDay[]
+  savedPlaces   UserSavedPlace[]
+}
+
+model UserSavedPlace {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  placeId   Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, placeId])
 }
 
 model ItineraryDay {
-  id        Int             @id @default(autoincrement())
-  day       Int
-  label     String
-  userId    Int?
-  user      User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  stops     ItineraryStop[]
+  id      Int             @id @default(autoincrement())
+  day     Int
+  label   String
+  userId  Int?
+  user    User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stops   ItineraryStop[]
 }
 
 model ItineraryStop {
@@ -120,28 +186,6 @@ model ItineraryStop {
   done           Boolean      @default(false)
   order          Int          @default(0)
   itineraryDay   ItineraryDay @relation(fields: [itineraryDayId], references: [id], onDelete: Cascade)
-}
-
-model Place {
-  id             Int      @id @default(autoincrement())
-  name           String   @unique
-  name_mr        String?
-  description    String
-  description_mr String?
-  category       String
-  emoji          String
-  latitude       Float
-  longitude      Float
-  rating         Float
-  address        String
-  hours          String
-  entryFee       String
-  accessible     Boolean  @default(false)
-  guidedTours    Boolean  @default(false)
-  isSaved        Boolean  @default(false)
-  isDiscovered   Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
 }
 ```
 
