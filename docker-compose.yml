@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # PostgreSQL with PostGIS Extension
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: pune_tour_guide_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: Pune_Tour_Guide
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d Pune_Tour_Guide"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache Store
+  redis:
+    image: redis:7-alpine
+    container_name: pune_tour_guide_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+

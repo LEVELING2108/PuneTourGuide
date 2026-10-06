@@ -4,7 +4,7 @@ A modern, high-performance tour guide web application for Pune, featuring intera
 
 ---
 
-### **[Backend Architecture](./BACKEND.md)** · **[Contribution Guidelines](./GEMINI.md)**
+### **[Backend Architecture](./BACKEND.md)** · **[Contribution Guidelines](./CONTRIBUTING.md)**
 
 ---
 
@@ -40,9 +40,10 @@ Follow these steps to run Pune Explorer locally on your development machine.
 
 Ensure you have the following installed on your system:
 - **Node.js** (v18.0 or higher) & **npm**
-- **PostgreSQL** database (v14+ recommended, with PostGIS extension for spatial queries)
-- **Redis** server (optional, used for Overpass API rate-limit caching)
 - **Git**
+- **Docker & Docker Compose** (Recommended for instant Postgres + Redis setup), OR:
+  - **PostgreSQL** database (v14+ with PostGIS extension enabled)
+  - **Redis** server (optional, used for Overpass API rate-limit caching)
 
 ---
 
@@ -50,19 +51,35 @@ Ensure you have the following installed on your system:
 
 ```bash
 git clone https://github.com/LEVELING2108/PuneTourGuide.git
-cd "Pune Tour Guide"
+cd PuneTourGuide
 ```
 
 ---
 
 ### 2️⃣ Environment Variables Setup
 
+#### **Frontend (`.env`)**
+Create a `.env` file in the root project directory (or copy `.env.example`):
+
+```bash
+cp .env.example .env
+```
+
+```env
+# API URL pointing to the local Node/Express server
+VITE_API_BASE_URL=http://localhost:3001/api
+```
+
 #### **Backend (`backend/.env`)**
-Create a `.env` file inside the `backend/` directory:
+Create a `.env` file inside the `backend/` directory (or copy `backend/.env.example`):
+
+```bash
+cp backend/.env.example backend/.env
+```
 
 ```env
 # Database connection string (PostgreSQL with PostGIS)
-DATABASE_URL="postgresql://postgres:your_password@localhost:5432/pune_tour_guide?schema=public"
+DATABASE_URL="postgresql://postgres:password@localhost:5432/Pune_Tour_Guide?schema=public"
 
 # Server Port
 PORT=3001
@@ -74,17 +91,19 @@ JWT_SECRET="pune_explorer_super_secret_key"
 REDIS_URL="redis://127.0.0.1:6379"
 ```
 
-#### **Frontend (`.env`)**
-Create a `.env` file in the root project directory:
+---
 
-```env
-# API URL pointing to the local Node/Express server
-VITE_API_BASE_URL=http://localhost:3001/api
+### 3️⃣ Start Database Services (Optional via Docker)
+
+If you use Docker, start PostgreSQL (with PostGIS) and Redis with one command:
+
+```bash
+docker compose up -d
 ```
 
 ---
 
-### 3️⃣ Backend Setup & Database Migration
+### 4️⃣ Backend Setup & Database Migration
 
 Navigate to the backend directory, install dependencies, run Prisma migrations, and seed initial data:
 
@@ -95,9 +114,9 @@ cd backend
 # Install node dependencies
 npm install
 
-# Generate Prisma Client & Run Database Migrations
+# Generate Prisma Client & Apply Database Migrations
 npx prisma generate
-npx prisma migrate dev --name init
+npx prisma migrate deploy
 
 # Seed database with initial tourist places, events, and default itineraries
 npx ts-node src/seed.ts
@@ -110,7 +129,7 @@ npm run dev
 
 ---
 
-### 4️⃣ Frontend Setup & Execution
+### 5️⃣ Frontend Setup & Execution
 
 Open a new terminal window in the project root directory and start the Vite dev server:
 
@@ -126,7 +145,7 @@ npm run dev
 
 ---
 
-### 5️⃣ Quick Verification & Scripts
+### 6️⃣ Quick Verification & Scripts
 
 You can also run all-in-one scripts from the root directory:
 
