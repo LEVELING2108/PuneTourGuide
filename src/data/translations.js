@@ -94,7 +94,20 @@ export const translations = {
     temple: "Temple",
     nature: "Nature",
     food: "Food",
-    wellness: "Wellness"
+    wellness: "Wellness",
+    versionText: "Version 1.1.0",
+    thankYouContributors: "Special thanks to all open-source contributors for helping build Pune Explorer! 🚩",
+    viewContributors: "Contributors & Release Notes",
+    contributorsModalTitle: "Release v1.1.0 · Contributor Thanks",
+    contributorsModalSubtitle: "Heartfelt gratitude to our open-source community",
+    contributorSanika: "Sanika Darekar (@sanikadarekar)",
+    contributorSanikaRole: "Docker Compose, Contributing Guidelines & Backend Sync",
+    contributorSourav: "Sourav Suman (@LEVELING2108)",
+    contributorSouravRole: "Core Architecture, OSM Viewport Engine & Security",
+    contributorOsm: "OpenStreetMap Contributors",
+    contributorOsmRole: "Geospatial Data & Heritage Footprints",
+    close: "Close",
+    githubRepo: "View on GitHub"
   },
   Marathi: {
     // Nav
@@ -191,7 +204,20 @@ export const translations = {
     temple: "मंदिर",
     nature: "निसर्ग",
     food: "खाद्यपदार्थ",
-    wellness: "आरोग्य"
+    wellness: "आरोग्य",
+    versionText: "आवृत्ती १.१.० (Version 1.1.0)",
+    thankYouContributors: "पुणे एक्सप्लोररसाठी योगदान देणाऱ्या सर्व योगदात्यांचे मनःपूर्वक आभार! 🚩",
+    viewContributors: "योगदाते आणि रिलीज नोट्स",
+    contributorsModalTitle: "रिलीज v१.१.० · योगदात्यांचे आभार",
+    contributorsModalSubtitle: "आमच्या मुक्त-स्रोत समुदायाचे मनःपूर्वक धन्यवाद",
+    contributorSanika: "सानिका दरेकर (@sanikadarekar)",
+    contributorSanikaRole: "डॉकर कंपोझ, योगदान मार्गदर्शक आणि डॉक्युमेंटेशन",
+    contributorSourav: "सौरव सुमन (@LEVELING2108)",
+    contributorSouravRole: "कोर आर्किटेक्चर, नकाशा इंजिन आणि सुरक्षा",
+    contributorOsm: "OpenStreetMap योगदाते",
+    contributorOsmRole: "नकाशा डेटा आणि ऐतिहासिक भू-माहिती",
+    close: "बंद करा",
+    githubRepo: "GitHub वर पहा"
   },
   Hindi: {
     // Nav
@@ -288,7 +314,20 @@ export const translations = {
     temple: "मंदिर",
     nature: "प्रकृति",
     food: "भोजन",
-    wellness: "कल्याण"
+    wellness: "कल्याण",
+    versionText: "संस्करण 1.1.0 (Version 1.1.0)",
+    thankYouContributors: "पुणे एक्सप्लोरर में योगदान देने वाले सभी योगदानकर्ताओं का हार्दिक धन्यवाद! 🚩",
+    viewContributors: "योगदानकर्ता और रिलीज़ नोट्स",
+    contributorsModalTitle: "रिलीज़ v1.1.0 · योगदानकर्ताओं का आभार",
+    contributorsModalSubtitle: "हमारे ओपन-सोर्स समुदाय का हार्दिक आभार",
+    contributorSanika: "सानिका दरेकर (@sanikadarekar)",
+    contributorSanikaRole: "डॉकर कंपोज़, योगदान दिशानिर्देश और दस्तावेज़ीकरण",
+    contributorSourav: "सौरव सुमन (@LEVELING2108)",
+    contributorSouravRole: "कोर आर्किटेक्चर, मैप इंजन और सुरक्षा",
+    contributorOsm: "OpenStreetMap योगदानकर्ता",
+    contributorOsmRole: "मानचित्र डेटा और भू-स्थानिक जानकारी",
+    close: "बंद करें",
+    githubRepo: "GitHub पर देखें"
   },
   Gujarati: {
     // Nav
@@ -385,6 +424,19 @@ export const translations = {
     temple: "મંદિર",
     nature: "કુદરત",
     food: "ખોરાક",
-    wellness: "કલ્યાણ"
+    wellness: "કલ્યાણ",
+    versionText: "સંસ્કરણ 1.1.0 (Version 1.1.0)",
+    thankYouContributors: "પુણે એક્સપ્લોરરમાં યોગદાન આપનાર તમામ યોગદાનકર્તાઓનો ખૂબ ખૂબ આભાર! 🚩",
+    viewContributors: "યોગદાનકર્તાઓ અને રીલીઝ નોટ્સ",
+    contributorsModalTitle: "રીલીઝ v1.1.0 · યોગદાનકર્તાઓનો આભાર",
+    contributorsModalSubtitle: "અમારા ઓપન-સોર્સ સમુદાયનો હૃદયપૂર્વક આભાર",
+    contributorSanika: "સાનિકા દરેકર (@sanikadarekar)",
+    contributorSanikaRole: "ડોકર કમ્પોઝ, યોગદાન માર્ગદર્શિકા અને દસ્તાવેજીકરણ",
+    contributorSourav: "સૌરવ સુમન (@LEVELING2108)",
+    contributorSouravRole: "કોર આર્કિટેક્ચર, મેપ એન્જિન અને સુરક્ષા",
+    contributorOsm: "OpenStreetMap યોગદાનકર્તાઓ",
+    contributorOsmRole: "નકશા ડેટા અને ભૌગોલિક માહિતી",
+    close: "બંધ કરો",
+    githubRepo: "GitHub પર જુઓ"
   },
 };
