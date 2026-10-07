@@ -2,6 +2,8 @@ import axios from 'axios';
 import redis from './cacheService';
 
 const OVERPASS_ENDPOINTS = [
+  'https://z.overpass-api.de/api/interpreter',
+  'https://lz4.overpass-api.de/api/interpreter',
   'https://overpass-api.de/api/interpreter',
   'https://overpass.kumi.systems/api/interpreter',
   'https://overpass.private.coffee/api/interpreter'
@@ -288,14 +290,14 @@ export const searchOSMPlaces = async (query: string): Promise<any[]> => {
   }
 
   const overpassQuery = `
-    [out:json][timeout:25];
+    [out:json][timeout:12];
     (
-      node["name"~"${sanitizedQuery}",i]["tourism"](${PUNE_BBOX});
-      node["name"~"${sanitizedQuery}",i]["historic"](${PUNE_BBOX});
-      node["name"~"${sanitizedQuery}",i]["amenity"~"restaurant|cafe|place_of_worship"](${PUNE_BBOX});
-      way["name"~"${sanitizedQuery}",i]["tourism"](${PUNE_BBOX});
-      way["name"~"${sanitizedQuery}",i]["historic"](${PUNE_BBOX});
-      way["name"~"${sanitizedQuery}",i]["amenity"~"restaurant|cafe|place_of_worship"](${PUNE_BBOX});
+      node(${PUNE_BBOX})["name"~"${sanitizedQuery}",i]["tourism"];
+      node(${PUNE_BBOX})["name"~"${sanitizedQuery}",i]["historic"];
+      node(${PUNE_BBOX})["name"~"${sanitizedQuery}",i]["amenity"~"restaurant|cafe|place_of_worship"];
+      way(${PUNE_BBOX})["name"~"${sanitizedQuery}",i]["tourism"];
+      way(${PUNE_BBOX})["name"~"${sanitizedQuery}",i]["historic"];
+      way(${PUNE_BBOX})["name"~"${sanitizedQuery}",i]["amenity"~"restaurant|cafe|place_of_worship"];
     );
     out center;
   `;
@@ -321,51 +323,51 @@ export const fetchOSMPlacesByCategory = async (category: string, customBbox?: st
   switch (category) {
     case 'Heritage':
       categoryFilter = `
-        node["historic"](${targetBbox});
-        way["historic"](${targetBbox});
-        node["tourism"="museum"](${targetBbox});
-        way["tourism"="museum"](${targetBbox});
+        node(${targetBbox})["historic"];
+        way(${targetBbox})["historic"];
+        node(${targetBbox})["tourism"="museum"];
+        way(${targetBbox})["tourism"="museum"];
       `;
       break;
     case 'Temple':
       categoryFilter = `
-        node["amenity"="place_of_worship"](${targetBbox});
-        way["amenity"="place_of_worship"](${targetBbox});
+        node(${targetBbox})["amenity"="place_of_worship"];
+        way(${targetBbox})["amenity"="place_of_worship"];
       `;
       break;
     case 'Nature':
       categoryFilter = `
-        node["leisure"~"park|nature_reserve|garden"](${targetBbox});
-        way["leisure"~"park|nature_reserve|garden"](${targetBbox});
-        node["tourism"~"zoo|viewpoint"](${targetBbox});
-        way["tourism"~"zoo|viewpoint"](${targetBbox});
+        node(${targetBbox})["leisure"~"park|nature_reserve|garden"];
+        way(${targetBbox})["leisure"~"park|nature_reserve|garden"];
+        node(${targetBbox})["tourism"~"zoo|viewpoint"];
+        way(${targetBbox})["tourism"~"zoo|viewpoint"];
       `;
       break;
     case 'Food':
       categoryFilter = `
-        node["amenity"~"restaurant|cafe"](${targetBbox});
-        way["amenity"~"restaurant|cafe"](${targetBbox});
+        node(${targetBbox})["amenity"~"restaurant|cafe"];
+        way(${targetBbox})["amenity"~"restaurant|cafe"];
       `;
       break;
     case 'Wellness':
       categoryFilter = `
-        node["amenity"="spa"](${targetBbox});
-        way["amenity"="spa"](${targetBbox});
-        node["leisure"="resort"](${targetBbox});
-        way["leisure"="resort"](${targetBbox});
-        node["name"~"Spa|Wellness|Yoga|Ayurveda|Meditation",i](${targetBbox});
-        way["name"~"Spa|Wellness|Yoga|Ayurveda|Meditation",i](${targetBbox});
+        node(${targetBbox})["amenity"="spa"];
+        way(${targetBbox})["amenity"="spa"];
+        node(${targetBbox})["leisure"="resort"];
+        way(${targetBbox})["leisure"="resort"];
+        node(${targetBbox})["name"~"Spa|Wellness|Yoga|Ayurveda|Meditation",i];
+        way(${targetBbox})["name"~"Spa|Wellness|Yoga|Ayurveda|Meditation",i];
       `;
       break;
     default:
       categoryFilter = `
-        node["tourism"="attraction"](${targetBbox});
-        way["tourism"="attraction"](${targetBbox});
+        node(${targetBbox})["tourism"="attraction"];
+        way(${targetBbox})["tourism"="attraction"];
       `;
   }
 
   const overpassQuery = `
-    [out:json][timeout:25];
+    [out:json][timeout:12];
     (
       ${categoryFilter.trim()}
     );
@@ -392,64 +394,64 @@ export const fetchOSMPlacesInBounds = async (bbox: BoundingBox, category?: strin
   switch (category) {
     case 'Heritage':
       categoryFilter = `
-        node["historic"](${bboxStr});
-        way["historic"](${bboxStr});
-        node["tourism"="museum"](${bboxStr});
-        way["tourism"="museum"](${bboxStr});
+        node(${bboxStr})["historic"];
+        way(${bboxStr})["historic"];
+        node(${bboxStr})["tourism"="museum"];
+        way(${bboxStr})["tourism"="museum"];
       `;
       break;
     case 'Temple':
       categoryFilter = `
-        node["amenity"="place_of_worship"](${bboxStr});
-        way["amenity"="place_of_worship"](${bboxStr});
+        node(${bboxStr})["amenity"="place_of_worship"];
+        way(${bboxStr})["amenity"="place_of_worship"];
       `;
       break;
     case 'Nature':
       categoryFilter = `
-        node["leisure"~"park|nature_reserve|garden"](${bboxStr});
-        way["leisure"~"park|nature_reserve|garden"](${bboxStr});
-        node["tourism"~"zoo|viewpoint"](${bboxStr});
-        way["tourism"~"zoo|viewpoint"](${bboxStr});
-        node["natural"~"water|peak"](${bboxStr});
-        way["natural"~"water|peak"](${bboxStr});
+        node(${bboxStr})["leisure"~"park|nature_reserve|garden"];
+        way(${bboxStr})["leisure"~"park|nature_reserve|garden"];
+        node(${bboxStr})["tourism"~"zoo|viewpoint"];
+        way(${bboxStr})["tourism"~"zoo|viewpoint"];
+        node(${bboxStr})["natural"~"water|peak"];
+        way(${bboxStr})["natural"~"water|peak"];
       `;
       break;
     case 'Food':
       categoryFilter = `
-        node["amenity"~"restaurant|cafe"](${bboxStr});
-        way["amenity"~"restaurant|cafe"](${bboxStr});
-        node["shop"~"bakery|ice_cream"](${bboxStr});
-        way["shop"~"bakery|ice_cream"](${bboxStr});
+        node(${bboxStr})["amenity"~"restaurant|cafe"];
+        way(${bboxStr})["amenity"~"restaurant|cafe"];
+        node(${bboxStr})["shop"~"bakery|ice_cream"];
+        way(${bboxStr})["shop"~"bakery|ice_cream"];
       `;
       break;
     case 'Wellness':
       categoryFilter = `
-        node["amenity"="spa"](${bboxStr});
-        way["amenity"="spa"](${bboxStr});
-        node["leisure"="resort"](${bboxStr});
-        way["leisure"="resort"](${bboxStr});
-        node["name"~"Spa|Wellness|Yoga|Ayurveda|Meditation",i](${bboxStr});
-        way["name"~"Spa|Wellness|Yoga|Ayurveda|Meditation",i](${bboxStr});
+        node(${bboxStr})["amenity"="spa"];
+        way(${bboxStr})["amenity"="spa"];
+        node(${bboxStr})["leisure"="resort"];
+        way(${bboxStr})["leisure"="resort"];
+        node(${bboxStr})["name"~"Spa|Wellness|Yoga|Ayurveda|Meditation",i];
+        way(${bboxStr})["name"~"Spa|Wellness|Yoga|Ayurveda|Meditation",i];
       `;
       break;
     default:
       // Live map scan across all 5 high-quality tourist categories
       categoryFilter = `
-        node["historic"](${bboxStr});
-        way["historic"](${bboxStr});
-        node["tourism"~"attraction|museum|viewpoint|zoo"](${bboxStr});
-        way["tourism"~"attraction|museum|viewpoint|zoo"](${bboxStr});
-        node["amenity"="place_of_worship"](${bboxStr});
-        way["amenity"="place_of_worship"](${bboxStr});
-        node["leisure"~"park|nature_reserve|garden|resort"](${bboxStr});
-        way["leisure"~"park|nature_reserve|garden|resort"](${bboxStr});
-        node["amenity"~"restaurant|cafe|spa"](${bboxStr});
-        way["amenity"~"restaurant|cafe|spa"](${bboxStr});
+        node(${bboxStr})["historic"];
+        way(${bboxStr})["historic"];
+        node(${bboxStr})["tourism"~"attraction|museum|viewpoint|zoo"];
+        way(${bboxStr})["tourism"~"attraction|museum|viewpoint|zoo"];
+        node(${bboxStr})["amenity"="place_of_worship"];
+        way(${bboxStr})["amenity"="place_of_worship"];
+        node(${bboxStr})["leisure"~"park|nature_reserve|garden|resort"];
+        way(${bboxStr})["leisure"~"park|nature_reserve|garden|resort"];
+        node(${bboxStr})["amenity"~"restaurant|cafe|spa"];
+        way(${bboxStr})["amenity"~"restaurant|cafe|spa"];
       `;
   }
 
   const query = `
-    [out:json][timeout:25];
+    [out:json][timeout:12];
     (
       ${categoryFilter.trim()}
     );
@@ -469,7 +471,7 @@ export const executeOverpassQuery = async (query: string): Promise<any[]> => {
           'User-Agent': 'PuneTourGuideApp/1.0',
           'Content-Type': 'application/x-www-form-urlencoded'
         },
-        timeout: 15000
+        timeout: 10000
       });
       const elements = response.data?.elements || [];
 

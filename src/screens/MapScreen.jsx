@@ -301,7 +301,7 @@ export default function MapScreen({ userLocation, userLanguage, weatherData }) {
         (p) => p.name.toLowerCase() === stop.name.toLowerCase()
       );
       if (matchedPlace?.latitude && matchedPlace?.longitude) {
-        return [matchedPlace.latitude, matchedPlace.longitude];
+        return [Number(matchedPlace.latitude), Number(matchedPlace.longitude)];
       }
       return null;
     })
@@ -317,8 +317,8 @@ export default function MapScreen({ userLocation, userLanguage, weatherData }) {
   } else if (selectedPlace?.latitude && selectedPlace?.longitude) {
     if (userLocation?.latitude && userLocation?.longitude) {
       points = [
-        [userLocation.latitude, userLocation.longitude],
-        [selectedPlace.latitude, selectedPlace.longitude]
+        [Number(userLocation.latitude), Number(userLocation.longitude)],
+        [Number(selectedPlace.latitude), Number(selectedPlace.longitude)]
       ];
     }
   }
@@ -700,8 +700,8 @@ export default function MapScreen({ userLocation, userLanguage, weatherData }) {
               
               return (
                 <Marker
-                  key={place.id}
-                  position={[place.latitude, place.longitude]}
+                  key={place.id || place.osmId || place.name}
+                  position={[Number(place.latitude), Number(place.longitude)]}
                   icon={createCustomIcon(getCategoryColor(place.category), place.emoji || "📍", stopNumber)}
                 >
                   <Popup>
@@ -713,9 +713,9 @@ export default function MapScreen({ userLocation, userLanguage, weatherData }) {
                         </div>
                       </div>
                       <div style={{ fontSize: 10, color: "#6B5B52", marginBottom: 8, display: "flex", gap: 6, alignItems: "center" }}>
-                        <span>⭐ {place.rating?.toFixed(1)}</span>
+                        <span>⭐ {(Number(place.rating) || 4.5).toFixed(1)}</span>
                         <span>•</span>
-                        <span>{userLanguage === "Marathi" ? (translations.Marathi[place.category.toLowerCase()] || place.category) : place.category}</span>
+                        <span>{userLanguage === "Marathi" ? (translations.Marathi[place.category?.toLowerCase()] || place.category) : place.category}</span>
                       </div>
                       
                       {stopIndex !== -1 ? (

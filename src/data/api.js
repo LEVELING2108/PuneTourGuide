@@ -1,3 +1,5 @@
+import { places as fallbackPlaces, events as fallbackEvents, itineraryDays as fallbackItineraries } from './puneData';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
 // ── Client-Side In-Memory Cache ───────────────────────────
@@ -107,13 +109,49 @@ export const fetchPlaces = async (params = {}) => {
     if (cached) return cached;
   }
 
-  const response = await fetch(url, { headers: getHeaders() });
-  if (!response.ok) throw new Error('Failed to fetch places');
-  const data = await response.json();
-  if (!params.live) {
-    setCache(url, data);
+  try {
+    const response = await fetch(url, { headers: getHeaders() });
+    if (response.ok) {
+      const data = await response.json();
+      if (Array.isArray(data) && data.length > 0) {
+        if (!params.live) {
+          setCache(url, data);
+        }
+        return data;
+      }
+    }
+  } catch (err) {
+    console.warn(`[API] Remote places endpoint unreachable (${url}):`, err.message, '- Using local Pune dataset.');
   }
-  return data;
+
+  // Graceful offline fallback
+  let fallback = [...fallbackPlaces];
+  if (params.category && params.category !== 'All') {
+    fallback = fallback.filter(p => p.category.toLowerCase() === params.category.toLowerCase());
+  }
+  if (params.q) {
+    const qLower = params.q.toLowerCase();
+    fallback = fallback.filter(p =>
+      p.name.toLowerCase().includes(qLower) ||
+      (p.description && p.description.toLowerCase().includes(qLower)) ||
+      (p.name_mr && p.name_mr.includes(params.q))
+    );
+  }
+  if (params.bbox) {
+    const [south, west, north, east] = params.bbox.split(',').map(Number);
+    if (!isNaN(south) && !isNaN(north) && !isNaN(west) && !isNaN(east)) {
+      const minLat = Math.min(south, north);
+      const maxLat = Math.max(south, north);
+      const minLon = Math.min(west, east);
+      const maxLon = Math.max(west, east);
+      const bounded = fallback.filter(p =>
+        p.latitude >= minLat && p.latitude <= maxLat &&
+        p.longitude >= minLon && p.longitude <= maxLon
+      );
+      if (bounded.length > 0) fallback = bounded;
+    }
+  }
+  return fallback;
 };
 
 export const fetchEvents = async () => {
@@ -121,11 +159,19 @@ export const fetchEvents = async () => {
   const cached = getCached(cacheKey);
   if (cached) return cached;
 
-  const response = await fetch(cacheKey, { headers: getHeaders() });
-  if (!response.ok) throw new Error('Failed to fetch events');
-  const data = await response.json();
-  setCache(cacheKey, data);
-  return data;
+  try {
+    const response = await fetch(cacheKey, { headers: getHeaders() });
+    if (response.ok) {
+      const data = await response.json();
+      if (Array.isArray(data) && data.length > 0) {
+        setCache(cacheKey, data);
+        return data;
+      }
+    }
+  } catch (err) {
+    console.warn('[API] Events endpoint unreachable, using local dataset:', err.message);
+  }
+  return fallbackEvents;
 };
 
 export const fetchItinerary = async () => {
@@ -133,11 +179,19 @@ export const fetchItinerary = async () => {
   const cached = getCached(cacheKey);
   if (cached) return cached;
 
-  const response = await fetch(cacheKey, { headers: getHeaders() });
-  if (!response.ok) throw new Error('Failed to fetch itinerary');
-  const data = await response.json();
-  setCache(cacheKey, data);
-  return data;
+  try {
+    const response = await fetch(cacheKey, { headers: getHeaders() });
+    if (response.ok) {
+      const data = await response.json();
+      if (Array.isArray(data) && data.length > 0) {
+        setCache(cacheKey, data);
+        return data;
+      }
+    }
+  } catch (err) {
+    console.warn('[API] Itinerary endpoint unreachable, using local dataset:', err.message);
+  }
+  return fallbackItineraries;
 };
 
 export const updateStopStatus = async (id, done) => {
@@ -222,11 +276,17 @@ export const fetchWeather = async () => {
   const cached = getCached(cacheKey);
   if (cached) return cached;
 
-  const response = await fetch(cacheKey, { headers: getHeaders() });
-  if (!response.ok) throw new Error('Failed to fetch weather status');
-  const data = await response.json();
-  setCache(cacheKey, data);
-  return data;
+  try {
+    const response = await fetch(cacheKey, { headers: getHeaders() });
+    if (response.ok) {
+      const data = await response.json();
+      setCache(cacheKey, data);
+      return data;
+    }
+  } catch (err) {
+    console.warn('[API] Weather endpoint unreachable, using local default:', err.message);
+  }
+  return { weather: "Sunny", temp: 32 };
 };
 
 export const toggleWeather = async () => {
