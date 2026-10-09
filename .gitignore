@@ -46,3 +46,7 @@ AI_ROADMAP.md
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Playwright
+test-results/
+playwright-report/

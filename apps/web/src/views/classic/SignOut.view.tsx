@@ -37,7 +37,7 @@ export default function SignOutView({ v }: ViewProps) {
             SOS still works without an account. Emergency contacts, medical info and offline packs stay on this phone.
           </div>
         </div>
-        <Link to="/login" className="tap danger" style={{ height: "56px", borderRadius: "28px", background: "#A3281A", color: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>Sign out</Link>
+        <Link to="/login" className="tap danger" onClick={v.signOut} style={{ height: "56px", borderRadius: "28px", background: "#A3281A", color: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>Sign out</Link>
         <Link to="/profile" className="tap ghost" style={{ height: "52px", borderRadius: "26px", border: "1px solid #D5DAD6", color: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>Cancel</Link>
       </div>
     </div>

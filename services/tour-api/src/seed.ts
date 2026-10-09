@@ -1,289 +1,93 @@
-import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
+import { env } from './config/env';
+import { nearestHospital, PLACES, ROUTES } from './seed/catalogue';
 
+/**
+ * Seeds the curated catalogue, curated routes and events.
+ * Safe to re-run: places/routes are upserted by name/slug; users and OSM places are never touched.
+ */
 const prisma = new PrismaClient();
 
-const places = [
-  // ── HERITAGE (10) ──────────────────────────────────────────
-  {
-    name: "Shaniwar Wada",
-    name_mr: "शनिवार वाडा",
-    emoji: "🏰",
-    category: "Heritage",
-    rating: 4.6,
-    latitude: 18.5194,
-    longitude: 73.8553,
-    entryFee: "₹25",
-    estYear: "1732",
-    visitTime: "2h",
-    hours: "8:00 AM – 6:30 PM",
-    phone: "020 2444 5051",
-    address: "Shaniwar Peth",
-    accessible: true,
-    guidedTours: true,
-    tag: "Must Visit",
-    tagColor: "terracotta",
-    bgColor: "#F2EAE7",
-    description: "The historic seat of the Peshwas of the Maratha Empire.",
-    description_mr: "मराठा साम्राज्यातील पेशव्यांचे ऐतिहासिक निवासस्थान.",
-    distance: "Calculating...",
-  },
-  {
-    name: "Aga Khan Palace",
-    name_mr: "आगा खान पॅलेस",
-    emoji: "🏛️",
-    category: "Heritage",
-    rating: 4.5,
-    latitude: 18.5523,
-    longitude: 73.9015,
-    entryFee: "₹30",
-    estYear: "1892",
-    visitTime: "1.5h",
-    hours: "9:00 AM – 5:30 PM",
-    phone: "020 2668 0250",
-    address: "Yerwada",
-    accessible: true,
-    guidedTours: true,
-    tag: "Historic",
-    tagColor: "terracotta",
-    bgColor: "#F2EAE7",
-    description: "Built by Sultan Muhammed Shah Aga Khan III in 1892.",
-    description_mr: "१८९२ मध्ये सुलतान मोहम्मद शाह आगा खान तिसरे यांनी बांधले.",
-    distance: "Calculating...",
-  },
-  {
-    name: "Pataleshwar Caves",
-    name_mr: "पाताळेश्वर लेणी",
-    emoji: "🕳️",
-    category: "Heritage",
-    rating: 4.4,
-    latitude: 18.5265,
-    longitude: 73.8504,
-    entryFee: "Free",
-    estYear: "8th Century",
-    visitTime: "1h",
-    hours: "8:00 AM – 5:30 PM",
-    phone: "—",
-    address: "Jangli Maharaj Road",
-    accessible: false,
-    guidedTours: false,
-    tag: "Ancient",
-    tagColor: "terracotta",
-    bgColor: "#F2EAE7",
-    description: "8th-century rock-cut cave temple dedicated to Lord Shiva.",
-    description_mr: "भगवान शिवाला समर्पित ८ व्या शतकातील लेणी मंदिर.",
-    distance: "Calculating...",
-  },
-  {
-    name: "Raja Dinkar Kelkar Museum",
-    name_mr: "राजा दिनकर केळकर संग्रहालय",
-    emoji: "🏺",
-    category: "Heritage",
-    rating: 4.6,
-    latitude: 18.5108,
-    longitude: 73.8542,
-    entryFee: "₹100",
-    estYear: "1962",
-    visitTime: "2.5h",
-    hours: "10:00 AM – 5:30 PM",
-    phone: "020 2447 4466",
-    address: "Shukrawar Peth",
-    accessible: true,
-    guidedTours: true,
-    tag: "Cultural",
-    tagColor: "terracotta",
-    bgColor: "#F2EAE7",
-    description: "One-man collection of over 21,000 artifacts.",
-    description_mr: "२१,००० हून अधिक कलाकृतींचा वैयक्तिक संग्रह.",
-    distance: "Calculating...",
-  },
-  {
-    name: "Vaishali Restaurant",
-    name_mr: "वैशाली रेस्टॉरंट",
-    emoji: "🥯",
-    category: "Food",
-    rating: 4.7,
-    latitude: 18.5234,
-    longitude: 73.8415,
-    entryFee: "—",
-    estYear: "1951",
-    visitTime: "1h",
-    hours: "7:00 AM – 11:00 PM",
-    phone: "020 2553 1244",
-    address: "FC Road",
-    accessible: true,
-    guidedTours: false,
-    tag: "Legendary",
-    tagColor: "green",
-    bgColor: "#FDF3E0",
-    description: "Pune's most famous South Indian breakfast spot.",
-    description_mr: "पुण्यातील सर्वात प्रसिद्ध दाक्षिणात्य नाश्ता केंद्र.",
-    distance: "Calculating...",
-  },
-  {
-    name: "Dagdusheth Halwai Ganpati",
-    name_mr: "दगडूशेठ हलवाई गणपती",
-    emoji: "⛩️",
-    category: "Temple",
-    rating: 4.9,
-    latitude: 18.5164,
-    longitude: 73.856,
-    entryFee: "Free",
-    estYear: "1893",
-    visitTime: "45 min",
-    hours: "6:00 AM – 10:30 PM",
-    phone: "020 2447 9999",
-    address: "Budhwar Peth",
-    accessible: true,
-    guidedTours: false,
-    tag: "Iconic",
-    tagColor: "amber",
-    bgColor: "#FDF3E0",
-    description: "The most famous Ganesh temple in Pune.",
-    description_mr: "पुण्यातील सर्वात प्रसिद्ध गणेश मंदिर.",
-    distance: "Calculating...",
-  },
-  // ... adding generic Marathi names for others to save time while ensuring the logic works
-  {
-    name: "Goodluck Cafe",
-    name_mr: "गुडलक कॅफे",
-    emoji: "☕",
-    category: "Food",
-    rating: 4.5,
-    latitude: 18.524,
-    longitude: 73.84,
-    entryFee: "—",
-    estYear: "1935",
-    visitTime: "45 min",
-    hours: "7:30 AM – 11:30 PM",
-    phone: "020 2553 6859",
-    address: "FC Road",
-    accessible: true,
-    guidedTours: false,
-    tag: "Irani Cafe",
-    tagColor: "green",
-    bgColor: "#FDF3E0",
-    description: "Famous for Bun Maska, Omelette, and Chai.",
-    description_mr: "बन मस्का, ऑम्लेट आणि चहासाठी प्रसिद्ध.",
-    distance: "Calculating...",
-  },
+const EVENTS = [
+  { date: 'SAT · JUN 14', name: 'Sawai Gandharva Festival', desc: 'Classical music at Balgandharva Rang', color: 'terracotta' },
+  { date: 'SUN · JUN 15', name: 'Pune Food Walk', desc: 'FC Road street eats tour', color: 'indigo' },
+  { date: 'WED · JUN 18', name: 'Heritage Cycle Tour', desc: 'Morning cycle through Old Pune Peths', color: 'sage' },
 ];
 
-const events = [
-  {
-    date: "SAT · JUN 14",
-    name: "Sawai Gandharva Festival",
-    desc: "Classical music at Balgandharva Rang",
-    color: "terracotta",
-  },
-  {
-    date: "SUN · JUN 15",
-    name: "Pune Food Walk",
-    desc: "FC Road street eats tour",
-    color: "indigo",
-  },
-  {
-    date: "WED · JUN 18",
-    name: "Heritage Cycle Tour",
-    desc: "Morning cycle through Old Pune Peths",
-    color: "sage",
-  },
-  {
-    date: "FRI · JUN 20",
-    name: "Dhamal Dandiya Night",
-    desc: "Pre-season workshop at Koregaon Park",
-    color: "amber",
-  },
-  {
-    date: "SAT · JUN 21",
-    name: "Pune Tech Meetup",
-    desc: "Networking for developers at Baner",
-    color: "indigo",
-  },
-  {
-    date: "SUN · JUN 22",
-    name: "Mulshi Lake Trek",
-    desc: "Guided monsoon trek near Pune",
-    color: "green",
-  },
-  {
-    date: "TUE · JUN 24",
-    name: "Classical Dance Night",
-    desc: "Kathak performance at Shaniwar Wada",
-    color: "terracotta",
+async function seedPlaces() {
+  const ids = new Map<string, number>();
+  for (const p of PLACES) {
+    const hospital = nearestHospital(p);
+    const data = {
+      name: p.name,
+      name_mr: p.name_mr,
+      category: p.category,
+      kind: p.kind ?? null,
+      area: p.area,
+      address: p.area + ', Pune',
+      latitude: p.lat,
+      longitude: p.lng,
+      description: p.description,
+      description_mr: p.description_mr ?? null,
+      hours: p.hours,
+      opensAt: p.opensAt ?? null,
+      closesAt: p.closesAt ?? null,
+      entryFee: p.entryFee,
+      free: p.free,
+      visitMinutes: p.visitMinutes,
+      visitTime: p.visitMinutes >= 60 ? `${Math.round((p.visitMinutes / 60) * 10) / 10} hr` : `${p.visitMinutes} min`,
+      accessible: p.accessible ?? false,
+      weakSignal: p.weakSignal ?? false,
+      xp: p.xp,
+      estYear: p.estYear ?? '',
+      popularity: p.popularity,
+      nearestHospitalName: hospital.name,
+      nearestHospitalKm: hospital.km,
+      curated: true,
+    };
+    const existing = await prisma.place.findFirst({ where: { name: p.name }, orderBy: { id: 'asc' } });
+    const saved = existing
+      ? await prisma.place.update({ where: { id: existing.id }, data })
+      : await prisma.place.create({ data });
+    ids.set(p.name, saved.id);
   }
-];
+  return ids;
+}
+
+async function seedRoutes(placeIds: Map<string, number>) {
+  for (const r of ROUTES) {
+    const { stops, ...fields } = r;
+    const route = await prisma.route.upsert({ where: { slug: r.slug }, update: fields, create: fields });
+    await prisma.routeStop.deleteMany({ where: { routeId: route.id } });
+    await prisma.routeStop.createMany({
+      data: stops.map((s, i) => {
+        const placeId = placeIds.get(s.place);
+        if (!placeId) throw new Error(`Route ${r.slug}: unknown place ${s.place}`);
+        return { routeId: route.id, placeId, order: i, time: s.time };
+      }),
+    });
+  }
+}
+
+async function seedEvents() {
+  if ((await prisma.event.count()) > 0) return;
+  await prisma.event.createMany({ data: EVENTS });
+}
 
 async function main() {
-  console.log('Start seeding...');
-
-  // Clear existing data
-  await prisma.itineraryStop.deleteMany();
-  await prisma.itineraryDay.deleteMany();
-  await prisma.event.deleteMany();
-  await prisma.place.deleteMany();
-
-  // Seed Places
-  for (const p of places) {
-    await prisma.place.create({ data: p as any });
+  if (env.isProd && !process.argv.includes('--force')) {
+    console.log('Refusing to seed production without --force');
+    return;
   }
-
-  // Seed Events
-  for (const e of events) {
-    await prisma.event.create({ data: e });
-  }
-
-  // Seed Itineraries
-  const day1 = await prisma.itineraryDay.create({
-    data: { day: 1, label: "Day 1 · Sat" }
-  });
-  const day2 = await prisma.itineraryDay.create({
-    data: { day: 2, label: "Day 2 · Sun" }
-  });
-
-  await prisma.itineraryStop.createMany({
-    data: [
-      {
-        itineraryDayId: day1.id,
-        time: "09:00 AM",
-        name: "Shaniwar Wada",
-        name_mr: "शनिवार वाडा",
-        desc: "Explore the primary fortress seat of the Peshwas.",
-        desc_mr: "पेशव्यांचे मुख्य ऐतिहासिक निवासस्थान एक्सप्लोर करा.",
-        dotColor: "#8B3A2A",
-        tags: ["Heritage", "Must Visit"]
-      },
-      {
-        itineraryDayId: day1.id,
-        time: "11:30 AM",
-        name: "Dagdusheth Halwai Ganpati",
-        name_mr: "दगडूशेठ हलवाई गणपती",
-        desc: "Pay a visit to the most celebrated golden Ganpati temple in Pune.",
-        desc_mr: "पुण्यातील सर्वात प्रसिद्ध सोन्याच्या गणपती मंदिराला भेट द्या.",
-        dotColor: "#B87318",
-        tags: ["Temple", "Iconic"]
-      },
-      {
-        itineraryDayId: day2.id,
-        time: "08:30 AM",
-        name: "Pataleshwar Caves",
-        name_mr: "पाताळेश्वर लेणी",
-        desc: "Marvel at the ancient 8th-century rock-cut monolithic Shiva shrine.",
-        desc_mr: "८ व्या शतकातील प्राचीन पाताळेश्वर शिव मंदिराला भेट द्या.",
-        dotColor: "#4A6741",
-        tags: ["Heritage", "Ancient"]
-      }
-    ]
-  });
-
-  console.log('Seeding finished.');
+  const ids = await seedPlaces();
+  await seedRoutes(ids);
+  await seedEvents();
+  console.log(`Seeded ${ids.size} curated places, ${ROUTES.length} routes.`);
 }
 
 main()
   .catch((e) => {
     console.error(e);
-    process.exit(1);
+    process.exitCode = 1;
   })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  .finally(() => prisma.$disconnect());

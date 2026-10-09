@@ -12,6 +12,8 @@ import itineraryRoutes from './routes/itineraryRoutes';
 import userRoutes from './routes/userRoutes';
 import weatherRoutes from './routes/weatherRoutes';
 import { globalApiLimiter, authLimiter, aiGenerationLimiter } from './middleware/rateLimit';
+import { errorHandler } from './middleware/errorHandler';
+import v1 from './v1';
 
 const app = express();
 
@@ -70,6 +72,9 @@ app.use('/api/user/login', authLimiter);
 app.use('/api/user/register', authLimiter);
 app.use('/api/itinerary/generate', aiGenerationLimiter);
 
+// Pune Explorer API
+app.use('/api/v1', v1);
+
 // Legacy routes (kept working until the new screens move to /api/v1)
 app.use('/api/places', placeRoutes);
 app.use('/api/events', eventRoutes);
@@ -102,5 +107,8 @@ if (env.isProd && fs.existsSync(distPath)) {
     }
   });
 }
+
+// Errors thrown before a router (e.g. malformed JSON)
+app.use(errorHandler);
 
 export default app;

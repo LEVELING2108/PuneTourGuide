@@ -8,34 +8,57 @@ datasource db {
 }
 
 model Place {
-  id          Int      @id @default(autoincrement())
-  name        String
-  name_mr     String?
-  emoji       String
-  category    String
-  rating      Float
-  distance    String
-  entryFee    String
-  estYear     String
-  visitTime   String
-  hours       String
-  phone       String
-  address     String
-  accessible  Boolean
-  guidedTours Boolean
-  tag         String
-  tagColor    String
-  bgColor     String
-  description String
-  description_mr String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  isSaved     Boolean  @default(false)
-  osmId       String?  @unique
-  latitude    Float?
-  longitude   Float?
-  location    Unsupported("geometry(Point, 4326)")?
-  savedBy     UserSavedPlace[]
+  id                  Int                                   @id @default(autoincrement())
+  name                String
+  name_mr             String?
+  emoji               String                                @default("")
+  /// Heritage | Temple | Fort | Museum | Nature | Food
+  category            String
+  rating              Float                                 @default(0)
+  distance            String                                @default("")
+  entryFee            String                                @default("")
+  estYear             String                                @default("")
+  visitTime           String                                @default("")
+  /// Opening hours, e.g. "8:00 AM - 6:30 PM"
+  hours               String                                @default("")
+  phone               String                                @default("")
+  address             String                                @default("")
+  accessible          Boolean                               @default(false)
+  guidedTours         Boolean                               @default(false)
+  tag                 String                                @default("")
+  tagColor            String                                @default("")
+  bgColor             String                                @default("")
+  description         String
+  description_mr      String?
+  createdAt           DateTime                              @default(now())
+  updatedAt           DateTime                              @updatedAt
+  isSaved             Boolean                               @default(false)
+  osmId               String?                               @unique
+  latitude            Float?
+  longitude           Float?
+  location            Unsupported("geometry(Point, 4326)")?
+  /// Neighbourhood shown in lists, e.g. "Kasba Peth"
+  area                String?
+  /// Sub-type shown to users, e.g. "Wada", "Hill", "Food lane"
+  kind                String?
+  /// Opening time window in minutes after midnight (for "Open now"); null = always open / unknown
+  opensAt             Int?
+  closesAt            Int?
+  visitMinutes        Int?
+  free                Boolean                               @default(false)
+  weakSignal          Boolean                               @default(false)
+  xp                  Int                                   @default(30)
+  nearestHospitalName String?
+  nearestHospitalKm   Float?
+  /// Hand-picked catalogue entry (vs auto-discovered from OSM)
+  curated             Boolean                               @default(false)
+  popularity          Int                                   @default(0)
+  savedBy             UserSavedPlace[]
+  stops               ItineraryStop[]
+  stamps              Stamp[]
+  routeStops          RouteStop[]
+
+  @@index([category])
 }
 
 model Event {
@@ -48,15 +71,34 @@ model Event {
 }
 
 model User {
-  id            Int              @id @default(autoincrement())
-  name          String
-  email         String           @unique
-  password      String
-  xp            Int              @default(0)
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  itineraryDays ItineraryDay[]
-  savedPlaces   UserSavedPlace[]
+  id             Int                @id @default(autoincrement())
+  name           String
+  email          String?            @unique
+  /// bcrypt hash; null for phone / Google users
+  password       String?
+  /// E.164, e.g. +9198XXXXXXXX
+  phone          String?            @unique
+  phoneVerified  Boolean            @default(false)
+  googleId       String?            @unique
+  avatarUrl      String?
+  language       String             @default("en")
+  /// classic | deccan
+  theme          String             @default("classic")
+  interests      String[]           @default([])
+  shakeToSos     Boolean            @default(true)
+  smsWhenOffline Boolean            @default(true)
+  tripReminders  Boolean            @default(false)
+  xp             Int                @default(0)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  itineraryDays  ItineraryDay[]
+  savedPlaces    UserSavedPlace[]
+  contacts       EmergencyContact[]
+  medical        MedicalProfile?
+  stamps         Stamp[]
+  refreshTokens  RefreshToken[]
+  passwordResets PasswordReset[]
+  sosEvents      SosEvent[]
 }
 
 model UserSavedPlace {
@@ -71,12 +113,13 @@ model UserSavedPlace {
 }
 
 model ItineraryDay {
-  id      Int             @id @default(autoincrement())
-  day     Int
-  label   String
-  userId  Int?
-  user    User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  stops   ItineraryStop[]
+  id     Int             @id @default(autoincrement())
+  day    Int
+  label  String
+  date   DateTime?       @db.Date
+  userId Int?
+  user   User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stops  ItineraryStop[]
 }
 
 model ItineraryStop {
@@ -91,5 +134,124 @@ model ItineraryStop {
   tags           Json
   done           Boolean      @default(false)
   order          Int          @default(0)
+  placeId        Int?
   itineraryDay   ItineraryDay @relation(fields: [itineraryDayId], references: [id], onDelete: Cascade)
+  place          Place?       @relation(fields: [placeId], references: [id], onDelete: SetNull)
+
+  @@index([itineraryDayId, order])
+}
+
+/// Curated route (peth walk, fort trip) that can be copied into a day plan
+model Route {
+  id            Int         @id @default(autoincrement())
+  slug          String      @unique
+  title         String
+  title_mr      String?
+  /// "On foot" | "By car" | "By auto"
+  mode          String
+  summary       String
+  /// Deccan-theme ticket copy ("Peth heritage walk", "Kasba -> Budhwar -> Shukrawar")
+  deccanTitle   String?
+  deccanSummary String?
+  tone          String      @default("primary")
+  /// Explore carousel order
+  sort          Int         @default(0)
+  stops         RouteStop[]
+}
+
+model RouteStop {
+  id      Int     @id @default(autoincrement())
+  routeId Int
+  placeId Int
+  order   Int
+  time    String?
+  route   Route   @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  place   Place   @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@index([routeId, order])
+}
+
+/// Passport stamp: one per user per place, awarded when a stop is ticked
+model Stamp {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  placeId     Int
+  collectedAt DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place       Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, placeId])
+}
+
+/// Max 5 per user, exactly one primary (enforced in the service)
+model EmergencyContact {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  name      String
+  relation  String
+  /// E.164
+  phone     String
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Free-text fields are AES-256-GCM encrypted (MEDICAL_ENC_KEY); blood group stays plain for responders
+model MedicalProfile {
+  userId           Int      @id
+  bloodGroup       String?
+  allergiesEnc     String?
+  medicinesEnc     String?
+  notesEnc         String?
+  showOnLockScreen Boolean  @default(true)
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Refresh tokens are stored as SHA-256 hashes and rotated on every use
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    Int
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model OtpCode {
+  id        Int      @id @default(autoincrement())
+  phone     String
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+}
+
+model PasswordReset {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SosEvent {
+  id              Int       @id @default(autoincrement())
+  userId          Int?
+  sessionId       String
+  idempotencyKey  String    @unique
+  lat             Float
+  lng             Float
+  contactsAlerted Int       @default(0)
+  startedAt       DateTime  @default(now())
+  cancelledAt     DateTime?
+  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
