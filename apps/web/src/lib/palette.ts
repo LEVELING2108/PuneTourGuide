@@ -31,6 +31,8 @@ const palettes = {
     avatarPhoto: '#26303B',
     displayFont: "'Instrument Serif', serif",
     stopRingOff: '#9AA6A2',
+    routeDone: '#9AA6A2',
+    shield: '#26303B',
   },
   deccan: {
     ink: '#231C17',
@@ -58,6 +60,8 @@ const palettes = {
     avatarPhoto: '#0E5B5E',
     displayFont: "'DM Serif Display', serif",
     stopRingOff: '#CDB894',
+    routeDone: '#B3A28A',
+    shield: '#0E5B5E',
   },
 } as const;
 

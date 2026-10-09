@@ -26,7 +26,8 @@ export function toHelpRow(el: OsmElement): HelpRow | null {
   const lat = el.lat ?? el.center?.lat;
   const lng = el.lon ?? el.center?.lon;
   if (!name || lat === undefined || lng === undefined) return null;
-  const street = [t['addr:housenumber'], t['addr:street']].filter(Boolean).join(' ');
+  // A house number alone ("489") means nothing to a traveller; only use it with a street.
+  const street = t['addr:street'] ? [t['addr:housenumber'], t['addr:street']].filter(Boolean).join(' ') : '';
   const address = t['addr:full'] || [street, t['addr:suburb'] || t['addr:city']].filter(Boolean).join(', ') || null;
   // OSM tags maternity homes, eye and dental hospitals as amenity=hospital. They cannot take an
   // accident case, so they count as clinics: "nearest hospital" must mean somewhere that can.
@@ -42,6 +43,40 @@ export function toHelpRow(el: OsmElement): HelpRow | null {
     lat,
     lng,
   };
+}
+
+const metres = (a: HelpRow, b: HelpRow) => {
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180 * Math.cos((a.lat * Math.PI) / 180);
+  return 6371000 * Math.sqrt(dLat * dLat + dLng * dLng);
+};
+const info = (r: HelpRow) => (r.emergency ? 4 : 0) + (r.phone ? 2 : 0) + (r.address ? 1 : 0);
+
+/**
+ * OSM often maps one hospital twice (a point and its building). Same name within 300 m is one
+ * place: keep the most complete record, and keep it as an emergency hospital if either says so.
+ */
+export function dedupe(rows: HelpRow[]): HelpRow[] {
+  const byName = new Map<string, HelpRow[]>();
+  for (const r of rows) {
+    const k = `${r.category}:${r.name.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+    byName.set(k, [...(byName.get(k) ?? []), r]);
+  }
+  const out: HelpRow[] = [];
+  for (const group of byName.values()) {
+    const kept: HelpRow[] = [];
+    for (const r of group.sort((a, b) => info(b) - info(a))) {
+      const twin = kept.find((k) => metres(k, r) < 300);
+      if (!twin) kept.push({ ...r });
+      else {
+        twin.emergency ||= r.emergency;
+        twin.phone ??= r.phone;
+        twin.address ??= r.address;
+      }
+    }
+    out.push(...kept);
+  }
+  return out;
 }
 
 const SPECIALIST =
@@ -67,7 +102,7 @@ export const helpService = {
       const r = toHelpRow(el);
       if (r) rows.set(r.osmId, r);
     }
-    const list = [...rows.values()];
+    const list = dedupe([...rows.values()]);
     // A tiny answer means a broken mirror, not a city without hospitals: keep the old data.
     if (list.filter((r) => r.category === 'hospital').length < 50) {
       throw new Error(`Only ${list.length} usable points came back; refusing to replace the existing data`);
@@ -89,10 +124,11 @@ export const helpService = {
     const cached = await getCachedData<{ covered: boolean; items: HelpNear[] }>(key);
     if (cached) return cached;
     const rows = await helpRepo.near(lat, lng, radiusKm, Math.min(200, limit * 3));
-    const items = rows
-      .map((r, i) => ({ r, i }))
+    // Hospitals outnumber police stations ten to one; always keep the nearest few police / fire.
+    const ranked = rows.map((r, i) => ({ r, i })).sort((a, b) => rank(a.r) - rank(b.r) || a.i - b.i);
+    const safety = ranked.filter(({ r }) => rank(r) === 2).slice(0, 3);
+    const items = [...ranked.filter((x) => !safety.includes(x)).slice(0, limit - safety.length), ...safety]
       .sort((a, b) => rank(a.r) - rank(b.r) || a.i - b.i)
-      .slice(0, limit)
       .map(({ r }) => r);
     // Not covered until the first import has run, so the app falls back to the live service.
     const result = { covered: items.length > 0 || (await helpRepo.count()) > 0, items };

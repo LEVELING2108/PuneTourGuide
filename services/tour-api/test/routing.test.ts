@@ -157,6 +157,26 @@ describe('POST /itinerary/optimize', () => {
     expect(res.body.data.day.stops.at(-1).place.name).toBe('Sinhagad Fort');
   });
 
+  it('starts from the last visited stop, so every stop still to visit can move', async () => {
+    const u = await signUp();
+    await plan(u.token, ['Shaniwar Wada', 'Sinhagad Fort', 'Lal Mahal', 'Kasba Ganpati']);
+    const days = await api().get('/api/v1/itinerary').set(auth(u.token));
+    await api().patch(`/api/v1/itinerary/stops/${days.body.data[0].stops[0].id}`).set(auth(u.token)).send({ done: true });
+    const far = 3600;
+    table.mockResolvedValueOnce([
+      [0, far, 300, 300],
+      [far, 0, far, far],
+      [300, far, 0, 300],
+      [300, far, 300, 0],
+    ]);
+    await invalidateCache('tour:table:*');
+    const res = await api().post('/api/v1/itinerary/optimize').set(auth(u.token)).send({});
+    expect(res.body.data.minutesSaved).toBe(55);
+    const names = res.body.data.day.stops.map((s: { place: { name: string } }) => s.place.name);
+    expect(names).toEqual(['Shaniwar Wada', 'Lal Mahal', 'Kasba Ganpati', 'Sinhagad Fort']);
+    expect(res.body.data.day.stops[1].time).toBe('11:00 AM'); // keeps the first open slot
+  });
+
   it('cannot touch another user’s day', async () => {
     const a = await signUp();
     const b = await signUp();

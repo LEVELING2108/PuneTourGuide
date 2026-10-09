@@ -62,7 +62,7 @@ for (const theme of ['classic', 'deccan'] as const) {
     await page.getByText('Shaniwar Wada').first().click();
     await expect(page).toHaveURL(/\/place\/\d+/);
     await expect(page.getByText('शनिवार वाडा')).toBeVisible();
-    await expect(page.getByText('8:00 AM - 6:30 PM')).toBeVisible();
+    await expect(page.getByText('8 AM–6:30 PM')).toBeVisible();
     await page.getByRole('button', { name: 'Save place' }).click();
     await expect(page.getByRole('status')).toContainText('Saved to your places');
     await expect(page.getByRole('button', { name: 'Remove from saved' })).toBeVisible();

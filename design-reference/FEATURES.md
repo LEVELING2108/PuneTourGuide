@@ -4,6 +4,8 @@ Companion to `README.md`. The `.dc.html` files show *how it looks*; this file sa
 and what backend/API work that needs. Status: **EXISTS** = already in PuneTourGuide or RoadSoS, **EXTEND** = exists but needs
 changes, **NEW** = to build.
 
+> **Progress:** ✅ in the Control column = works end to end on real data, verified by automated tests (updated after each build phase).
+
 ## 0. Architecture (agreed)
 
 - **Frontend:** this repo's React + Vite PWA. One component set, two themes (CSS variables, `data-theme`).
@@ -56,19 +58,19 @@ Medical info is sensitive: store encrypted at rest, only return it to the owner,
 ### First launch
 | Control | Behaviour | Backend |
 |---|---|---|
-| Splash (tap / auto 2 s) | → Intro on first launch, → Home after that (`localStorage.pe_onboarded`) | — |
-| Intro: swipe / Next / Skip / Get started / Log in | Carousel; Skip & Get started → Permissions; Log in → Login | — |
-| Permissions: Allow location | `navigator.geolocation.getCurrentPosition` (triggers OS prompt) | — |
-| Permissions: Allow motion | `DeviceMotionEvent.requestPermission()` on iOS (must be in the tap handler), otherwise just enable | — |
-| Continue / Not now | Save `pe_perm_*` flags → SignUp | — |
-| Home amber “Safety not set up” card | Shown when location or motion not granted; Set up → Permissions | — |
+| ✅ Splash (tap / auto 2 s) | → Intro on first launch, → Home after that (`localStorage.pe_onboarded`) | — |
+| ✅ Intro: swipe / Next / Skip / Get started / Log in | Carousel; Skip & Get started → Permissions; Log in → Login | — |
+| ✅ Permissions: Allow location | `navigator.geolocation.getCurrentPosition` (triggers OS prompt) | — |
+| ✅ Permissions: Allow motion | `DeviceMotionEvent.requestPermission()` on iOS (must be in the tap handler), otherwise just enable | — |
+| ✅ Continue / Not now | Save `pe_perm_*` flags → SignUp | — |
+| ✅ Home amber “Safety not set up” card | Shown when location or motion not granted; Set up → Permissions | — |
 
 ### Account
 | Control | Behaviour | Backend |
 |---|---|---|
 | Continue / Sign up with Google | Google Identity Services → ID token → server verifies → JWT. New user → Onboard | **NEW** `POST /api/auth/google` |
-| Email / Mobile number tabs | Switch form | — |
-| Log in (email) | | EXISTS `/users/login` |
+| ✅ Email / Mobile number tabs | Switch form | — |
+| ✅ Log in (email) | | EXISTS `/users/login` |
 | Create account (email) + password strength | Strength computed client-side; disabled until Terms ticked | EXISTS `/users/register` (EXTEND for interests/theme defaults) |
 | Send code (mobile) | Rate-limited; send 6-digit SMS | **NEW** `POST /api/auth/otp/send` (SMS provider e.g. MSG91/Twilio/Firebase Phone Auth) |
 | OTP boxes, auto-fill | `autocomplete="one-time-code"`; Web OTP API on Android | — |
@@ -78,29 +80,29 @@ Medical info is sensitive: store encrypted at rest, only return it to the owner,
 | Onboard: Pick from my contacts | Contact Picker API (Android Chrome) or Capacitor Contacts; fallback to manual | — |
 | Onboard: Save & start exploring / Skip | Save first contact | **NEW** `POST /api/contacts` |
 | Forgot? → Send reset link / Send again | Always show “check inbox” (no account enumeration); link valid 30 min | **NEW** `POST /api/auth/password/forgot`, `POST /api/auth/password/reset` (email via Resend/Nodemailer) |
-| Skip for now | Guest mode: Explore/Map/SOS work, save/plan prompt login | — |
+| ✅ Skip for now | Guest mode: Explore/Map/SOS work, save/plan prompt login | — |
 
 ### Main tabs
 | Control | Behaviour | Backend |
 |---|---|---|
-| Home: अ button | → Language | — |
-| Home: Next stop card | First not-done stop of today | EXISTS itinerary |
-| Home: Collections / stamps | → Explore with category preset | EXISTS places (filter) |
-| Explore: search | Debounced query | **EXTEND** `GET /api/places?q=` |
-| Explore: category chips | Filter list | **EXTEND** `?category=` |
-| Explore: filter button → Filters sheet (distance, open now, free, wheelchair, hospital ≤2 km) | “Show N places” uses count from API | **EXTEND** `GET /api/places?near=lat,lng&radiusKm&openNow&free&accessible&helpWithinKm` (PostGIS `ST_DWithin`) + `GET /api/places/count?...` |
-| Explore: route tickets | Load a curated route into the plan | **NEW** `GET /api/routes`, `POST /api/itinerary/from-route/:id` |
-| Explore: “+” on a place | Add/remove from plan, toast | EXISTS stops POST/DELETE |
-| Map: Places / My route / Help nearby | Layers; Help works logged-out | EXISTS places, itinerary + OSRM, RoadSoS emergency-services |
-| Map: call buttons | `tel:` with real numbers from emergency-services | EXISTS |
-| Map / Place: Start directions | → Navigation | OSRM route (EXISTS in itinerary service) |
-| Navigation: Walk / Auto | Re-route with profile `foot`/`car` | OSRM |
-| Navigation: End directions / SOS | → Plan / → SOS | — |
-| Plan: Day tabs, tick visited | Tick → +XP and **collect a stamp** | EXISTS PATCH stop; **NEW** `POST /api/stamps` (or do it inside the PATCH) |
-| Plan: Optimise | Calls optimise, shows “saves N min” from response | EXISTS `/itinerary/optimize` (EXTEND to return time saved) |
+| ✅ Home: अ button | → Language | — |
+| ✅ Home: Next stop card | First not-done stop of today | EXISTS itinerary |
+| ✅ Home: Collections / stamps | → Explore with category preset | EXISTS places (filter) |
+| ✅ Explore: search | Debounced query | **EXTEND** `GET /api/places?q=` |
+| ✅ Explore: category chips | Filter list | **EXTEND** `?category=` |
+| ✅ Explore: filter button → Filters sheet (distance, open now, free, wheelchair, hospital ≤2 km) | “Show N places” uses count from API | **EXTEND** `GET /api/places?near=lat,lng&radiusKm&openNow&free&accessible&helpWithinKm` (PostGIS `ST_DWithin`) + `GET /api/places/count?...` |
+| ✅ Explore: route tickets | Load a curated route into the plan | **NEW** `GET /api/routes`, `POST /api/itinerary/from-route/:id` |
+| ✅ Explore: “+” on a place | Add/remove from plan, toast | EXISTS stops POST/DELETE |
+| ✅ Map: Places / My route / Help nearby | Layers; Help works logged-out | EXISTS places, itinerary + OSRM, RoadSoS emergency-services |
+| ✅ Map: call buttons | `tel:` with real numbers from emergency-services | EXISTS |
+| ✅ Map / Place: Start directions | → Navigation | OSRM route (EXISTS in itinerary service) |
+| ✅ Navigation: Walk / Auto | Re-route with profile `foot`/`car` | OSRM |
+| ✅ Navigation: End directions / SOS | → Plan / → SOS | — |
+| ✅ Plan: Day tabs, tick visited | Tick → +XP and **collect a stamp** | EXISTS PATCH stop; **NEW** `POST /api/stamps` (or do it inside the PATCH) |
+| ✅ Plan: Optimise | Calls optimise, shows “saves N min” from response | EXISTS `/itinerary/optimize` (EXTEND to return time saved) |
 | Plan: Share live trip toggle | Creates tracking session, shares link to contacts | RoadSoS `create-session` + **NEW** `POST /api/share-trip` (sends link by SMS/WhatsApp intent) |
-| Place: Save | Toggle save, toast | EXISTS |
-| Place: Add to plan / Directions / nearest hospital | | EXISTS / OSRM / emergency-services |
+| ✅ Place: Save | Toggle save, toast | EXISTS |
+| ✅ Place: Add to plan / Directions / nearest hospital | | EXISTS / OSRM / emergency-services |
 
 ### SOS (works logged-out and offline)
 | Control | Behaviour | Backend |

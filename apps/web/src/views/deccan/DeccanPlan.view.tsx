@@ -25,6 +25,8 @@ const css = `
 .scr-deccan-DeccanPlan .knob{transition:left .35s cubic-bezier(.3,.8,.2,1)}
 .scr-deccan-DeccanPlan .track{transition:background-color .35s}
 .scr-deccan-DeccanPlan .navi:hover{color:var(--bg)}
+@keyframes dDeccanPlan-toast{0%{opacity:0;transform:translateY(16px)}12%{opacity:1;transform:none}85%{opacity:1;transform:none}100%{opacity:0;transform:translateY(8px)}}
+.scr-deccan-DeccanPlan .toast{animation:dDeccanPlan-toast 3s ease both}
 @media (prefers-reduced-motion:reduce){.scr-deccan-DeccanPlan *,.scr-deccan-DeccanPlan *::after{animation:none!important;transition:none!important}}
 `;
 
@@ -49,8 +51,18 @@ export default function DeccanPlanView({ v }: ViewProps) {
           </div>
           <div className="rise d2" style={{ position: "relative", height: "44px", borderRadius: "22px", background: "#E7DAC4", padding: "4px", boxSizing: "border-box", display: "flex" }}>
             <div className="seg" style={{ position: "absolute", top: "4px", left: "4px", width: "calc(50% - 4px)", height: "36px", borderRadius: "18px", background: "var(--ink)", transform: `translateX(${v.segX})` }} />
-            <button className="segtxt" onClick={v.pickDay1} style={{ position: "relative", flex: "1", border: "none", background: "transparent", fontFamily: "var(--font-body)", fontSize: "14.5px", fontWeight: "600", color: v.c1, cursor: "pointer" }}>Day 1 · Sat</button>
-            <button className="segtxt" onClick={v.pickDay2} style={{ position: "relative", flex: "1", border: "none", background: "transparent", fontFamily: "var(--font-body)", fontSize: "14.5px", fontWeight: "600", color: v.c2, cursor: "pointer" }}>Day 2 · Sun</button>
+            <button className="segtxt" onClick={v.pickDay1} aria-pressed={v.day1Pressed} style={{ position: "relative", flex: "1", border: "none", background: "transparent", fontFamily: "var(--font-body)", fontSize: "14.5px", fontWeight: "600", color: v.c1, cursor: "pointer" }}>{v.day1Label}</button>
+            <button className="segtxt" onClick={v.pickDay2} aria-pressed={v.day2Pressed} style={{ position: "relative", flex: "1", border: "none", background: "transparent", fontFamily: "var(--font-body)", fontSize: "14.5px", fontWeight: "600", color: v.c2, cursor: "pointer" }}>{v.day2Label}</button>
+          </div>
+          <div className="rise d2" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: "36px" }}>
+            <div style={{ fontSize: "12px", letterSpacing: "0.14em", color: "var(--muted)" }}>{v.countText}</div>
+            <button className="tap" onClick={v.optimise} aria-busy={v.optBusy} style={{ height: "36px", padding: "0 14px", borderRadius: "18px", border: "1px solid var(--line)", background: "var(--surface)", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "600", color: "var(--ink)", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 17l6-6 4 4 6-8" />
+                <path d="M15 7h5v5" />
+              </svg>
+              {v.optLabel}
+            </button>
           </div>
           <div className="rise d3" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {((v.stops ?? []) as any[]).map((s: any, sIndex: number) => (
@@ -67,7 +79,7 @@ export default function DeccanPlanView({ v }: ViewProps) {
                     <div style={{ fontSize: "13px", color: s.helpColor }}>{s.help}</div>
                     <div style={{ fontSize: "12.5px", fontWeight: "600", color: "#8A6420" }}>+{s.xp}{" XP"}</div>
                   </div>
-                  <button className="tap" onClick={s.toggle} aria-label="Mark visited" aria-pressed={s.pressed} style={{ alignSelf: "center", marginRight: "12px", width: "40px", height: "40px", borderRadius: "20px", border: `1.5px solid ${s.ring}`, background: s.fill, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: "0" }}>
+                  <button className="tap" onClick={s.toggle} aria-label={s.tickLabel} aria-pressed={s.pressed} style={{ alignSelf: "center", marginRight: "12px", width: "40px", height: "40px", borderRadius: "20px", border: `1.5px solid ${s.ring}`, background: s.fill, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: "0" }}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={s.tick} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M5 12l5 5 9-10" />
                     </svg>
@@ -87,6 +99,15 @@ export default function DeccanPlanView({ v }: ViewProps) {
               </Fragment>
             ))}
           </div>
+          {v.empty && (
+            <>
+              <div className="rise d3" style={{ position: "relative", background: "var(--surface)", border: "1.5px dashed #D8C6A6", borderRadius: "16px", padding: "18px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                <div style={{ fontFamily: "var(--font-display)", fontSize: "21px", lineHeight: "1.1" }}>{v.emptyTitle}</div>
+                <div style={{ fontSize: "13px", color: "var(--muted)" }}>{v.emptyText}</div>
+                <Link to="/explore" style={{ marginTop: "6px", fontSize: "13.5px", fontWeight: "600", textDecoration: "none" }}>Open Explore</Link>
+              </div>
+            </>
+          )}
           <div className="rise d4" style={{ background: "var(--ink)", color: "var(--bg)", borderRadius: "18px", padding: "14px 16px", display: "flex", alignItems: "center", gap: "14px", borderTop: "3px solid var(--gold)" }}>
             <div style={{ flex: "1" }}>
               <div style={{ fontSize: "15px", fontWeight: "600" }}>Share live trip</div>
@@ -99,6 +120,14 @@ export default function DeccanPlanView({ v }: ViewProps) {
           </div>
         </div>
       </div>
+      {v.showToast && (
+        <>
+          <div className="toast" role="status" style={{ position: "absolute", left: "22px", right: "22px", bottom: "100px", padding: "13px 16px", borderRadius: "16px", background: "var(--ink)", color: "var(--bg)", fontSize: "13.5px", display: "flex", alignItems: "center", gap: "10px", boxShadow: "0 16px 30px -14px rgba(35,28,23,0.6)", borderTop: "2px solid var(--gold)", zIndex: "3" }}>
+            <span style={{ width: "8px", height: "8px", borderRadius: "4px", background: "var(--gold)", flexShrink: "0" }} />
+            {v.toastText}
+          </div>
+        </>
+      )}
       <nav className="rise d6" aria-label="Main" style={{ position: "absolute", left: "16px", right: "16px", bottom: "20px", height: "64px", borderRadius: "32px", background: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px", boxSizing: "border-box", boxShadow: "0 20px 40px -18px rgba(35,28,23,0.6)", borderTop: "2px solid var(--gold)" }}>
         <Link to="/" className="tap navi" aria-label="Home" style={{ width: "48px", height: "48px", borderRadius: "24px", color: "#B5A795", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">

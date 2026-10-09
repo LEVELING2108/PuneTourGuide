@@ -87,3 +87,11 @@ body {
 .scr [data-scroll][data-flex] > * {
   flex-shrink: 0;
 }
+
+/* Leaflet map (components/map/MapCanvas.tsx) */
+.pe-map .leaflet-container { font-family: var(--font-body); }
+.pe-map .leaflet-tile-pane { filter: var(--map-tiles-filter); }
+.pe-map .pe-pin { background: none; border: none; }
+.pe-map .leaflet-top.leaflet-right { top: var(--pe-attr-top, 0px); }
+.pe-map .leaflet-control-attribution { font-size: 9.5px; background: rgba(255, 255, 255, 0.72); border-radius: 8px 0 0 8px; padding: 1px 6px; }
+.pe-map .leaflet-control-attribution a { color: inherit; }

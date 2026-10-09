@@ -11,7 +11,8 @@ export default defineConfig({
     proxy: {
       '/api': { target: 'http://localhost:3001', changeOrigin: true },
       '/safety': {
-        target: 'http://localhost:8000',
+        // SAFETY_PORT matches scripts/run-safety.mjs (default 8000)
+        target: `http://127.0.0.1:${process.env.SAFETY_PORT || '8000'}`,
         changeOrigin: true,
         ws: true,
         rewrite: (path) => path.replace(/^\/safety/, ''),

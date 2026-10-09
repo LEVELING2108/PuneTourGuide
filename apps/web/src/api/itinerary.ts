@@ -36,6 +36,8 @@ export type RouteTicket = {
 
 export type TickResult = { stop: Stop; stampCollected: boolean; xpAwarded: number; totalXp?: number };
 
+export type OptimiseResult = { day: PlanDay; minutesSaved: number; estimated: boolean };
+
 export const itineraryApi = {
   plan: () => api<PlanDay[]>('/itinerary'),
   addStop: (placeId: number, dayId?: number) =>
@@ -45,4 +47,5 @@ export const itineraryApi = {
     api<TickResult>(`/itinerary/stops/${id}`, { method: 'PATCH', body: patch }),
   fromRoute: (routeId: number, dayId?: number) => api<PlanDay>(`/itinerary/from-route/${routeId}`, { body: dayId ? { dayId } : {} }),
   routes: () => api<RouteTicket[]>('/routes'),
+  optimize: (dayId?: number) => api<OptimiseResult>('/itinerary/optimize', { body: dayId ? { dayId } : {} }),
 };

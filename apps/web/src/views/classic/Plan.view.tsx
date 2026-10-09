@@ -40,7 +40,7 @@ export default function PlanView({ v }: ViewProps) {
               <div style={{ fontSize: "11.5px", fontWeight: "600", letterSpacing: "0.16em", color: "var(--muted)" }}>{"YOUR PLAN · "}{v.xpLabel}</div>
               <h1 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "44px", fontWeight: "400", lineHeight: "0.98" }}>{v.dayName}</h1>
             </div>
-            <button className="tap" onClick={v.optimise} style={{ height: "44px", padding: "0 16px", borderRadius: "22px", border: "1px solid #E1E4E0", background: "var(--surface)", fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: "600", color: "var(--ink)", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+            <button className="tap" onClick={v.optimise} aria-busy={v.optBusy} style={{ height: "44px", padding: "0 16px", borderRadius: "22px", border: "1px solid #E1E4E0", background: "var(--surface)", fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: "600", color: "var(--ink)", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 17l6-6 4 4 6-8" />
                 <path d="M15 7h5v5" />
@@ -50,15 +50,15 @@ export default function PlanView({ v }: ViewProps) {
           </div>
           <div className="rise d2" style={{ position: "relative", height: "46px", borderRadius: "23px", background: "#E9EBE7", padding: "4px", boxSizing: "border-box", display: "flex" }}>
             <div className="seg" style={{ position: "absolute", top: "4px", left: "4px", width: "calc(50% - 4px)", height: "38px", borderRadius: "19px", background: "var(--ink)", transform: `translateX(${v.segX})` }} />
-            <button className="segtxt" onClick={v.pickDay1} style={{ position: "relative", flex: "1", border: "none", background: "transparent", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "600", color: v.day1Color, cursor: "pointer" }}>Day 1 · Sat</button>
-            <button className="segtxt" onClick={v.pickDay2} style={{ position: "relative", flex: "1", border: "none", background: "transparent", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "600", color: v.day2Color, cursor: "pointer" }}>Day 2 · Sun</button>
+            <button className="segtxt" onClick={v.pickDay1} aria-pressed={v.day1Pressed} style={{ position: "relative", flex: "1", border: "none", background: "transparent", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "600", color: v.day1Color, cursor: "pointer" }}>{v.day1Label}</button>
+            <button className="segtxt" onClick={v.pickDay2} aria-pressed={v.day2Pressed} style={{ position: "relative", flex: "1", border: "none", background: "transparent", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "600", color: v.day2Color, cursor: "pointer" }}>{v.day2Label}</button>
           </div>
           <div className="rise d3" style={{ display: "flex", flexDirection: "column" }}>
             {((v.stops ?? []) as any[]).map((s: any, sIndex: number) => (
               <Fragment key={s?.key ?? sIndex}>
                 <div style={{ display: "flex", gap: "14px" }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "24px" }}>
-                    <button className="check tap" onClick={s.toggle} aria-label="Mark visited" style={{ width: "24px", height: "24px", borderRadius: "12px", border: `1.5px solid ${s.ring}`, background: s.fill, marginTop: "2px", padding: "0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                    <button className="check tap" onClick={s.toggle} aria-label={s.tickLabel} aria-pressed={s.pressed} style={{ width: "24px", height: "24px", borderRadius: "12px", border: `1.5px solid ${s.ring}`, background: s.fill, marginTop: "2px", padding: "0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M5 12l5 5 9-10" />
                       </svg>
@@ -79,6 +79,15 @@ export default function PlanView({ v }: ViewProps) {
               </Fragment>
             ))}
           </div>
+          {v.empty && (
+            <>
+              <div className="rise d3" style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "20px", padding: "18px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", lineHeight: "1.05" }}>{v.emptyTitle}</div>
+                <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>{v.emptyText}</div>
+                <Link to="/explore" style={{ marginTop: "6px", fontSize: "13px", fontWeight: "600", textDecoration: "none" }}>Open Explore</Link>
+              </div>
+            </>
+          )}
           <div className="rise d4" style={{ background: "var(--ink)", color: "var(--bg)", borderRadius: "22px", padding: "16px 18px", display: "flex", alignItems: "center", gap: "14px" }}>
             <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "3px" }}>
               <div style={{ fontSize: "14.5px", fontWeight: "600" }}>Share live trip</div>

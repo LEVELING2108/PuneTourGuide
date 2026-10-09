@@ -147,23 +147,27 @@ export const itineraryService = {
     const pending = day.stops.filter((s) => !s.done);
     const routable = pending.filter((s) => s.place?.latitude != null && s.place?.longitude != null);
     const unroutable = pending.filter((s) => !routable.includes(s));
+    // The fixed start is where you are in the day: the last visited stop, else the first stop.
+    const anchor = [...done].reverse().find((s) => s.place?.latitude != null && s.place?.longitude != null);
+    const seq = anchor ? [anchor, ...routable] : routable;
     const unchanged = { day: toDayDto(day), minutesSaved: 0, estimated: false };
-    if (routable.length < 3) return unchanged; // with a fixed start, two stops have only one order
+    if (seq.length < 3) return unchanged; // with a fixed start, two stops have only one order
 
-    const pts = routable.map((s) => ({ lat: s.place!.latitude!, lng: s.place!.longitude! }));
+    const pts = seq.map((s) => ({ lat: s.place!.latitude!, lng: s.place!.longitude! }));
     const { seconds, estimated } = await routingService.matrix(pts, 'car');
     const order = optimiseOrder(seconds);
-    const savedS = pathCost(routable.map((_, i) => i), seconds) - pathCost(order, seconds);
+    const savedS = pathCost(seq.map((_, i) => i), seconds) - pathCost(order, seconds);
     if (savedS < 60) return { ...unchanged, estimated };
 
-    // Re-time from the fixed start: visit length + travel, rounded up to the next quarter hour.
+    // Re-time from the first stop still to visit: visit length + travel, rounded up to the quarter hour.
+    const visitOrder = anchor ? order.slice(1) : order;
     let t = parseTime(routable[0].time) ?? DEFAULT_START;
-    const timed = order.map((idx, n) => {
+    const timed = visitOrder.map((idx, n) => {
       if (n > 0) {
-        const prev = routable[order[n - 1]];
-        t = roundUp15(t + (prev.place?.visitMinutes ?? 60) + seconds[order[n - 1]][idx] / 60);
+        const prevIdx = visitOrder[n - 1];
+        t = roundUp15(t + (seq[prevIdx].place?.visitMinutes ?? 60) + seconds[prevIdx][idx] / 60);
       }
-      return { stop: routable[idx], time: formatTime(t) };
+      return { stop: seq[idx], time: formatTime(t) };
     });
     const final = [...done.map((s) => ({ stop: s, time: undefined })), ...timed, ...unroutable.map((s) => ({ stop: s, time: undefined }))];
     await itineraryRepo.reorder(final.map((f, i) => ({ id: f.stop.id, order: i, time: f.time })));

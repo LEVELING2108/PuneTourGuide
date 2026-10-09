@@ -16,6 +16,9 @@
   --font-body: 'Hanken Grotesk', sans-serif;
   --font-accent: 'Mukta', sans-serif;
   --backdrop: #e9ebe7;
+  /* Map: background while tiles load, and the tint applied to OSM tiles */
+  --map-bg: #ecede8;
+  --map-tiles-filter: saturate(0.85);
   color-scheme: light;
 }
 
@@ -35,6 +38,8 @@
   --font-body: 'Mukta', sans-serif;
   --font-accent: 'Yatra One', 'Mukta', sans-serif;
   --backdrop: #e7dac4;
+  --map-bg: #ede3d0;
+  --map-tiles-filter: sepia(0.38) saturate(0.85) hue-rotate(-6deg) brightness(0.98);
 }
 
 /* SOS red is never themed */

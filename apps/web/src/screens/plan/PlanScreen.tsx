@@ -1,103 +1,131 @@
-import { useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
+import type { Stop } from '../../api/itinerary';
 import { Themed } from '../../components/Themed';
+import { kmText, placeTone, usePlan } from '../../features/places';
+import { puneTodayIso, useOptimiseDay, useTickStop } from '../../features/plan';
 import { usePalette } from '../../lib/palette';
 import { useFlash } from '../../lib/useFlash';
+import { useIsLoggedIn } from '../../stores/auth';
 import { useTheme } from '../../stores/theme';
 import PlanView from '../../views/classic/Plan.view';
 import DeccanPlanView from '../../views/deccan/DeccanPlan.view';
 
-type DemoStop = { time: string; name: string; xp: number; help: string; warn?: boolean; tone: string };
-
-const DAY1: DemoStop[] = [
-  { time: '9:30 AM', name: 'Shaniwar Wada', xp: 40, help: 'KEM Hospital · 1.2 km', tone: '#7A1F4E' },
-  { time: '11:30 AM', name: 'Dagdusheth Ganpati', xp: 30, help: 'KEM Hospital · 0.9 km', tone: '#A4462B' },
-  { time: '3:00 PM', name: 'Sinhagad Fort trek', xp: 80, help: 'Weak signal · help list saved offline', warn: true, tone: '#0E5B5E' },
-];
-const DAY2: DemoStop[] = [
-  { time: '10:00 AM', name: 'Aga Khan Palace', xp: 40, help: 'Ruby Hall Clinic · 4 km', tone: '#0E5B5E' },
-  { time: '1:00 PM', name: 'Pataleshwar Caves', xp: 30, help: 'Hospital · 1.6 km', tone: '#A4462B' },
-  { time: '5:30 PM', name: 'Parvati Hill', xp: 30, help: 'Hospital · 2 km', tone: '#7A1F4E' },
-];
-const DAY2_OPTIMISED: DemoStop[] = [
-  { ...DAY2[1], time: '10:00 AM' },
-  { ...DAY2[0], time: '12:30 PM' },
-  DAY2[2],
-];
+function helpLine(s: Stop) {
+  const h = s.place.hospital;
+  const near = h ? [h.name, kmText(h.km)].filter(Boolean).join(' · ') : null;
+  if (s.place.weakSignal) return near ? `Weak signal · ${near}` : 'Weak signal · check help on the map first';
+  return near ?? 'Help nearby on the map';
+}
 
 export default function PlanScreen() {
   const theme = useTheme();
   const p = usePalette();
   const deccan = theme === 'deccan';
-  const [day, setDay] = useState<1 | 2>(1);
-  const [sharing, setSharing] = useState(true);
-  const [done, setDone] = useState<Record<string, boolean>>({ 'Shaniwar Wada': true });
-  const [busy, setBusy] = useState(false);
-  const [flipped, setFlipped] = useState(false);
+  const navigate = useNavigate();
+  const loggedIn = useIsLoggedIn();
+  const plan = usePlan(loggedIn);
+  const tick = useTickStop();
+  const optimise = useOptimiseDay();
   const toast = useFlash(3100);
-  const timer = useRef<number>(0);
+  const [picked, setPicked] = useState<number | null>(null);
 
-  const list = day === 1 ? DAY1 : flipped ? DAY2_OPTIMISED : DAY2;
-  let earned = 0;
+  // A plan belongs to an account: guests log in and come straight back.
+  useEffect(() => {
+    if (!loggedIn) navigate('/login?next=%2Fplan', { replace: true });
+  }, [loggedIn, navigate]);
+
+  const days = plan.data ?? [];
+  const todayIdx = Math.max(0, days.findIndex((d) => d.date === puneTodayIso()));
+  const idx = picked ?? todayIdx;
+  const day = days[idx];
+  const list = day?.stops ?? [];
+  const earned = list.filter((s) => s.done).reduce((n, s) => n + s.place.xp, 0);
+  const left = list.filter((s) => !s.done).length;
+
   const stops = list.map((s, i) => {
-    const d = !!done[s.name];
-    if (d) earned += s.xp;
+    const d = s.done;
     const [t, ampm] = s.time.split(' ');
     return {
-      ...s,
-      key: s.name,
-      xp: deccan ? String(s.xp) : '+' + s.xp + ' XP',
+      key: s.id,
+      name: s.place.name,
+      href: s.place.id ? `/place/${s.place.id}` : undefined,
+      xp: deccan ? String(s.place.xp) : `+${s.place.xp} XP`,
       time: deccan ? t : s.time,
       ampm,
-      no: '0' + (i + 1),
+      no: String(i + 1).padStart(2, '0'),
+      help: helpLine(s),
+      tone: placeTone(s.place.category, theme),
       done: d,
       pressed: d ? 'true' : 'false',
-      helpColor: s.warn ? '#8A4A12' : p.muted,
+      tickLabel: d ? `Mark ${s.place.name} not visited` : `Mark ${s.place.name} visited`,
+      helpColor: s.place.weakSignal ? '#8A4A12' : p.muted,
       ring: d ? p.primary : p.stopRingOff,
       fill: d ? p.primary : p.surface,
       tick: d ? p.surface : p.stopRingOff,
       opacity: d ? 0.62 : 1,
       line: i === list.length - 1 ? 'none' : 'block',
-      toggle: () => setDone({ ...done, [s.name]: !d }),
+      toggle: () =>
+        tick.mutate(
+          { stopId: s.id, done: !d },
+          {
+            onSuccess: (r) => {
+              if (r.stampCollected) toast.flash(`Stamp collected · +${r.xpAwarded} XP`);
+            },
+            onError: (err) => toast.flash(err.message),
+          }
+        ),
     };
   });
 
-  const trackOn = deccan ? '#C59A3A' : '#2FA58A';
+  const tab = (i: number) => days[i]?.label ?? `Day ${i + 1}`;
   const trackOff = deccan ? '#4A3F37' : '#3A423F';
-  const dayOn = p.onInk;
 
   const v = {
     stops,
-    dayName: day === 1 ? 'Saturday' : 'Sunday',
-    xpLabel: earned + ' XP EARNED',
-    xp: '+' + earned,
-    segX: day === 1 ? '0%' : '100%',
-    day1Color: day === 1 ? dayOn : p.muted,
-    day2Color: day === 2 ? dayOn : p.muted,
-    c1: day === 1 ? dayOn : p.muted,
-    c2: day === 2 ? dayOn : p.muted,
-    pickDay1: () => setDay(1),
-    pickDay2: () => setDay(2),
-    sharing: sharing ? 'true' : 'false',
-    sharePressed: sharing ? 'true' : 'false',
-    trackBg: sharing ? trackOn : trackOff,
-    knobLeft: sharing ? '24px' : '4px',
-    knob: sharing ? '24px' : '4px',
-    shareText: sharing ? 'Aai and Aman can follow your route' : 'Off · nobody can see your location',
-    toggleShare: () => setSharing(!sharing),
-    optLabel: busy ? 'Optimising…' : 'Optimise',
+    empty: !!day && list.length === 0,
+    loading: plan.isLoading,
+    emptyTitle: deccan ? 'No stops on this day' : 'Nothing planned yet',
+    emptyText: 'Add places from Explore, or load a curated route.',
+    dayName: day?.weekday ?? '',
+    day1Label: tab(0),
+    day2Label: tab(1),
+    countText: list.length ? `${list.length} ${list.length === 1 ? 'stop' : 'stops'} · ${left} left` : '',
+    xpLabel: `${earned} XP EARNED`,
+    xp: `+${earned}`,
+    segX: idx === 0 ? '0%' : '100%',
+    day1Color: idx === 0 ? p.onInk : p.muted,
+    day2Color: idx === 1 ? p.onInk : p.muted,
+    c1: idx === 0 ? p.onInk : p.muted,
+    c2: idx === 1 ? p.onInk : p.muted,
+    day1Pressed: idx === 0 ? 'true' : 'false',
+    day2Pressed: idx === 1 ? 'true' : 'false',
+    pickDay1: () => setPicked(0),
+    pickDay2: () => setPicked(1),
+    // Live trip sharing needs emergency contacts and a tracking session (Phase 5).
+    sharing: 'false',
+    sharePressed: 'false',
+    trackBg: trackOff,
+    knobLeft: '4px',
+    knob: '4px',
+    shareText: 'Off · nobody can see your location',
+    toggleShare: () => toast.flash('Add an emergency contact to share your trip'),
+    optLabel: optimise.isPending ? 'Optimising…' : 'Optimise',
+    optBusy: optimise.isPending ? 'true' : 'false',
     showToast: toast.show,
     toastKey: toast.key,
     toastText: toast.text,
     optimise: () => {
-      if (busy) return;
-      setBusy(true);
-      window.clearTimeout(timer.current);
-      timer.current = window.setTimeout(() => {
-        const already = day === 1 || flipped;
-        if (day === 2) setFlipped(true);
-        setBusy(false);
-        toast.flash(already ? 'Already the best order for today' : 'Reordered · saves about 25 min of travel');
-      }, 900);
+      if (!day || optimise.isPending) return;
+      optimise.mutate(day.id, {
+        onSuccess: (r) =>
+          toast.flash(
+            r.minutesSaved > 0
+              ? `Reordered · saves about ${r.minutesSaved} min of travel${r.estimated ? ' (estimate)' : ''}`
+              : 'Already the best order for today'
+          ),
+        onError: (err) => toast.flash(err.message),
+      });
     },
   };
   return <Themed classic={PlanView} deccan={DeccanPlanView} v={v} />;

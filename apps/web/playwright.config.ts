@@ -3,6 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 /** End-to-end tests against the running dev stack (npm run dev). Mobile viewport. */
 export default defineConfig({
   testDir: './e2e',
+  globalSetup: './e2e/global-setup.ts',
   timeout: 45_000,
   retries: 0,
   use: {

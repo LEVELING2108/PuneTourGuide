@@ -57,7 +57,8 @@ cp services/tour-api/.env.example services/tour-api/.env
 cp apps/web/.env.example apps/web/.env
 
 npm run prisma:deploy                               # apply migrations
-npm run seed -w services/tour-api                   # seed places, events, routes
+npm run seed -w services/tour-api                   # dev bootstrap: curated places + routes
+npm run refresh:help                                # real hospitals, clinics, police, fire stations from OpenStreetMap
 
 # Safety service virtualenv (once)
 cd services/safety && python -m venv .venv && .venv/Scripts/pip install -r requirements-dev.txt && cd ../..
@@ -75,7 +76,15 @@ npm run dev                                         # web :5050 · tour-api :300
 | `npm run lint` · `npm run typecheck` · `npm test` | Checks for web + tour-api |
 | `npm run build` · `npm run build:api` | Production builds |
 | `npm run prisma:deploy` | Apply database migrations |
+| `npm run refresh:help` | Import Pune's help points from OpenStreetMap and refresh each place's nearest hospital. Run nightly in production; a failed or partial download keeps the existing data |
 | `docker compose up` | PostGIS, Redis, Tour API and Safety service in containers |
+
+### Before going to production
+
+- **Map tiles:** set `VITE_MAP_TILE_URL` (and `VITE_MAP_TILE_ATTRIBUTION`) to a tile provider with your key. The default OSM tile server is for development only.
+- **Routing:** set `OSRM_URL` / `OSRM_FOOT_URL` to a provider or self-hosted OSRM. The defaults are public demo servers.
+- **Overpass:** set `OVERPASS_ENDPOINTS` for the safety service and the import, ideally a self-hosted instance.
+- **Redis** is required with more than one API instance (shared rate limits, cooldowns, caches).
 
 ---
 
@@ -85,7 +94,7 @@ npm run dev                                         # web :5050 · tour-api :300
 | :--- | :--- |
 | Web app | `http://localhost:5050` |
 | Tour API | `http://localhost:3001/api` |
-| Safety service | `http://localhost:8000` (`/health`, `/api/emergency-services`, `/ws/track/{id}`) |
+| Safety service | `http://localhost:8000` (`/health`, `/api/emergency-services`, `/ws/track/{id}`). If 8000 is taken (e.g. by WSL), run with `SAFETY_PORT=8010` for both `dev:safety` and `dev:web` |
 | PostgreSQL | `localhost:5432` |
 | Redis | `localhost:6379` |
 

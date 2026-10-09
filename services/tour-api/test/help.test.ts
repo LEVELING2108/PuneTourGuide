@@ -3,7 +3,7 @@ import { prisma } from '../src/lib/prisma';
 import { seedCatalogue } from '../src/seed/run';
 import { invalidateCache } from '../src/services/cacheService';
 import { helpRepo } from '../src/v1/help/help.repository';
-import { cleanPhone, toHelpRow } from '../src/v1/help/help.service';
+import { cleanPhone, dedupe, toHelpRow } from '../src/v1/help/help.service';
 import { api } from './helpers';
 
 describe('OSM → help rows', () => {
@@ -39,6 +39,17 @@ describe('OSM → help rows', () => {
     expect(t('Smile Dental Hospital')).toBe('clinic');
     expect(t('Morya Multispeciality Hospital')).toBe('hospital');
     expect(t('City Maternity Hospital', { emergency: 'yes' })).toBe('hospital');
+  });
+
+  it('merges the point and building of one hospital, keeping the fullest record', () => {
+    const base = { category: 'hospital', emergency: false, phone: null, address: null, lat: 18.52, lng: 73.85 };
+    const out = dedupe([
+      { ...base, osmId: 'node/1', name: 'Umarji Hospital' },
+      { ...base, osmId: 'way/2', name: 'Umarji Hospital', address: '351 Shukrawar Peth', lat: 18.5205 },
+      { ...base, osmId: 'node/3', name: 'Umarji Hospital', lat: 18.6 }, // a different branch 9 km away
+    ]);
+    expect(out).toHaveLength(2);
+    expect(out.find((r) => r.lat < 18.55)?.address).toBe('351 Shukrawar Peth');
   });
 
   it('only keeps dialable phone numbers', () => {

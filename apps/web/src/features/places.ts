@@ -60,6 +60,10 @@ const DECCAN_TONE: Record<string, string> = {
   Food: '#C59A3A',
 };
 
+/** Category colour for tickets and pins, per theme. */
+export const placeTone = (category: string | null | undefined, theme: ThemeName) =>
+  (theme === 'deccan' ? DECCAN_TONE : CLASSIC_TONE)[category ?? ''] ?? (theme === 'deccan' ? '#7A1F4E' : '#26303B');
+
 export const kmText = (km: number | null | undefined) => (km === null || km === undefined ? null : km < 10 ? `${km} km` : `${Math.round(km)} km`);
 
 /** List-row text and colours for a place, matching the Explore mockups. */
