@@ -47,7 +47,7 @@ app.use(
 
 const allowedOrigins = process.env.CLIENT_ORIGINS
   ? process.env.CLIENT_ORIGINS.split(',').map((o) => o.trim())
-  : ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:5173'];
+  : ['http://localhost:5050', 'http://127.0.0.1:5050', 'http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:5173'];
 
 app.use(
   cors({
