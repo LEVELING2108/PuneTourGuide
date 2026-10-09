@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer — Explore (Deccan theme)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&amp;family=Yatra+One&amp;family=Mukta:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#7A1F4E}a:hover{color:#5C1239}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pulse{from{transform:scale(1);opacity:.55}to{transform:scale(1.7);opacity:0}}
+.rise{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.05s}.d2{animation-delay:.12s}.d3{animation-delay:.19s}.d4{animation-delay:.26s}.d5{animation-delay:.33s}.d6{animation-delay:.4s}
+.tap{transition:transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .3s,background-color .3s,color .3s,border-color .3s}
+.tap:active{transform:scale(.96)}
+.lift{transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
+.lift:hover{transform:translateY(-3px);box-shadow:0 18px 32px -18px rgba(35,28,23,.5)}
+.row{transition:background-color .3s}
+.row:hover{background-color:#FFFBF3}
+.navi:hover{color:#F3EADB}
+.sos::after{content:"";position:absolute;inset:0;border-radius:inherit;border:1.5px solid #C8321C;animation:pulse 2.6s ease-out infinite}
+.slide{overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.slide::-webkit-scrollbar{display:none}
+.slide>*{scroll-snap-align:start}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F3EADB; font-family: 'Mukta', sans-serif; color: #231C17">
+  <div style="padding: 54px 22px 0; display: flex; flex-direction: column; gap: 16px">
+
+    <div class="rise d1" style="display: flex; flex-direction: column; gap: 0">
+      <div style="font-family: 'Yatra One', sans-serif; font-size: 20px; color: #A4462B; line-height: 1.2">शोधा</div>
+      <h1 style="margin: 0; font-family: 'DM Serif Display', serif; font-size: 40px; font-weight: 400; line-height: 1">Explore <span style="font-style: italic; color: #7A1F4E">Pune</span></h1>
+    </div>
+
+    <div class="rise d2" style="display: flex; gap: 10px">
+      <label style="flex: 1; display: flex; align-items: center; gap: 12px; height: 50px; padding: 0 18px; border-radius: 25px; background: #FFFBF3; border: 1px solid #DCCDB6">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B5D50" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <input placeholder="Forts, wadas, misal spots" style="border: none; outline: none; flex: 1; min-width: 0; font-family: 'Mukta', sans-serif; font-size: 15.5px; background: transparent; color: #231C17">
+      </label>
+      <a class="tap" href="DeccanFilters.dc.html" aria-label="Filters" style="width: 50px; height: 50px; flex-shrink: 0; border-radius: 25px; background: #231C17; display: flex; align-items: center; justify-content: center">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F3EADB" stroke-width="1.6" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"></path><circle cx="16" cy="7" r="2"></circle><circle cx="8" cy="17" r="2"></circle></svg></a>
+    </div>
+
+    <div class="rise d3 slide" style="display: flex; gap: 8px; margin: 0 -22px; padding: 0 22px; scroll-padding-inline: 22px">
+      <sc-for list="{{chips}}" as="c" hint-placeholder-count="6">
+        <button class="tap" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="height: 38px; padding: 0 16px; border-radius: 19px; border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-family: 'Mukta', sans-serif; font-size: 14px; font-weight: 600; flex-shrink: 0; cursor: pointer">{{c.label}}</button>
+      </sc-for>
+    </div>
+
+    <div class="rise d4 slide" style="display: flex; gap: 12px; margin: 0 -22px; padding: 0 22px; scroll-padding-inline: 22px">
+      <a class="lift" href="DeccanPlan.dc.html" style="flex: 0 0 300px; height: 118px; display: flex; text-decoration: none; color: #FFFBF3; border-radius: 18px; overflow: hidden; position: relative">
+        <div style="flex: 1; background: #7A1F4E; padding: 14px 16px; display: flex; flex-direction: column; justify-content: space-between">
+          <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.16em; color: #F2C9DC">YATRA · ON FOOT</div>
+          <div><div style="font-family: 'DM Serif Display', serif; font-size: 22px; line-height: 1.05">Peth heritage walk</div><div style="font-size: 12.5px; color: #F2D5E3">Kasba → Budhwar → Shukrawar</div></div>
+        </div>
+        <div style="width: 0; border-left: 2px dashed #F3EADB; opacity: 0.7"></div>
+        <div style="width: 72px; background: #5C1239; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px">
+          <div style="font-family: 'DM Serif Display', serif; font-size: 26px; line-height: 1">5</div><div style="font-size: 11px; color: #F2C9DC; letter-spacing: 0.1em">STOPS</div>
+        </div>
+        <span style="position: absolute; left: 218px; top: -9px; width: 18px; height: 18px; border-radius: 9px; background: #F3EADB"></span>
+        <span style="position: absolute; left: 218px; bottom: -9px; width: 18px; height: 18px; border-radius: 9px; background: #F3EADB"></span>
+      </a>
+      <a class="lift" href="DeccanPlan.dc.html" style="flex: 0 0 300px; height: 118px; display: flex; text-decoration: none; color: #FFFBF3; border-radius: 18px; overflow: hidden; position: relative">
+        <div style="flex: 1; background: #0E5B5E; padding: 14px 16px; display: flex; flex-direction: column; justify-content: space-between">
+          <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.16em; color: #B9DAD6">YATRA · SAHYADRI</div>
+          <div><div style="font-family: 'DM Serif Display', serif; font-size: 22px; line-height: 1.05">Two-fort monsoon trek</div><div style="font-size: 12.5px; color: #D4E8E5">Sinhagad → Rajgad · offline pack</div></div>
+        </div>
+        <div style="width: 0; border-left: 2px dashed #F3EADB; opacity: 0.7"></div>
+        <div style="width: 72px; background: #073638; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px">
+          <div style="font-family: 'DM Serif Display', serif; font-size: 26px; line-height: 1">2</div><div style="font-size: 11px; color: #B9DAD6; letter-spacing: 0.1em">DAYS</div>
+        </div>
+        <span style="position: absolute; left: 218px; top: -9px; width: 18px; height: 18px; border-radius: 9px; background: #F3EADB"></span>
+        <span style="position: absolute; left: 218px; bottom: -9px; width: 18px; height: 18px; border-radius: 9px; background: #F3EADB"></span>
+      </a>
+    </div>
+
+    <div class="rise d5" style="display: flex; flex-direction: column">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 4px">
+        <h2 style="margin: 0; font-family: 'DM Serif Display', serif; font-size: 24px; font-weight: 400">{{heading}}</h2>
+        <div style="font-size: 13px; color: #6B5D50">By distance</div>
+      </div>
+      <sc-for list="{{places}}" as="p" hint-placeholder-count="3">
+        <a class="row" href="DeccanPlace.dc.html" style="display: flex; align-items: center; gap: 14px; padding: 10px 8px; margin: 0 -8px; border-radius: 16px; border-bottom: 1px solid #E2D4BE; text-decoration: none; color: #231C17">
+          <div style="padding: 3px; border: 1.5px dashed #CDB894; border-radius: 4px; background: #FFFBF3; flex-shrink: 0">
+            <div style="width: 52px; height: 52px; border-radius: 2px; background: {{p.tone}}; color: #FFFBF3; font-family: 'Yatra One', sans-serif; font-size: 13px; display: flex; align-items: flex-end; padding: 4px; box-sizing: border-box">{{p.mr}}</div>
+          </div>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px">
+            <div style="font-family: 'DM Serif Display', serif; font-size: 18px; line-height: 1.15">{{p.name}}</div>
+            <div style="font-size: 13px; color: #6B5D50">{{p.meta}}</div>
+            <div style="font-size: 12.5px; color: {{p.helpColor}}">{{p.help}}</div>
+          </div>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B5D50" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+        </a>
+      </sc-for>
+    </div>
+  </div>
+
+  <a class="tap sos" href="DeccanSOS.dc.html" aria-label="Emergency SOS" style="position: absolute; right: 22px; bottom: 100px; width: 60px; height: 60px; border-radius: 30px; background: #C8321C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-decoration: none; box-shadow: 0 14px 30px -12px rgba(200,50,28,0.75)">SOS</a>
+
+  <nav class="rise d6" aria-label="Main" style="position: absolute; left: 16px; right: 16px; bottom: 20px; height: 64px; border-radius: 32px; background: #231C17; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; box-sizing: border-box; box-shadow: 0 20px 40px -18px rgba(35,28,23,0.6); border-top: 2px solid #C59A3A">
+    <a class="tap navi" href="DeccanHome.dc.html" aria-label="Home" style="width: 48px; height: 48px; border-radius: 24px; color: #B5A795; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg></a>
+    <a class="tap" href="DeccanExplore.dc.html" style="height: 48px; padding: 0 18px; border-radius: 24px; background: #F3EADB; color: #231C17; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; text-decoration: none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M15.5 8.5l-2 5-5 2 2-5z"></path></svg>Explore</a>
+    <a class="tap navi" href="DeccanMap.dc.html" aria-label="Map" style="width: 48px; height: 48px; border-radius: 24px; color: #B5A795; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"></path></svg></a>
+    <a class="tap navi" href="DeccanPlan.dc.html" aria-label="Plan" style="width: 48px; height: 48px; border-radius: 24px; color: #B5A795; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></a>
+    <a class="tap navi" href="DeccanProfile.dc.html" aria-label="Profile" style="width: 48px; height: 48px; border-radius: 24px; color: #B5A795; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { cat: 'All' };
+  }
+  renderVals() {
+    const cat = this.state.cat;
+    const chips = ['All', 'Forts', 'Temples', 'Wadas', 'Food lanes', 'Hills'].map((label) => {
+      const on = label === cat;
+      return { label, pressed: on ? 'true' : 'false', bg: on ? '#7A1F4E' : '#FFFBF3', fg: on ? '#FFFBF3' : '#231C17', bd: on ? '#7A1F4E' : '#DCCDB6', pick: () => this.setState({ cat: label }) };
+    });
+    const all = [
+      { name: 'Shaniwar Wada', mr: 'वाडा', cat: 'Wadas', meta: 'Kasba Peth · 2.1 km', help: 'Hospital 1.2 km', tone: '#7A1F4E' },
+      { name: 'Pataleshwar Caves', mr: 'लेणी', cat: 'Temples', meta: 'Shivajinagar · 3.4 km', help: 'Hospital 1.6 km', tone: '#A4462B' },
+      { name: 'Sinhagad Fort', mr: 'गड', cat: 'Forts', meta: 'Sahyadri trek · 28 km', help: 'Weak signal · save offline first', warn: true, tone: '#0E5B5E' },
+      { name: 'Dagdusheth Ganpati', mr: 'मंदिर', cat: 'Temples', meta: 'Budhwar Peth · 2.3 km', help: 'Hospital 0.9 km', tone: '#A4462B' },
+      { name: 'Vishrambaug Wada', mr: 'वाडा', cat: 'Wadas', meta: 'Sadashiv Peth · 2.5 km', help: 'Hospital 1.1 km', tone: '#7A1F4E' },
+      { name: 'Parvati Hill', mr: 'टेकडी', cat: 'Hills', meta: 'Parvati · 4.2 km', help: 'Hospital 2 km', tone: '#0E5B5E' },
+      { name: 'Rajgad Fort', mr: 'गड', cat: 'Forts', meta: 'Sahyadri trek · 55 km', help: 'Weak signal · save offline first', warn: true, tone: '#0E5B5E' },
+      { name: 'Laxmi Road food lane', mr: 'खाऊ', cat: 'Food lanes', meta: 'Budhwar Peth · 2.2 km', help: 'Hospital 1 km', tone: '#C59A3A' }
+    ];
+    const places = all.filter((p) => cat === 'All' || p.cat === cat).slice(0, 3).map((p) => ({ ...p, helpColor: p.warn ? '#8A4A12' : '#6B5D50' }));
+    return { chips, places, heading: cat === 'All' ? 'Near you' : cat };
+  }
+}
+</script>
+</body>
+</html>

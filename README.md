@@ -1,10 +1,10 @@
 # 🏰 Pune Explorer
 
-A modern, high-performance tour guide web application for Pune, featuring interactive maps, dynamic itinerary planning, OpenStreetMap auto-discovery, weather-adaptive routing, and gamification.
+A travel guide for Pune where help is always one tap or one shake away, even offline. Pune Explorer merges PuneTourGuide (places, day plans, XP) with RoadSoS (SOS, live location, nearby hospitals), with two themes: Classic and Deccan.
 
 ---
 
-### **[Backend Architecture](./BACKEND.md)** · **[Contribution Guidelines](./CONTRIBUTING.md)** · **[Changelog](./CHANGELOG.md)**
+### **[Technical Design](./design-reference/TECH_DESIGN.md)** · **[Feature Spec](./design-reference/FEATURES.md)** · **[Backend Architecture](./BACKEND.md)** · **[Contribution Guidelines](./CONTRIBUTING.md)** · **[Changelog](./CHANGELOG.md)**
 
 ---
 
@@ -35,140 +35,59 @@ A modern, high-performance tour guide web application for Pune, featuring intera
 
 ## 🛠️ Local Setup Guide
 
-Follow these steps to run Pune Explorer locally on your development machine.
+Pune Explorer is an npm-workspaces monorepo:
 
-### 📋 Prerequisites
+```
+apps/web/            React PWA (Vite)
+services/tour-api/   Express + Prisma + PostGIS API (places, plans, accounts)
+services/safety/     FastAPI safety service from RoadSoS (emergency services, live tracking)
+design-reference/    Approved UI mockups + TECH_DESIGN.md / FEATURES.md (source of truth)
+```
 
-Ensure you have the following installed on your system:
-- **Node.js** (v18.0 or higher) & **npm**
-- **Git**
-- **Docker & Docker Compose** (Recommended for instant Postgres + Redis setup), OR:
-  - **PostgreSQL** database (v14+ with PostGIS extension enabled)
-  - **Redis** server (optional, used for Overpass API rate-limit caching)
+### Prerequisites
+- **Node.js 20+** and npm, **Python 3.12+**
+- **PostgreSQL 16+ with PostGIS** and **Redis** — or just `docker compose up -d postgres redis`
+  (Redis is optional locally; both APIs fall back to in-memory caches.)
 
----
-
-### 1️⃣ Clone the Repository
+### First run
 
 ```bash
-git clone https://github.com/LEVELING2108/PuneTourGuide.git
-cd PuneTourGuide
+npm install                                         # installs web + tour-api
+cp services/tour-api/.env.example services/tour-api/.env
+cp apps/web/.env.example apps/web/.env
+
+npm run prisma:deploy                               # apply migrations
+npm run seed -w services/tour-api                   # seed places, events, routes
+
+# Safety service virtualenv (once)
+cd services/safety && python -m venv .venv && .venv/Scripts/pip install -r requirements-dev.txt && cd ../..
+#   (macOS/Linux: .venv/bin/pip)
+
+npm run dev                                         # web :5050 · tour-api :3001 · safety :8000
 ```
 
----
+### Scripts
 
-### 2️⃣ Environment Variables Setup
-
-#### **Frontend (`.env`)**
-Create a `.env` file in the root project directory (or copy `.env.example`):
-
-```bash
-cp .env.example .env
-```
-
-```env
-# API URL pointing to the local Node/Express server
-VITE_API_BASE_URL=http://localhost:3001/api
-```
-
-#### **Backend (`backend/.env`)**
-Create a `.env` file inside the `backend/` directory (or copy `backend/.env.example`):
-
-```bash
-cp backend/.env.example backend/.env
-```
-
-```env
-# Database connection string (PostgreSQL with PostGIS)
-DATABASE_URL="postgresql://postgres:password@localhost:5432/Pune_Tour_Guide?schema=public"
-
-# Server Port
-PORT=3001
-
-# Secret key for JWT signing
-JWT_SECRET="pune_explorer_super_secret_key"
-
-# Redis connection URL (optional for caching)
-REDIS_URL="redis://127.0.0.1:6379"
-```
-
----
-
-### 3️⃣ Start Database Services (Optional via Docker)
-
-If you use Docker, start PostgreSQL (with PostGIS) and Redis with one command:
-
-```bash
-docker compose up -d
-```
-
----
-
-### 4️⃣ Backend Setup & Database Migration
-
-Navigate to the backend directory, install dependencies, run Prisma migrations, and seed initial data:
-
-```bash
-# Navigate to backend
-cd backend
-
-# Install node dependencies
-npm install
-
-# Generate Prisma Client & Apply Database Migrations
-npx prisma generate
-npx prisma migrate deploy
-
-# Seed database with initial tourist places, events, and default itineraries
-npx ts-node src/seed.ts
-
-# Start backend server in development mode (with nodemon)
-npm run dev
-```
-
-*The backend server will run on `http://localhost:3001`.*
-
----
-
-### 5️⃣ Frontend Setup & Execution
-
-Open a new terminal window in the project root directory and start the Vite dev server:
-
-```bash
-# From project root directory
-npm install
-
-# Start Vite dev server
-npm run dev
-```
-
-*The frontend application will open on `http://localhost:5173`.*
-
----
-
-### 6️⃣ Quick Verification & Scripts
-
-You can also run all-in-one scripts from the root directory:
-
-| Command | Description |
+| Command | What it does |
 | :--- | :--- |
-| `npm run dev` | Starts Vite frontend dev server |
-| `npm run build` | Builds production frontend bundle (`dist/`) |
-| `npm run build:backend` | Compiles backend TypeScript to JavaScript (`backend/dist/`) |
-| `npm run build:all` | Installs, generates Prisma client, and builds both backend & frontend |
-| `npm run prisma:generate` | Generates Prisma client inside `backend/` |
-| `npm run prisma:deploy` | Deploys Prisma migrations to database |
+| `npm run dev` | Web, Tour API and Safety service together |
+| `npm run dev:web` / `dev:api` / `dev:safety` | One of them |
+| `npm run lint` · `npm run typecheck` · `npm test` | Checks for web + tour-api |
+| `npm run build` · `npm run build:api` | Production builds |
+| `npm run prisma:deploy` | Apply database migrations |
+| `docker compose up` | PostGIS, Redis, Tour API and Safety service in containers |
 
 ---
 
-## 🌐 API Ports & Services Summary
+## 🌐 Ports
 
-| Component | URL / Address | Description |
-| :--- | :--- | :--- |
-| **Frontend Web App** | `http://localhost:5173` | React 18 + Vite local UI |
-| **Backend Express API** | `http://localhost:3001/api` | REST API Endpoints |
-| **PostgreSQL Database** | `localhost:5432` | Main database (`pune_tour_guide`) |
-| **Redis Cache** | `localhost:6379` | Key-value store (prefix `places:v5:`) |
+| Component | URL |
+| :--- | :--- |
+| Web app | `http://localhost:5050` |
+| Tour API | `http://localhost:3001/api` |
+| Safety service | `http://localhost:8000` (`/health`, `/api/emergency-services`, `/ws/track/{id}`) |
+| PostgreSQL | `localhost:5432` |
+| Redis | `localhost:6379` |
 
 ---
 

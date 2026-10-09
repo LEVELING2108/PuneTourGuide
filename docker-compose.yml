@@ -1,10 +1,9 @@
-version: '3.8'
-
+# Local stack: PostGIS, Redis, Tour API (Express) and Safety service (FastAPI).
+# The web app runs outside Docker with `npm run dev:web` for fast reloads.
 services:
-  # PostgreSQL with PostGIS Extension
   postgres:
     image: postgis/postgis:16-3.4
-    container_name: pune_tour_guide_postgres
+    container_name: pune_explorer_postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -20,10 +19,9 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis Cache Store
   redis:
     image: redis:7-alpine
-    container_name: pune_tour_guide_redis
+    container_name: pune_explorer_redis
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -35,7 +33,36 @@ services:
       timeout: 5s
       retries: 5
 
+  tour-api:
+    build:
+      context: .
+      dockerfile: services/tour-api/Dockerfile
+    container_name: pune_explorer_tour_api
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/Pune_Tour_Guide?schema=public
+      REDIS_URL: redis://redis:6379
+      SAFETY_SERVICE_URL: http://safety:8000
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  safety:
+    build: ./services/safety
+    container_name: pune_explorer_safety
+    environment:
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   redis_data:
-

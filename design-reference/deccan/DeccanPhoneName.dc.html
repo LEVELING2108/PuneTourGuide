@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer (Deccan) — Almost there</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&amp;family=Yatra+One&amp;family=Mukta:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#7A1F4E}a:hover{color:#5C1239}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes up{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes draw{from{stroke-dashoffset:30}to{stroke-dashoffset:0}}
+@keyframes popin{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08);opacity:1}100%{transform:none}}
+.rise{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.up{animation:up .8s cubic-bezier(.2,.7,.2,1) .1s both}
+.d1{animation-delay:.05s}.d2{animation-delay:.12s}.d3{animation-delay:.25s}.d4{animation-delay:.32s}.d5{animation-delay:.39s}.d6{animation-delay:.46s}
+.rings{animation:spin 90s linear infinite;transform-origin:50% 50%}
+.badge{animation:popin .6s cubic-bezier(.2,.7,.2,1) .2s both}
+.tick{stroke-dasharray:30;animation:draw .5s ease-out .6s both}
+.field{transition:border-color .3s,box-shadow .3s}
+.field:focus-within{border-color:#7A1F4E;box-shadow:0 0 0 3px rgba(122,31,78,.12)}
+.box{transition:background-color .25s,border-color .25s}
+.cta{transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .35s,background-color .35s}
+.cta:hover{transform:translateY(-2px);box-shadow:0 16px 30px -14px rgba(122,31,78,.7)}
+.cta:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #7A1F4E; font-family: 'Mukta', sans-serif; color: #231C17">
+
+  <svg width="390" height="10" viewBox="0 0 390 10" aria-hidden="true" style="position: absolute; top: 0; left: 0; z-index: 5"><defs><pattern id="zz" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#C59A3A"></rect><path d="M0 10 L5 2 L10 10 Z" fill="#5C1239"></path></pattern></defs><rect width="390" height="10" fill="url(#zz)"></rect></svg>
+  <div aria-hidden="true" style="position: absolute; right: 54px; top: 130px; width: 58px; height: 58px; border-radius: 29px; background: #E2B95B; opacity: 0.85"></div>
+  <svg width="390" height="80" viewBox="0 0 390 96" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; left: 0; top: 208px; opacity: 0.9"><path d="M0 74 Q60 34 120 58 T240 44 T390 54 V96 H0 Z" fill="#6A1A44"></path><path d="M0 96 V66 H30 V54 a14 14 0 0 1 28 0 V66 H110 V58 H118 V52 H126 V58 H134 V52 H142 V58 H150 V66 H170 V44 a22 22 0 0 1 44 0 V66 H260 V56 a12 12 0 0 1 24 0 V66 H330 V50 a16 16 0 0 1 32 0 V66 H390 V96 Z" fill="#4E0F30"></path></svg>
+
+  <div style="position: absolute; top: 64px; left: 24px; right: 24px; display: flex; flex-direction: column; gap: 22px; color: #F3EADB">
+    <div class="badge" style="width: 52px; height: 52px; border-radius: 26px; background: #F3EADB; display: flex; align-items: center; justify-content: center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7A1F4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path class="tick" d="M5 12l5 5 9-10"></path></svg>
+    </div>
+    <div class="rise d2" style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; flex-direction: column"><div style="font-family: 'Yatra One', sans-serif; font-size: 19px; line-height: 1.25; color: #E2B95B">जवळजवळ झालं</div><h1 style="margin: 0; font-family: 'DM Serif Display', serif; font-size: 46px; font-weight: 400; line-height: 0.95">Almost <span style="font-style: italic; color: #F2C9DC">there</span></h1></div>
+      <div style="font-size: 14px; color: #F2D5E3">+91 98••• ••210 is verified. This number is new, so let's set up your account.</div>
+    </div>
+  </div>
+
+  <div class="up" style="position: absolute; left: 0; right: 0; top: 280px; bottom: 0; background: #F3EADB; border-radius: 30px 30px 0 0; padding: 30px 24px 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+
+    <label class="rise d3" style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #6B5D50">WHAT SHOULD WE CALL YOU?</span>
+      <span class="field" style="height: 50px; border-radius: 14px; border: 1px solid #DCCDB6; background: #FFFBF3; display: flex; align-items: center; padding: 0 16px"><input placeholder="Your name" autocomplete="name" style="border: none; outline: none; flex: 1; min-width: 0; font-family: 'Mukta', sans-serif; font-size: 15px; background: transparent; color: #231C17"></span>
+    </label>
+
+    <label class="rise d4" style="display: flex; flex-direction: column; gap: 6px">
+      <span style="display: flex; justify-content: space-between"><span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #6B5D50">EMAIL</span><span style="font-size: 12px; color: #6B5D50">Optional</span></span>
+      <span class="field" style="height: 50px; border-radius: 14px; border: 1px solid #DCCDB6; background: #FFFBF3; display: flex; align-items: center; padding: 0 16px"><input type="email" placeholder="For trip summaries and account recovery" autocomplete="email" style="border: none; outline: none; flex: 1; min-width: 0; font-family: 'Mukta', sans-serif; font-size: 14.5px; background: transparent; color: #231C17"></span>
+    </label>
+
+    <button class="rise d5" onClick="{{toggleAgree}}" role="checkbox" aria-checked="{{agreeChecked}}" style="display: flex; align-items: flex-start; gap: 10px; border: none; background: transparent; padding: 0; text-align: left; cursor: pointer; font-family: 'Mukta', sans-serif">
+      <span class="box" style="width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid {{boxBd}}; background: {{boxBg}}; box-sizing: border-box; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F3EADB" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></span>
+      <span style="font-size: 13px; line-height: 1.45; color: #6B5D50">I agree to the <span style="color: #7A1F4E; font-weight: 600">Terms</span> and <span style="color: #7A1F4E; font-weight: 600">Privacy Policy</span></span>
+    </button>
+
+    <a class="rise d5 cta" href="DeccanOnboard.dc.html" aria-disabled="{{ctaDisabled}}" style="height: 56px; border-radius: 28px; background: {{ctaBg}}; color: #F3EADB; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 600; text-decoration: none; margin-top: 4px">Continue
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+
+    <div class="rise d6" style="margin-top: auto; display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: #F5E6EE">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7A1F4E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"></path><path d="M9 12l2 2 4-4"></path></svg>
+      <div style="font-size: 12.5px; line-height: 1.45; color: #4A1530">Next, we'll ask for one emergency contact. It takes 20 seconds and makes SOS work from day one.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { agree: false };
+  }
+  renderVals() {
+    const agree = this.state.agree;
+    return {
+      agreeChecked: agree ? 'true' : 'false',
+      boxBg: agree ? '#7A1F4E' : '#FFFBF3',
+      boxBd: agree ? '#7A1F4E' : '#C9B79C',
+      toggleAgree: () => this.setState({ agree: !agree }),
+      ctaBg: agree ? '#7A1F4E' : '#B98DA3',
+      ctaDisabled: agree ? 'false' : 'true'
+    };
+  }
+}
+</script>
+</body>
+</html>

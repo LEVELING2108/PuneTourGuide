@@ -40,3 +40,9 @@ SESSION_SUMMARY.md
 AI_ROADMAP.md
 
 
+
+# Python (safety service)
+.venv
+__pycache__/
+*.pyc
+.pytest_cache/

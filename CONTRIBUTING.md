@@ -56,7 +56,7 @@ Create `.env` files for both frontend and backend using the provided templates:
 cp .env.example .env
 
 # 2. Backend Environment
-cp backend/.env.example backend/.env
+cp services/tour-api/.env.example services/tour-api/.env
 ```
 
 Review both `.env` files and update database credentials or API keys if necessary.
@@ -69,30 +69,16 @@ docker compose up -d
 
 ### 4. Install Dependencies & Migrate Database
 ```bash
-# Install frontend dependencies
-npm install
-
-# Install backend dependencies
-cd backend
-npm install
-
-# Generate Prisma Client & apply existing database migrations
-npx prisma generate
-npx prisma migrate deploy
-
-# Seed initial tourist places, events, and sample itineraries
-npx ts-node src/seed.ts
-cd ..
+npm install                              # all workspaces (apps/web, services/tour-api)
+npm run prisma:generate
+npm run prisma:deploy
+npm run seed -w services/tour-api        # places, events, sample itineraries
 ```
 
 ### 5. Start Development Servers
-Open two terminal windows:
-
-* **Terminal 1: Backend Server** (runs on `http://localhost:3001`):
-  ```bash
-  cd backend
-  npm run dev
-  ```
+```bash
+npm run dev    # web :5050, tour-api :3001, safety service :8000
+```
 
 * **Terminal 2: Frontend Server** (runs on `http://localhost:5173`):
   ```bash
@@ -154,7 +140,7 @@ We follow the [Conventional Commits](https://www.conventionalcommits.org/) speci
 
 ## 🚀 Submitting a Pull Request
 
-1. **Test Your Changes**: Verify that both the backend builds (`cd backend && npm run build`) and the frontend runs cleanly without errors.
+1. **Test Your Changes**: Verify that both the backend builds (`npm run build:api`) and the frontend runs cleanly without errors.
 2. **Push to Your Fork**:
    ```bash
    git push origin feat/your-feature-name

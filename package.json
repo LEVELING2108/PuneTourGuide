@@ -1,32 +1,28 @@
 {
-  "name": "pune-tour-guide",
-  "version": "1.1.0",
-  "type": "module",
+  "name": "pune-explorer",
+  "version": "2.0.0-alpha.0",
   "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/web",
+    "services/tour-api"
+  ],
   "scripts": {
-    "dev": "concurrently -n \"frontend,backend\" -c \"cyan,magenta\" \"npm run dev:frontend\" \"npm run dev:backend\"",
-    "dev:frontend": "vite",
-    "dev:backend": "npm --prefix backend run dev",
-    "build": "vite build",
-    "preview": "vite preview",
-    "build:backend": "cd backend && npm run build",
-    "prisma:generate": "cd backend && npx prisma generate",
-    "prisma:deploy": "cd backend && npx prisma migrate deploy",
-    "build:all": "npm install --prefix backend && npm run prisma:generate && npm run build:backend && npm run build",
-    "start": "npm run prisma:deploy && node backend/dist/app.js"
-  },
-  "dependencies": {
-    "leaflet": "^1.9.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-leaflet": "^4.2.1"
+    "dev": "concurrently -n web,api,safety -c cyan,magenta,yellow \"npm run dev -w apps/web\" \"npm run dev -w services/tour-api\" \"npm run dev:safety\"",
+    "dev:web": "npm run dev -w apps/web",
+    "dev:api": "npm run dev -w services/tour-api",
+    "dev:safety": "node scripts/run-safety.mjs",
+    "build": "npm run build -w apps/web",
+    "build:api": "npm run build -w services/tour-api",
+    "build:all": "npm run prisma:generate && npm run build:api && npm run build",
+    "lint": "npm run lint -w apps/web && npm run lint -w services/tour-api",
+    "typecheck": "npm run typecheck -w apps/web && npm run typecheck -w services/tour-api",
+    "test": "npm run test -w apps/web && npm run test -w services/tour-api",
+    "prisma:generate": "npm run prisma:generate -w services/tour-api",
+    "prisma:deploy": "npm run prisma:deploy -w services/tour-api",
+    "start": "npm run prisma:deploy && node services/tour-api/dist/server.js"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.0",
-    "autoprefixer": "^10.4.17",
-    "concurrently": "^10.0.5",
-    "postcss": "^8.4.33",
-    "tailwindcss": "^3.4.1",
-    "vite": "^5.0.12"
+    "concurrently": "^9.1.2"
   }
 }

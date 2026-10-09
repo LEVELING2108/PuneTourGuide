@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer — SOS</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#FFFFFF}a:hover{color:#FFE3DC}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes ripple{from{transform:scale(.85);opacity:.45}to{transform:scale(1.5);opacity:0}}
+@keyframes tick{0%{transform:scale(1.18);opacity:.4}100%{transform:scale(1);opacity:1}}
+.rise{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.05s}.d2{animation-delay:.12s}.d3{animation-delay:.19s}.d4{animation-delay:.26s}.d5{animation-delay:.33s}
+.ripple{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(255,255,255,.5);animation:ripple 2.4s ease-out infinite}
+.r2{animation-delay:1.2s}
+.ring{transition:stroke-dashoffset 1s linear}
+.num{animation:tick .5s cubic-bezier(.2,.7,.2,1)}
+.tap{transition:transform .2s cubic-bezier(.2,.7,.2,1),background-color .3s,color .3s}
+.tap:active{transform:scale(.96)}
+.dial:hover{background-color:rgba(255,255,255,.16)}
+.ghost:hover{background-color:rgba(255,255,255,.08)}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #8F1D12; font-family: 'Hanken Grotesk', sans-serif; color: #FFFFFF; padding: 68px 24px 32px; display: flex; flex-direction: column; gap: 28px">
+
+  <div class="rise d1" style="display: flex; flex-direction: column; gap: 8px; align-items: center; text-align: center">
+    <div style="font-size: 11.5px; font-weight: 600; letter-spacing: 0.2em; color: #F6B8A9">SHAKE DETECTED</div>
+    <h1 style="margin: 0; font-family: 'Instrument Serif', serif; font-size: 40px; font-weight: 400; line-height: 1">{{headline}}</h1>
+  </div>
+
+  <div class="rise d2" style="align-self: center; width: 210px; height: 210px; position: relative; display: flex; align-items: center; justify-content: center">
+    <span class="ripple"></span>
+    <span class="ripple r2"></span>
+    <svg width="210" height="210" viewBox="0 0 210 210" style="position: absolute; inset: 0" aria-hidden="true">
+      <circle cx="105" cy="105" r="96" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"></circle>
+      <circle class="ring" cx="105" cy="105" r="96" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-dasharray="603" stroke-dashoffset="{{offset}}" transform="rotate(-90 105 105)"></circle>
+    </svg>
+    <sc-if value="{{counting}}" hint-placeholder-val="{{ true }}">
+      <div class="num" key="{{count}}" style="font-family: 'Instrument Serif', serif; font-size: 120px; line-height: 1">{{count}}</div>
+    </sc-if>
+    <sc-if value="{{calling}}" hint-placeholder-val="{{ false }}">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"></path></svg>
+    </sc-if>
+  </div>
+
+  <div class="rise d3" style="border-top: 1px solid rgba(255,255,255,0.18); border-bottom: 1px solid rgba(255,255,255,0.18); padding: 14px 0; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; align-items: center; gap: 12px; font-size: 14px; color: #FCE3DD">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F6B8A9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>
+      <span>Live location going to <b style="color: #FFFFFF; font-weight: 600">Aai</b> and <b style="color: #FFFFFF; font-weight: 600">Aman</b></span></div>
+    <div style="display: flex; align-items: center; gap: 12px; font-size: 14px; color: #FCE3DD">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F6B8A9" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+      <span>Nearest trauma care: <b style="color: #FFFFFF; font-weight: 600">KEM Hospital, 1.2 km</b></span></div>
+    <div style="display: flex; align-items: center; gap: 12px; font-size: 14px; color: #FCE3DD">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F6B8A9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h7"></path></svg>
+      <span>Medical profile shared with responders</span></div>
+  </div>
+
+  <div class="rise d4" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+    <a class="tap dial" href="tel:108" style="height: 68px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.28); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-decoration: none; color: #FFFFFF"><span style="font-family: 'Instrument Serif', serif; font-size: 26px; line-height: 1">108</span><span style="font-size: 11.5px; color: #F6B8A9">Ambulance</span></a>
+    <a class="tap dial" href="tel:100" style="height: 68px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.28); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-decoration: none; color: #FFFFFF"><span style="font-family: 'Instrument Serif', serif; font-size: 26px; line-height: 1">100</span><span style="font-size: 11.5px; color: #F6B8A9">Police</span></a>
+    <a class="tap dial" href="tel:1091" style="height: 68px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.28); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-decoration: none; color: #FFFFFF"><span style="font-family: 'Instrument Serif', serif; font-size: 26px; line-height: 1">1091</span><span style="font-size: 11.5px; color: #F6B8A9">Women</span></a>
+  </div>
+
+  <div class="rise d5" style="margin-top: auto; display: flex; flex-direction: column; gap: 10px">
+    <a class="tap" href="tel:112" style="height: 60px; border-radius: 30px; background: #FFFFFF; color: #8F1D12; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px; font-weight: 700; text-decoration: none">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"></path></svg>Call 112 now</a>
+    <a class="tap ghost" href="Main.dc.html" style="height: 56px; border-radius: 28px; border: 1px solid rgba(255,255,255,0.4); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; text-decoration: none">I'm safe, cancel</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { count: 5 };
+  }
+  componentDidMount() {
+    this.timer = setInterval(() => {
+      if (this.state.count <= 0) { clearInterval(this.timer); return; }
+      this.setState({ count: this.state.count - 1 });
+    }, 1000);
+  }
+  componentWillUnmount() {
+    clearInterval(this.timer);
+  }
+  renderVals() {
+    const c = this.state.count;
+    return {
+      count: c,
+      counting: c > 0,
+      calling: c <= 0,
+      headline: c > 0 ? 'Calling 112 in' : 'Connecting to 112',
+      offset: String(Math.round(603 * (1 - c / 5)))
+    };
+  }
+}
+</script>
+</body>
+</html>
