@@ -1,10 +1,12 @@
 import rateLimit from 'express-rate-limit';
 import { env } from '../config/env';
+import { SharedStore } from './rateLimitStore';
 
 // Global API limiter: 300 requests per 15-minute window per IP in production
 export const globalApiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,
+  store: new SharedStore('legacy-api'),
   standardHeaders: true,
   legacyHeaders: false,
   skip: () => !env.isProd,
@@ -15,6 +17,7 @@ export const globalApiLimiter = rateLimit({
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
+  store: new SharedStore('legacy-auth'),
   standardHeaders: true,
   legacyHeaders: false,
   skip: () => !env.isProd,
@@ -25,6 +28,7 @@ export const authLimiter = rateLimit({
 export const aiGenerationLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
+  store: new SharedStore('legacy-ai'),
   standardHeaders: true,
   legacyHeaders: false,
   skip: () => !env.isProd,

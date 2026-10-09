@@ -14,6 +14,7 @@ import weatherRoutes from './routes/weatherRoutes';
 import { globalApiLimiter, authLimiter, aiGenerationLimiter } from './middleware/rateLimit';
 import { errorHandler } from './middleware/errorHandler';
 import v1 from './v1';
+import { apiLimit } from './middleware/limits';
 
 const app = express();
 
@@ -73,7 +74,7 @@ app.use('/api/user/register', authLimiter);
 app.use('/api/itinerary/generate', aiGenerationLimiter);
 
 // Pune Explorer API
-app.use('/api/v1', v1);
+app.use('/api/v1', apiLimit, v1);
 
 // Legacy routes (kept working until the new screens move to /api/v1)
 app.use('/api/places', placeRoutes);

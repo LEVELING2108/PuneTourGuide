@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import healthRoutes from './health/health.routes';
 import { errorHandler, notFoundHandler } from '../middleware/errorHandler';
 import authRoutes from './auth/auth.routes';
 import itineraryRoutes from './itinerary/itinerary.routes';
@@ -9,6 +10,8 @@ import usersRoutes from './users/users.routes';
 
 /** /api/v1: { data, meta } envelopes, Zod-validated inputs, typed errors. */
 const v1 = Router();
+
+v1.use('/health', healthRoutes);
 
 v1.use('/auth', authRoutes);
 v1.use('/users', usersRoutes);

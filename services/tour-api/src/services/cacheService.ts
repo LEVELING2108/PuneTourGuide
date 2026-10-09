@@ -33,10 +33,8 @@ try {
     maxRetriesPerRequest: 1,
     enableOfflineQueue: false, // Never block or queue commands when offline
     lazyConnect: true,
-    retryStrategy: (times) => {
-      if (times > 2) return null; // Cease retries quickly in local development
-      return 500;
-    },
+    // Production keeps reconnecting with backoff; development gives up fast and uses memory.
+    retryStrategy: (times) => (env.isProd ? Math.min(times * 200, 5000) : times > 2 ? null : 500),
   });
 
   redis.on('connect', () => {
@@ -55,7 +53,10 @@ try {
   redis.on('error', (err) => {
     isRedisConnected = false;
     if (!hasLoggedRedisNotice) {
-      console.warn(`[Cache] Redis unavailable at ${redisUrl} (${err.message}). Using high-performance in-memory cache.`);
+      // Never print the URL: it can carry a password.
+      const msg = `[Cache] Redis unavailable (${err.message}). Falling back to per-process memory.`;
+      if (env.isProd) console.error(`${msg} Rate limits and cooldowns are NOT shared across instances until Redis is back.`);
+      else console.warn(msg);
       hasLoggedRedisNotice = true;
     }
   });
@@ -111,10 +112,13 @@ export const invalidateCache = async (pattern: string): Promise<void> => {
 
   if (isRedisConnected && redis) {
     try {
-      const keys = await redis.keys(pattern);
-      if (keys.length > 0) {
-        await redis.del(...keys);
-      }
+      // SCAN, never KEYS: KEYS blocks Redis for every client while it walks the keyspace.
+      let cursor = '0';
+      do {
+        const [next, keys] = await redis.scan(cursor, 'MATCH', pattern, 'COUNT', 200);
+        cursor = next;
+        if (keys.length > 0) await redis.unlink(...keys);
+      } while (cursor !== '0');
     } catch {
       // Invalidation handled in memory
     }
@@ -151,6 +155,13 @@ export const setCooldown = async (key: string, ttlSeconds: number): Promise<void
       // Saved in memory
     }
   }
+};
+
+/** The shared Redis connection when it is up, else null (callers fall back to memory). */
+export const sharedRedis = (): Redis | null => (isRedisConnected && redis ? redis : null);
+
+export const closeCache = async () => {
+  if (redis) await redis.quit().catch(() => redis?.disconnect());
 };
 
 export default redis;
