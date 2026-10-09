@@ -113,7 +113,7 @@ export const fetchPlaces = async (params = {}) => {
     const response = await fetch(url, { headers: getHeaders() });
     if (response.ok) {
       const data = await response.json();
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         if (!params.live) {
           setCache(url, data);
         }
@@ -163,7 +163,7 @@ export const fetchEvents = async () => {
     const response = await fetch(cacheKey, { headers: getHeaders() });
     if (response.ok) {
       const data = await response.json();
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         setCache(cacheKey, data);
         return data;
       }
@@ -183,7 +183,7 @@ export const fetchItinerary = async () => {
     const response = await fetch(cacheKey, { headers: getHeaders() });
     if (response.ok) {
       const data = await response.json();
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         setCache(cacheKey, data);
         return data;
       }

@@ -1,12 +1,12 @@
 import axios from 'axios';
-import redis from './cacheService';
+import { getCooldown, setCooldown } from './cacheService';
 
 const OVERPASS_ENDPOINTS = [
-  'https://z.overpass-api.de/api/interpreter',
   'https://lz4.overpass-api.de/api/interpreter',
-  'https://overpass-api.de/api/interpreter',
-  'https://overpass.kumi.systems/api/interpreter',
-  'https://overpass.private.coffee/api/interpreter'
+  'https://overpass.openstreetmap.fr/api/interpreter',
+  'https://overpass.osm.ch/api/interpreter',
+  'https://z.overpass-api.de/api/interpreter',
+  'https://overpass-api.de/api/interpreter'
 ];
 
 // Expanded Bounding box for Pune metropolitan area (south, west, north, east)
@@ -278,19 +278,15 @@ export const searchOSMPlaces = async (query: string): Promise<any[]> => {
   }
 
   const cooldownKey = `places:discovery:cooldown:search:${sanitizedQuery.toLowerCase()}`;
-  try {
-    const isCooldownActive = await redis.get(cooldownKey);
-    if (isCooldownActive) {
-      console.log(`[OSM] Discovery cooldown active for search query: ${sanitizedQuery}. Skipping query.`);
-      return [];
-    }
-    await redis.set(cooldownKey, 'true', 'EX', 300); // 5 min cooldown
-  } catch (err) {
-    console.error('Redis error checking search cooldown:', err);
+  const isCooldownActive = await getCooldown(cooldownKey);
+  if (isCooldownActive) {
+    console.log(`[OSM] Discovery cooldown active for search query: ${sanitizedQuery}. Skipping query.`);
+    return [];
   }
+  await setCooldown(cooldownKey, 300); // 5 min cooldown
 
   const overpassQuery = `
-    [out:json][timeout:12];
+    [out:json][timeout:8];
     (
       node(${PUNE_BBOX})["name"~"${sanitizedQuery}",i]["tourism"];
       node(${PUNE_BBOX})["name"~"${sanitizedQuery}",i]["historic"];
@@ -308,16 +304,12 @@ export const searchOSMPlaces = async (query: string): Promise<any[]> => {
 export const fetchOSMPlacesByCategory = async (category: string, customBbox?: string): Promise<any[]> => {
   const targetBbox = customBbox || PUNE_BBOX;
   const cooldownKey = `places:discovery:cooldown:cat:${category.toLowerCase()}:${targetBbox}`;
-  try {
-    const isCooldownActive = await redis.get(cooldownKey);
-    if (isCooldownActive) {
-      console.log(`[OSM] Discovery cooldown active for category ${category}. Skipping query.`);
-      return [];
-    }
-    await redis.set(cooldownKey, 'true', 'EX', 120); // 2 min cooldown
-  } catch (err) {
-    console.error('Redis error checking discovery category cooldown:', err);
+  const isCooldownActive = await getCooldown(cooldownKey);
+  if (isCooldownActive) {
+    console.log(`[OSM] Discovery cooldown active for category ${category}. Skipping query.`);
+    return [];
   }
+  await setCooldown(cooldownKey, 120); // 2 min cooldown
 
   let categoryFilter = '';
   switch (category) {
@@ -451,7 +443,7 @@ export const fetchOSMPlacesInBounds = async (bbox: BoundingBox, category?: strin
   }
 
   const query = `
-    [out:json][timeout:12];
+    [out:json][timeout:8];
     (
       ${categoryFilter.trim()}
     );
@@ -471,7 +463,7 @@ export const executeOverpassQuery = async (query: string): Promise<any[]> => {
           'User-Agent': 'PuneTourGuideApp/1.0',
           'Content-Type': 'application/x-www-form-urlencoded'
         },
-        timeout: 10000
+        timeout: 4500
       });
       const elements = response.data?.elements || [];
 

@@ -1,5 +1,10 @@
 import dotenv from 'dotenv';
+import path from 'path';
+
 dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../../backend/.env') });
+dotenv.config({ path: path.resolve(process.cwd(), 'backend/.env') });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const resolveJwtSecret = (): string => {
   const secret = process.env.JWT_SECRET;

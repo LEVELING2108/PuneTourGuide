@@ -115,8 +115,8 @@ export default function MapScreen({ userLocation, userLanguage, weatherData }) {
       if (livePlaces && livePlaces.length > 0) {
         setPlaces((prev) => {
           const map = new Map();
-          prev.forEach((p) => map.set(p.id || p.osmId, p));
-          livePlaces.forEach((p) => map.set(p.id || p.osmId, p));
+          prev.forEach((p) => map.set(p.id || p.osmId || p.name, p));
+          livePlaces.forEach((p) => map.set(p.id || p.osmId || p.name, p));
           return Array.from(map.values());
         });
       }
@@ -180,12 +180,8 @@ export default function MapScreen({ userLocation, userLanguage, weatherData }) {
           }
         }
 
-        // Fetch all tourist places (scoped to current viewport bounds if set)
-        const params = { category: activeFilter };
-        if (currentBounds) {
-          params.bbox = `${currentBounds.south},${currentBounds.west},${currentBounds.north},${currentBounds.east}`;
-        }
-        const placesData = await fetchPlaces(params);
+        // Fetch all tourist places for the selected category
+        const placesData = await fetchPlaces({ category: activeFilter });
         setPlaces(placesData || []);
       } catch (error) {
         console.error("Failed to load map data:", error);

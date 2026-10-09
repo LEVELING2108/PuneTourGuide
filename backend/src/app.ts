@@ -15,6 +15,7 @@ import { globalApiLimiter, authLimiter, aiGenerationLimiter } from './middleware
 dotenv.config();
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../backend/.env') });
+dotenv.config({ path: path.resolve(process.cwd(), 'backend/.env') });
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -113,8 +114,16 @@ if (process.env.NODE_ENV === 'production' && distExists) {
   });
 }
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+});
+
+server.on('error', (err: any) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`[Fatal] Port ${port} is already in use. Please terminate any running processes on port ${port}.`);
+  } else {
+    console.error(`[Server Error]:`, err);
+  }
 });
 
 export default app;

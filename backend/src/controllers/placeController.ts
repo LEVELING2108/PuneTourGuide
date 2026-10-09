@@ -94,8 +94,8 @@ export const getAllPlaces = async (req: Request, res: Response) => {
           orderBy: { rating: 'desc' }
         });
 
-        // If live refresh requested or few places exist in this map area, fetch directly from OpenStreetMap
-        if (live === 'true' || places.length < 4) {
+        // If live refresh explicitly requested, fetch directly from OpenStreetMap
+        if (live === 'true') {
           console.log(`[OSM] Fetching live places in map bounds [${south}, ${west}, ${north}, ${east}] for category ${category || 'All'}...`);
           try {
             const discovered = await fetchOSMPlacesInBounds(

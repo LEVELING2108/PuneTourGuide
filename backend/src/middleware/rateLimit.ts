@@ -1,11 +1,12 @@
 import rateLimit from 'express-rate-limit';
 
-// Global API limiter: 300 requests per 15-minute window per IP
+// Global API limiter: 300 requests per 15-minute window per IP in production
 export const globalApiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV !== 'production',
   message: { error: 'Too many requests from this IP, please try again after 15 minutes.' },
 });
 
@@ -15,6 +16,7 @@ export const authLimiter = rateLimit({
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV !== 'production',
   message: { error: 'Too many authentication attempts. Please try again after 15 minutes.' },
 });
 
@@ -24,5 +26,6 @@ export const aiGenerationLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV !== 'production',
   message: { error: 'AI itinerary generation limit reached. Please wait a few minutes before trying again.' },
 });
