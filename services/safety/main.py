@@ -69,11 +69,15 @@ http_client = httpx.AsyncClient(
 )
 
 # Mirror Health Tracking
+# Worldwide mirrors only (overpass.osm.ch holds Swiss data and returned nothing for India).
+# Production: set OVERPASS_ENDPOINTS (comma-separated), ideally a self-hosted instance.
 OVERPASS_ENDPOINTS = [
+    u.strip() for u in os.getenv("OVERPASS_ENDPOINTS", "").split(",") if u.strip()
+] or [
     "https://overpass-api.de/api/interpreter",
-    "https://overpass.osm.ch/api/interpreter",
     "https://lz4.overpass-api.de/api/interpreter",
-    "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
+    "https://overpass.private.coffee/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
 ]
 MIRROR_STATUS = {url: {"fails": 0, "last_error": None} for url in OVERPASS_ENDPOINTS}
 
@@ -174,7 +178,17 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         except asyncio.CancelledError:
             pass
 
+async def fetch_with_failover(query: str, endpoint_idx: int, attempts: int = 3):
+    """Run one Overpass query, moving to the next mirror on failure. Returns (elements, ok)."""
+    for attempt in range(min(attempts, len(OVERPASS_ENDPOINTS))):
+        elements = await fetch_parallel(query, endpoint_idx + attempt)
+        if elements is not None:
+            return elements, True
+    return [], False
+
+
 async def fetch_parallel(query: str, endpoint_idx: int):
+    """One attempt against one mirror: the element list, or None if the mirror failed."""
     endpoint = get_healthy_endpoint(endpoint_idx)
 
     try:
@@ -191,24 +205,24 @@ async def fetch_parallel(query: str, endpoint_idx: int):
         MIRROR_STATUS[endpoint]["fails"] += 1
         MIRROR_STATUS[endpoint]["last_error"] = error_msg
         logger.error(f"Fail from {endpoint}: {error_msg}")
-        return []
+        return None
         
     except httpx.TimeoutException:
         MIRROR_STATUS[endpoint]["fails"] += 1
         MIRROR_STATUS[endpoint]["last_error"] = "Timeout"
         logger.error(f"Error from {endpoint}: Request Timeout (8s)")
-        return []
+        return None
     except httpx.ConnectError:
         MIRROR_STATUS[endpoint]["fails"] += 1
         MIRROR_STATUS[endpoint]["last_error"] = "ConnectError"
         logger.error(f"Error from {endpoint}: Connection Failed")
-        return []
+        return None
     except Exception as e:
         err_name = type(e).__name__
         MIRROR_STATUS[endpoint]["fails"] += 1
         MIRROR_STATUS[endpoint]["last_error"] = err_name
         logger.error(f"Error from {endpoint}: {err_name} - {str(e)}")
-        return []
+        return None
 
 import math
 
@@ -224,7 +238,8 @@ def haversine_dist(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 from dsa_engine import SpatialKDTree, TopKHeap, GeohashUtil
 
 @app.get("/api/emergency-services")
-@limiter.limit("10/minute")
+# Generous per IP: carrier CGNAT puts many users behind one address, and results are geohash-cached.
+@limiter.limit("60/minute")
 async def get_emergency_services(
     request: Request,
     lat: float = Query(..., description="Latitude"),
@@ -248,14 +263,16 @@ async def get_emergency_services(
         f'[out:json][timeout:10];(node(around:{radius},{lat},{lon})["shop"~"car_repair|tyres|car|motorcycle"];way(around:{radius},{lat},{lon})["shop"~"car_repair|tyres|car|motorcycle"];node(around:{radius},{lat},{lon})["emergency"~"towing|technical_rescue"];);out center;'
     ]
 
-    tasks = [fetch_parallel(q, i) for i, q in enumerate(queries)]
+    tasks = [fetch_with_failover(q, i) for i, q in enumerate(queries)]
     results_list = await asyncio.gather(*tasks)
-    all_elements = [item for sublist in results_list for item in sublist]
+    all_elements = [item for elements, _ in results_list for item in elements]
+    complete = all(ok for _, ok in results_list)
     
     if not all_elements:
         logger.warning("No parallel results. Trying single robust union query.")
         agg = f'[out:json][timeout:15];(node(around:{radius},{lat},{lon})["amenity"~"hospital|police|fire_station"];way(around:{radius},{lat},{lon})["amenity"~"hospital|police|fire_station"];);out center;'
-        all_elements = await fetch_parallel(agg, 0)
+        all_elements, _ = await fetch_with_failover(agg, 0)
+        complete = False
 
     final_results = []
     seen_ids = set()
@@ -288,166 +305,20 @@ async def get_emergency_services(
             "distance": dist
         })
     
-    # Fallback Emergency Facilities if OSM query yields no elements
+    # No invented facilities: in an emergency a fake hospital is worse than an honest empty list.
+    # The app shows "call 112" when this is empty. Empty results are not cached so the next call retries.
     if not final_results:
-        logger.warning("No Overpass elements found. Returning proximity-calculated emergency seed services.")
-        final_results = [
-            # Medical Services (4)
-            {
-                "id": 101,
-                "name": "General Emergency & Level-1 Trauma Care Hospital",
-                "category": "hospital",
-                "type": "trauma_center",
-                "phone": "112",
-                "lat": round(lat + 0.005, 5),
-                "lon": round(lon + 0.005, 5),
-                "address": "24/7 Emergency Trauma Wing",
-                "is_recommended": True,
-                "distance": haversine_dist(lat, lon, lat + 0.005, lon + 0.005)
-            },
-            {
-                "id": 102,
-                "name": "Apex Regional Emergency Hospital & ICU Unit",
-                "category": "hospital",
-                "type": "trauma_center",
-                "phone": "102",
-                "lat": round(lat + 0.011, 5),
-                "lon": round(lon - 0.008, 5),
-                "address": "Super Specialty Trauma Center",
-                "is_recommended": True,
-                "distance": haversine_dist(lat, lon, lat + 0.011, lon - 0.008)
-            },
-            {
-                "id": 103,
-                "name": "City Rapid Ambulance Dispatch Base",
-                "category": "hospital",
-                "type": "hospital",
-                "phone": "108",
-                "lat": round(lat - 0.009, 5),
-                "lon": round(lon + 0.012, 5),
-                "address": "Central Emergency Transport HQ",
-                "is_recommended": False,
-                "distance": haversine_dist(lat, lon, lat - 0.009, lon + 0.012)
-            },
-            {
-                "id": 104,
-                "name": "Lifeline Critical Care & Trauma Clinic",
-                "category": "hospital",
-                "type": "clinic",
-                "phone": "112",
-                "lat": round(lat + 0.018, 5),
-                "lon": round(lon + 0.015, 5),
-                "address": "24/7 First Response Clinic",
-                "is_recommended": False,
-                "distance": haversine_dist(lat, lon, lat + 0.018, lon + 0.015)
-            },
-            # Security / Police Services (4)
-            {
-                "id": 201,
-                "name": "Central Police Control & Emergency Response HQ",
-                "category": "police",
-                "type": "police",
-                "phone": "100",
-                "lat": round(lat + 0.007, 5),
-                "lon": round(lon - 0.004, 5),
-                "address": "Highway Patrol Headquarters",
-                "is_recommended": False,
-                "distance": haversine_dist(lat, lon, lat + 0.007, lon - 0.004)
-            },
-            {
-                "id": 202,
-                "name": "Highway Security Patrol & Rapid Action Unit",
-                "category": "police",
-                "type": "police",
-                "phone": "112",
-                "lat": round(lat - 0.012, 5),
-                "lon": round(lon - 0.009, 5),
-                "address": "Sector 4 Security Post",
-                "is_recommended": False,
-                "distance": haversine_dist(lat, lon, lat - 0.012, lon - 0.009)
-            },
-            {
-                "id": 203,
-                "name": "District Fire & Disaster Rescue Station",
-                "category": "police",
-                "type": "fire_station",
-                "phone": "101",
-                "lat": round(lat + 0.015, 5),
-                "lon": round(lon - 0.014, 5),
-                "address": "Emergency Fire & Rescue Services",
-                "is_recommended": False,
-                "distance": haversine_dist(lat, lon, lat + 0.015, lon - 0.014)
-            },
-            {
-                "id": 204,
-                "name": "City Tactical Police & Bystander Protection Post",
-                "category": "police",
-                "type": "police",
-                "phone": "100",
-                "lat": round(lat - 0.021, 5),
-                "lon": round(lon + 0.018, 5),
-                "address": "Metropolitan Rapid Response",
-                "is_recommended": False,
-                "distance": haversine_dist(lat, lon, lat - 0.021, lon + 0.018)
-            },
-            # Repairs & Rescue Services (4)
-            {
-                "id": 301,
-                "name": "24/7 National Highway Rescue & Heavy Towing",
-                "category": "car_repair",
-                "type": "rescue",
-                "phone": "1033",
-                "lat": round(lat - 0.006, 5),
-                "lon": round(lon + 0.008, 5),
-                "address": "National Towing & Breakdown Rescue",
-                "is_recommended": False,
-                "distance": haversine_dist(lat, lon, lat - 0.006, lon + 0.008)
-            },
-            {
-                "id": 302,
-                "name": "Rapid Auto Repair & Emergency Mobile Mechanic",
-                "category": "car_repair",
-                "type": "rescue",
-                "phone": "1800-102-1033",
-                "lat": round(lat + 0.014, 5),
-                "lon": round(lon + 0.011, 5),
-                "address": "Mobile Breakdown Assistance",
-                "is_recommended": False,
-                "distance": haversine_dist(lat, lon, lat + 0.014, lon + 0.011)
-            },
-            {
-                "id": 303,
-                "name": "Express Highway Tyre & Vehicle Repair Base",
-                "category": "car_repair",
-                "type": "rescue",
-                "phone": "1033",
-                "lat": round(lat - 0.016, 5),
-                "lon": round(lon - 0.015, 5),
-                "address": "Highway Breakdown Rescue Hub",
-                "is_recommended": False,
-                "distance": haversine_dist(lat, lon, lat - 0.016, lon - 0.015)
-            },
-            {
-                "id": 304,
-                "name": "Highway EV & Vehicle Rescue Recovery Station",
-                "category": "car_repair",
-                "type": "rescue",
-                "phone": "1800-419-1033",
-                "lat": round(lat + 0.022, 5),
-                "lon": round(lon - 0.020, 5),
-                "address": "24/7 Highway Technical Recovery",
-                "is_recommended": False,
-                "distance": haversine_dist(lat, lon, lat + 0.022, lon - 0.020)
-            }
-        ]
+        logger.warning("No Overpass elements found for this area.")
+        return {"services": [], "status": "unavailable"}
     
     # DSA Category-Balanced Selection: Guarantees Top Candidates for Medical, Security (Police), and Rescue (Repairs)
     top_services = TopKHeap.select_top_k(final_results, k_per_category=10)
     if top_services:
         top_services[0]["is_nearest"] = True
 
-    await kv_set(geo_key, json.dumps(top_services), ex=600)
-    return {"services": top_services}
+    if complete:
+        await kv_set(geo_key, json.dumps(top_services), ex=6 * 3600)
+    return {"services": top_services, "status": "ok" if complete else "partial"}
 
 @app.get("/health")
 def health_check():

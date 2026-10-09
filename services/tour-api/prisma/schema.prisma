@@ -255,3 +255,26 @@ model SosEvent {
   cancelledAt     DateTime?
   user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
+
+/// Emergency help points imported from OpenStreetMap (npm run refresh:help).
+/// Serves "Help nearby" and each place's nearest hospital without calling Overpass per request.
+model HelpPlace {
+  id        Int      @id @default(autoincrement())
+  /// "node/123", "way/456"
+  osmId     String   @unique
+  name      String
+  /// hospital | clinic | police | fire_station
+  category  String
+  /// OSM emergency=yes: 24x7 casualty / trauma care
+  emergency Boolean  @default(false)
+  phone     String?
+  address   String?
+  latitude  Float
+  longitude Float
+  location  Unsupported("geometry(Point, 4326)")?
+  /// Last import run that saw this point; rows not seen by a complete run are removed
+  seenAt    DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+}

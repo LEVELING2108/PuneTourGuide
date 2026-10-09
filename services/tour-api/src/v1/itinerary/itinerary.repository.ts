@@ -65,9 +65,8 @@ export const itineraryRepo = {
       let stampCollected = false;
       let xpAwarded = 0;
       if (done && placeId) {
-        const existing = await tx.stamp.findUnique({ where: { userId_placeId: { userId, placeId } } });
-        if (!existing) {
-          await tx.stamp.create({ data: { userId, placeId } });
+        const { count } = await tx.stamp.createMany({ data: [{ userId, placeId }], skipDuplicates: true });
+        if (count === 1) {
           await tx.user.update({ where: { id: userId }, data: { xp: { increment: xp } } });
           stampCollected = true;
           xpAwarded = xp;

@@ -1,11 +1,6 @@
 import { prisma } from '../lib/prisma';
+import { helpRepo } from '../v1/help/help.repository';
 import { nearestHospital, PLACES, ROUTES } from './catalogue';
-
-const EVENTS = [
-  { date: 'SAT · JUN 14', name: 'Sawai Gandharva Festival', desc: 'Classical music at Balgandharva Rang', color: 'terracotta' },
-  { date: 'SUN · JUN 15', name: 'Pune Food Walk', desc: 'FC Road street eats tour', color: 'indigo' },
-  { date: 'WED · JUN 18', name: 'Heritage Cycle Tour', desc: 'Morning cycle through Old Pune Peths', color: 'sage' },
-];
 
 async function seedPlaces() {
   const ids = new Map<string, number>();
@@ -62,15 +57,11 @@ async function seedRoutes(placeIds: Map<string, number>) {
   }
 }
 
-async function seedEvents() {
-  if ((await prisma.event.count()) > 0) return;
-  await prisma.event.createMany({ data: EVENTS });
-}
-
-/** Idempotent: upserts curated places by name and routes by slug. */
+/** Idempotent: upserts curated places by name and routes by slug. No events: those come from a real source later. */
 export async function seedCatalogue() {
   const ids = await seedPlaces();
   await seedRoutes(ids);
-  await seedEvents();
+  // Real nearest hospitals from the OSM import win over the bootstrap list (no-op before the first import).
+  await helpRepo.refreshPlaceHospitals();
   return { places: ids.size, routes: ROUTES.length };
 }

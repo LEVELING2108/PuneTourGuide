@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import healthRoutes from './health/health.routes';
+import helpRoutes from './help/help.routes';
+import routingRoutes from './routing/routing.routes';
 import { errorHandler, notFoundHandler } from '../middleware/errorHandler';
 import authRoutes from './auth/auth.routes';
 import itineraryRoutes from './itinerary/itinerary.routes';
@@ -18,6 +20,8 @@ v1.use('/users', usersRoutes);
 v1.use('/places', placesRoutes);
 v1.use('/routes', routesRoutes);
 v1.use('/itinerary', itineraryRoutes);
+v1.use('/help', helpRoutes);
+v1.use('/', routingRoutes);
 v1.use('/', miscRoutes);
 
 v1.use(notFoundHandler);

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { handle, ok } from '../../lib/http';
+import { optimiseLimit } from '../../middleware/limits';
 import { requireAuth, userId } from '../../middleware/requireAuth';
 import { idParam, input, validate } from '../../middleware/validate';
 import { itineraryService } from './itinerary.service';
@@ -17,6 +18,8 @@ const patchStopSchema = z
   .object({ done: z.boolean().optional(), time: time.optional() })
   .strict()
   .refine((b) => b.done !== undefined || b.time !== undefined, 'Nothing to change');
+
+const optimiseSchema = z.object({ dayId: z.number().int().positive().optional() }).strict();
 
 const fromRouteSchema = z.object({ dayId: z.number().int().positive().optional() }).strict();
 
@@ -43,6 +46,13 @@ router.delete(
   '/stops/:id',
   validate({ params: idParam }),
   handle(async (_req, res) => ok(res, await itineraryService.removeStop(userId(res), input<unknown, unknown, { id: number }>(res).params.id)))
+);
+
+router.post(
+  '/optimize',
+  optimiseLimit,
+  validate({ body: optimiseSchema }),
+  handle(async (_req, res) => ok(res, await itineraryService.optimize(userId(res), input<{ dayId?: number }>(res).body.dayId)))
 );
 
 router.post(

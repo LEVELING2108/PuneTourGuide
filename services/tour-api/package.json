@@ -12,7 +12,8 @@
     "seed": "tsx src/seed.ts",
     "prisma:generate": "prisma generate",
     "prisma:deploy": "prisma migrate deploy",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "refresh:help": "tsx src/scripts/refresh-help.ts"
   },
   "author": "",
   "license": "ISC",

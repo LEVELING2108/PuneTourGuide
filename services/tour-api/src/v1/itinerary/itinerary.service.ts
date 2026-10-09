@@ -1,4 +1,6 @@
 import { conflict, notFound } from '../../lib/errors';
+import { optimiseOrder, pathCost } from '../routing/optimize';
+import { routingService } from '../routing/routing.service';
 import { itineraryRepo, type DayWithStops, type StopWithPlace } from './itinerary.repository';
 import { addDays, dayLabel, formatTime, parseTime, puneToday, roundUp15, weekday } from './time';
 
@@ -132,6 +134,41 @@ export const itineraryService = {
     if (patch.time) await itineraryRepo.updateStop(stop.id, { time: patch.time });
     const fresh = await itineraryRepo.stop(userId, stopId);
     return { stop: toStopDto(fresh!), ...reward };
+  },
+
+  /**
+   * Optimise a day (TECH_DESIGN §9.3). Visited stops stay where they are; the first stop still
+   * to visit is the fixed start; the rest are reordered by travel time (NN + 2-opt) and re-timed.
+   * Stops without coordinates keep their place at the end. Saves under a minute count as no change.
+   */
+  async optimize(userId: number, dayId?: number) {
+    const day = await this.targetDay(userId, dayId);
+    const done = day.stops.filter((s) => s.done);
+    const pending = day.stops.filter((s) => !s.done);
+    const routable = pending.filter((s) => s.place?.latitude != null && s.place?.longitude != null);
+    const unroutable = pending.filter((s) => !routable.includes(s));
+    const unchanged = { day: toDayDto(day), minutesSaved: 0, estimated: false };
+    if (routable.length < 3) return unchanged; // with a fixed start, two stops have only one order
+
+    const pts = routable.map((s) => ({ lat: s.place!.latitude!, lng: s.place!.longitude! }));
+    const { seconds, estimated } = await routingService.matrix(pts, 'car');
+    const order = optimiseOrder(seconds);
+    const savedS = pathCost(routable.map((_, i) => i), seconds) - pathCost(order, seconds);
+    if (savedS < 60) return { ...unchanged, estimated };
+
+    // Re-time from the fixed start: visit length + travel, rounded up to the next quarter hour.
+    let t = parseTime(routable[0].time) ?? DEFAULT_START;
+    const timed = order.map((idx, n) => {
+      if (n > 0) {
+        const prev = routable[order[n - 1]];
+        t = roundUp15(t + (prev.place?.visitMinutes ?? 60) + seconds[order[n - 1]][idx] / 60);
+      }
+      return { stop: routable[idx], time: formatTime(t) };
+    });
+    const final = [...done.map((s) => ({ stop: s, time: undefined })), ...timed, ...unroutable.map((s) => ({ stop: s, time: undefined }))];
+    await itineraryRepo.reorder(final.map((f, i) => ({ id: f.stop.id, order: i, time: f.time })));
+    const fresh = await itineraryRepo.day(userId, day.id);
+    return { day: toDayDto(fresh!), minutesSaved: Math.round(savedS / 60), estimated };
   },
 
   async routes() {

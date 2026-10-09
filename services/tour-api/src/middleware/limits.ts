@@ -33,6 +33,10 @@ export const sosLimit = make('sos', 10 * 60_000, 10);
 /** Test alerts: 3 per day per IP (also enforced per user in the service). */
 export const testAlertLimit = make('test-alert', 24 * 60 * 60_000, 3);
 
+/** Directions and Optimise spend the routing provider's quota. Live navigation re-routes occasionally. */
+export const routingLimit = make('routing', 60_000, 30);
+export const optimiseLimit = make('optimise', 10 * 60_000, 20);
+
 /**
  * Whole-API ceiling per IP. Generous on purpose: Indian mobile carriers put many
  * users behind one CGNAT address, so the tight limits stay on the sensitive routes above.
