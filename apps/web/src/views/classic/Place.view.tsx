@@ -42,7 +42,7 @@ export default function PlaceView({ v }: ViewProps) {
             </svg>
             <div style={{ fontSize: "12px", letterSpacing: "0.14em", color: "#A9CFC6", border: "1px dashed #5F8F86", borderRadius: "12px", padding: "8px 14px", marginTop: "-40px" }}>PLACE PHOTO</div>
           </div>
-          <Link to="/explore" className="tap" aria-label="Back" style={{ position: "absolute", top: "56px", left: "20px", width: "44px", height: "44px", borderRadius: "22px", background: "rgba(246,246,243,0.16)", border: "1px solid rgba(246,246,243,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Link to="/explore" className="tap" aria-label="Back" onClick={v.back} style={{ position: "absolute", top: "56px", left: "20px", width: "44px", height: "44px", borderRadius: "22px", background: "rgba(246,246,243,0.16)", border: "1px solid rgba(246,246,243,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 5l-7 7 7 7" />
             </svg>
@@ -58,35 +58,35 @@ export default function PlaceView({ v }: ViewProps) {
             </>
           )}
           <div className="rise d2" style={{ position: "absolute", left: "24px", right: "24px", bottom: "44px", color: "var(--bg)", display: "flex", flexDirection: "column", gap: "6px" }}>
-            <div style={{ fontSize: "11.5px", fontWeight: "600", letterSpacing: "0.16em", color: "#A9CFC6" }}>HERITAGE · KALYANI NAGAR</div>
+            <div style={{ fontSize: "11.5px", fontWeight: "600", letterSpacing: "0.16em", color: "#A9CFC6" }}>{v.kicker}</div>
             <h1 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "48px", fontWeight: "400", lineHeight: "0.95" }}>
-              Aga Khan
-              <br />
-              <span style={{ fontStyle: "italic" }}>Palace</span>
+              {v.titleA}
+              {v.titleA && <br />}
+              <span style={{ fontStyle: "italic" }}>{v.titleB}</span>
             </h1>
-            <div style={{ fontFamily: "'Mukta', sans-serif", fontSize: "15px", color: "#CFE3DE" }}>आगा खान पॅलेस</div>
+            <div style={{ fontFamily: "'Mukta', sans-serif", fontSize: "15px", color: "#CFE3DE" }}>{v.nameMr}</div>
           </div>
         </div>
       </div>
-      <div style={{ position: "absolute", top: "372px", left: "0", right: "0", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "28px 24px 0", display: "flex", flexDirection: "column", gap: "20px" }}>
+      <div style={{ position: "absolute", top: "372px", left: "0", right: "0", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "28px 24px 28px", display: "flex", flexDirection: "column", gap: "20px", overflowY: "auto", boxSizing: "border-box" }}>
         <p className="rise d3" style={{ margin: "0", fontSize: "15px", lineHeight: "1.55", color: "#2C3431" }}>
-          Built in 1892, the palace held Mahatma Gandhi and Kasturba Gandhi during the Quit India movement. Kasturba's memorial stands in the gardens.
+          {v.description}
         </p>
         <div className="rise d4" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)" }}>
           <div style={{ padding: "14px 0", display: "flex", flexDirection: "column", gap: "4px" }}>
             <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>OPEN</div>
-            <div style={{ fontFamily: "var(--font-display)", fontSize: "21px" }}>[HOURS]</div>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: "21px" }}>{v.hours}</div>
           </div>
           <div style={{ padding: "14px 0 14px 14px", borderLeft: "1px solid var(--line)", display: "flex", flexDirection: "column", gap: "4px" }}>
             <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>ENTRY</div>
-            <div style={{ fontFamily: "var(--font-display)", fontSize: "21px" }}>[FEE]</div>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: "21px" }}>{v.fee}</div>
           </div>
           <div style={{ padding: "14px 0 14px 14px", borderLeft: "1px solid var(--line)", display: "flex", flexDirection: "column", gap: "4px" }}>
             <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>VISIT</div>
-            <div style={{ fontFamily: "var(--font-display)", fontSize: "21px" }}>1.5 hr</div>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: "21px" }}>{v.visit}</div>
           </div>
         </div>
-        <Link to="/map" className="rise d5 tap" style={{ display: "flex", alignItems: "center", gap: "14px", textDecoration: "none", color: "var(--ink)" }}>
+        <Link to={v.helpHref} className="rise d5 tap" style={{ display: "flex", alignItems: "center", gap: "14px", textDecoration: "none", color: "var(--ink)" }}>
           <div style={{ width: "40px", height: "40px", borderRadius: "20px", border: "1px solid #EFC9C1", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0" }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8321C" strokeWidth="2.4" strokeLinecap="round">
               <path d="M12 5v14M5 12h14" />
@@ -94,22 +94,22 @@ export default function PlaceView({ v }: ViewProps) {
           </div>
           <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "2px" }}>
             <div style={{ fontSize: "12px", color: "var(--muted)" }}>Nearest hospital</div>
-            <div style={{ fontSize: "14.5px", fontWeight: "600" }}>Ruby Hall Clinic · 4 km</div>
+            <div style={{ fontSize: "14.5px", fontWeight: "600" }}>{v.hospitalLine}</div>
           </div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 6l6 6-6 6" />
           </svg>
         </Link>
         <div className="rise d6" style={{ display: "flex", gap: "10px", marginTop: "auto", paddingBottom: "32px" }}>
-          <Link to="/directions" className="ghost" style={{ flex: "1", height: "56px", borderRadius: "28px", border: "1px solid #C9D0CC", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "15px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>
+          <Link to={v.directionsHref} className="ghost" style={{ flex: "1", height: "56px", borderRadius: "28px", border: "1px solid #C9D0CC", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "15px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 11l18-8-8 18-2-8z" />
             </svg>
             Directions
           </Link>
-          <Link to="/plan" className="cta" style={{ flex: "1.4", height: "56px", borderRadius: "28px", background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "15px", fontWeight: "600", color: "var(--bg)", textDecoration: "none" }}>
-            Add to plan{" "}
-            <span style={{ fontSize: "12.5px", color: "#A9CFC6" }}>+40 XP</span>
+          <Link to="/plan" className="cta" onClick={v.addToPlan} style={{ flex: "1.4", height: "56px", borderRadius: "28px", background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "15px", fontWeight: "600", color: "var(--bg)", textDecoration: "none" }}>
+            {v.ctaLabel}{" "}
+            <span style={{ fontSize: "12.5px", color: "#A9CFC6" }}>{v.xpLabel}</span>
           </Link>
         </div>
       </div>

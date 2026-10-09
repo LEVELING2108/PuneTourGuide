@@ -34,13 +34,13 @@ export default function MainView({ v }: ViewProps) {
         <div style={{ padding: "60px 24px 0", display: "flex", flexDirection: "column", gap: "22px" }}>
           <div className="rise d1" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ fontSize: "11.5px", fontWeight: "600", letterSpacing: "0.16em", color: "var(--muted)" }}>SATURDAY · PUNE · 29°</div>
+              <div style={{ fontSize: "11.5px", fontWeight: "600", letterSpacing: "0.16em", color: "var(--muted)" }}>{v.dateLine}</div>
               <h1 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "44px", fontWeight: "400", lineHeight: "0.98", letterSpacing: "-0.01em" }}>
                 Where to,
                 <br />
                 <span style={{ fontStyle: "italic", color: "var(--primary)" }}>today?</span>
               </h1>
-              <div style={{ fontFamily: "'Mukta', sans-serif", fontSize: "14px", color: "var(--muted)" }}>नमस्कार, Sourav</div>
+              <div style={{ fontFamily: "'Mukta', sans-serif", fontSize: "14px", color: "var(--muted)" }}>{v.greeting}</div>
             </div>
             <Link to="/settings/language" className="tap" aria-label="Language" style={{ width: "44px", height: "44px", boxSizing: "border-box", borderRadius: "22px", border: "1px solid #E1E4E0", background: "var(--surface)", fontFamily: "'Mukta', sans-serif", fontSize: "15px", color: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}>अ</Link>
           </div>
@@ -49,22 +49,22 @@ export default function MainView({ v }: ViewProps) {
               <circle cx="11" cy="11" r="7" />
               <path d="M20 20l-3.5-3.5" />
             </svg>
-            <input placeholder="Forts, temples, food, hospitals" style={{ border: "none", outline: "none", flex: "1", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
+            <input type="search" enterKeyHint="search" aria-label="Search" placeholder="Forts, temples, food, hospitals" value={v.q} onChange={v.onQuery} onKeyDown={v.onSearch} style={{ border: "none", outline: "none", flex: "1", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
           </label>
-          <Link to="/plan" className="rise d3 lift" style={{ position: "relative", height: "178px", borderRadius: "26px", background: "var(--primary)", color: "var(--bg)", padding: "22px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "space-between", textDecoration: "none", overflow: "hidden" }}>
+          <Link to={v.nextHref} className="rise d3 lift" style={{ position: "relative", height: "178px", borderRadius: "26px", background: "var(--primary)", color: "var(--bg)", padding: "22px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "space-between", textDecoration: "none", overflow: "hidden" }}>
             <svg width="220" height="220" viewBox="0 0 220 220" aria-hidden="true" style={{ position: "absolute", right: "-60px", top: "-60px", opacity: "0.18" }}>
               <circle cx="110" cy="110" r="70" fill="none" stroke="var(--bg)" strokeWidth="1" />
               <circle cx="110" cy="110" r="96" fill="none" stroke="var(--bg)" strokeWidth="1" />
               <circle cx="110" cy="110" r="44" fill="none" stroke="var(--bg)" strokeWidth="1" />
             </svg>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ fontSize: "11.5px", fontWeight: "600", letterSpacing: "0.16em", color: "#A9CFC6" }}>NEXT STOP · 9:30 AM</div>
-              <div style={{ fontSize: "12px", color: "#A9CFC6" }}>1 of 3</div>
+              <div style={{ fontSize: "11.5px", fontWeight: "600", letterSpacing: "0.16em", color: "#A9CFC6" }}>{v.nextKicker}</div>
+              <div style={{ fontSize: "12px", color: "#A9CFC6" }}>{v.nextCount}</div>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <div style={{ fontFamily: "var(--font-display)", fontSize: "34px", lineHeight: "1" }}>Shaniwar Wada</div>
+              <div style={{ fontFamily: "var(--font-display)", fontSize: "34px", lineHeight: "1" }}>{v.nextName}</div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ fontSize: "13px", color: "#CFE3DE" }}>Kasba Peth · 18 min · hospital 1.2 km</div>
+                <div style={{ fontSize: "13px", color: "#CFE3DE" }}>{v.nextMeta}</div>
                 <svg className="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14M13 6l6 6-6 6" />
                 </svg>
@@ -82,7 +82,7 @@ export default function MainView({ v }: ViewProps) {
                 </div>
                 <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "2px" }}>
                   <div style={{ fontSize: "14.5px", fontWeight: "600" }}>Safety not set up</div>
-                  <div style={{ fontSize: "12.5px", color: "#8A4A12" }}>1 step left · location and shake to SOS</div>
+                  <div style={{ fontSize: "12.5px", color: "#8A4A12" }}>{v.setupText}</div>
                 </div>
                 <span style={{ height: "32px", padding: "0 12px", borderRadius: "16px", background: "#8A4A12", color: "#FDF0E1", display: "flex", alignItems: "center", fontSize: "12.5px", fontWeight: "600" }}>Set up</span>
               </Link>
@@ -99,7 +99,7 @@ export default function MainView({ v }: ViewProps) {
                 </div>
                 <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "2px" }}>
                   <div style={{ fontSize: "14.5px", fontWeight: "600" }}>Safety ready</div>
-                  <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>Offline pack saved · 2 emergency contacts</div>
+                  <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>{v.readyText}</div>
                 </div>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 6l6 6-6 6" />
@@ -113,16 +113,16 @@ export default function MainView({ v }: ViewProps) {
               <Link to="/explore" style={{ fontSize: "13px", fontWeight: "600", textDecoration: "none" }}>See all</Link>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "10px" }}>
-              <Link to="/explore" className="lift" style={{ height: "74px", borderRadius: "18px", background: "#4A3426", padding: "14px 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "flex-end", textDecoration: "none", color: "var(--bg)" }}>
+              <Link to="/explore" onClick={v.collections?.[0]?.open} className="lift" style={{ height: "74px", borderRadius: "18px", background: "#4A3426", padding: "14px 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "flex-end", textDecoration: "none", color: "var(--bg)" }}>
                 <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", lineHeight: "1" }}>Forts</div>
               </Link>
-              <Link to="/explore" className="lift" style={{ height: "74px", borderRadius: "18px", background: "#26303B", padding: "14px 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "flex-end", textDecoration: "none", color: "var(--bg)" }}>
+              <Link to="/explore" onClick={v.collections?.[1]?.open} className="lift" style={{ height: "74px", borderRadius: "18px", background: "#26303B", padding: "14px 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "flex-end", textDecoration: "none", color: "var(--bg)" }}>
                 <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", lineHeight: "1" }}>Temples</div>
               </Link>
-              <Link to="/explore" className="lift" style={{ height: "74px", borderRadius: "18px", background: "#1B2220", padding: "14px 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "flex-end", textDecoration: "none", color: "var(--bg)" }}>
+              <Link to="/explore" onClick={v.collections?.[2]?.open} className="lift" style={{ height: "74px", borderRadius: "18px", background: "#1B2220", padding: "14px 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "flex-end", textDecoration: "none", color: "var(--bg)" }}>
                 <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", lineHeight: "1" }}>Heritage</div>
               </Link>
-              <Link to="/explore" className="lift" style={{ height: "74px", borderRadius: "18px", background: "var(--surface)", border: "1px solid var(--line)", padding: "14px 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "flex-end", textDecoration: "none", color: "var(--ink)" }}>
+              <Link to="/explore" onClick={v.collections?.[3]?.open} className="lift" style={{ height: "74px", borderRadius: "18px", background: "var(--surface)", border: "1px solid var(--line)", padding: "14px 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "flex-end", textDecoration: "none", color: "var(--ink)" }}>
                 <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", lineHeight: "1" }}>Food</div>
               </Link>
             </div>

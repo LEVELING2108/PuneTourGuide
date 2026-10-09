@@ -27,6 +27,8 @@ const css = `
 .scr-deccan-DeccanExplore .slide::-webkit-scrollbar{display:none}
 .scr-deccan-DeccanExplore .slide>*{scroll-snap-align:start}
 @media (prefers-reduced-motion:reduce){.scr-deccan-DeccanExplore *,.scr-deccan-DeccanExplore *::after{animation:none!important;transition:none!important}}
+@keyframes dDeccanExplore-toast{0%{opacity:0;transform:translateY(16px)}12%{opacity:1;transform:none}85%{opacity:1;transform:none}100%{opacity:0;transform:translateY(8px)}}
+.scr-deccan-DeccanExplore .toast{animation:dDeccanExplore-toast 2.6s ease both}
 `;
 
 export default function DeccanExploreView({ v }: ViewProps) {
@@ -48,7 +50,7 @@ export default function DeccanExploreView({ v }: ViewProps) {
                 <circle cx="11" cy="11" r="7" />
                 <path d="M20 20l-3.5-3.5" />
               </svg>
-              <input placeholder="Forts, wadas, misal spots" style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15.5px", background: "transparent", color: "var(--ink)" }} />
+              <input type="search" enterKeyHint="search" aria-label="Search places" placeholder="Forts, wadas, misal spots" value={v.q} onChange={v.onQuery} style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15.5px", background: "transparent", color: "var(--ink)" }} />
             </label>
             <Link to="/explore/filters" className="tap" aria-label="Filters" style={{ width: "50px", height: "50px", flexShrink: "0", borderRadius: "25px", background: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="1.6" strokeLinecap="round">
@@ -66,12 +68,12 @@ export default function DeccanExploreView({ v }: ViewProps) {
             ))}
           </div>
           <div className="rise d4 slide" style={{ display: "flex", gap: "12px", margin: "0 -22px", padding: "0 22px", scrollPaddingInline: "22px" }}>
-            <Link to="/plan" className="lift" style={{ flex: "0 0 300px", height: "118px", display: "flex", textDecoration: "none", color: "var(--surface)", borderRadius: "18px", overflow: "hidden", position: "relative" }}>
+            <Link to="/plan" className="lift" onClick={v.routes?.[0]?.load} style={{ flex: "0 0 300px", height: "118px", display: "flex", textDecoration: "none", color: "var(--surface)", borderRadius: "18px", overflow: "hidden", position: "relative" }}>
               <div style={{ flex: "1", background: "var(--primary)", padding: "14px 16px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.16em", color: "#F2C9DC" }}>YATRA · ON FOOT</div>
                 <div>
-                  <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", lineHeight: "1.05" }}>Peth heritage walk</div>
-                  <div style={{ fontSize: "12.5px", color: "#F2D5E3" }}>Kasba → Budhwar → Shukrawar</div>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", lineHeight: "1.05" }}>{v.routes?.[0]?.deccanTitle}</div>
+                  <div style={{ fontSize: "12.5px", color: "#F2D5E3" }}>{v.routes?.[0]?.deccanSummary}</div>
                 </div>
               </div>
               <div style={{ width: "0", borderLeft: "2px dashed var(--bg)", opacity: "0.7" }} />
@@ -82,12 +84,12 @@ export default function DeccanExploreView({ v }: ViewProps) {
               <span style={{ position: "absolute", left: "218px", top: "-9px", width: "18px", height: "18px", borderRadius: "9px", background: "var(--bg)" }} />
               <span style={{ position: "absolute", left: "218px", bottom: "-9px", width: "18px", height: "18px", borderRadius: "9px", background: "var(--bg)" }} />
             </Link>
-            <Link to="/plan" className="lift" style={{ flex: "0 0 300px", height: "118px", display: "flex", textDecoration: "none", color: "var(--surface)", borderRadius: "18px", overflow: "hidden", position: "relative" }}>
+            <Link to="/plan" className="lift" onClick={v.routes?.[1]?.load} style={{ flex: "0 0 300px", height: "118px", display: "flex", textDecoration: "none", color: "var(--surface)", borderRadius: "18px", overflow: "hidden", position: "relative" }}>
               <div style={{ flex: "1", background: "#0E5B5E", padding: "14px 16px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.16em", color: "#B9DAD6" }}>YATRA · SAHYADRI</div>
                 <div>
-                  <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", lineHeight: "1.05" }}>Two-fort monsoon trek</div>
-                  <div style={{ fontSize: "12.5px", color: "#D4E8E5" }}>Sinhagad → Rajgad · offline pack</div>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", lineHeight: "1.05" }}>{v.routes?.[1]?.deccanTitle}</div>
+                  <div style={{ fontSize: "12.5px", color: "#D4E8E5" }}>{v.routes?.[1]?.deccanSummary}</div>
                 </div>
               </div>
               <div style={{ width: "0", borderLeft: "2px dashed var(--bg)", opacity: "0.7" }} />
@@ -102,11 +104,13 @@ export default function DeccanExploreView({ v }: ViewProps) {
           <div className="rise d5" style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingBottom: "4px" }}>
               <h2 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "24px", fontWeight: "400" }}>{v.heading}</h2>
-              <div style={{ fontSize: "13px", color: "var(--muted)" }}>By distance</div>
+              <div style={{ fontSize: "13px", color: "var(--muted)" }}>{v.sortLabel}</div>
             </div>
+            {v.empty && <div style={{ padding: "18px 0", fontSize: "14px", color: "var(--muted)" }}>{v.emptyText}</div>}
             {((v.places ?? []) as any[]).map((p: any, pIndex: number) => (
               <Fragment key={p?.key ?? pIndex}>
-                <Link to="/place" className="row" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "10px 8px", margin: "0 -8px", borderRadius: "16px", borderBottom: "1px solid var(--line)", textDecoration: "none", color: "var(--ink)" }}>
+                <div className="row" style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 8px", margin: "0 -8px", borderRadius: "16px", borderBottom: "1px solid var(--line)" }}>
+                <Link to={p.href} style={{ flex: "1", minWidth: "0", display: "flex", alignItems: "center", gap: "14px", textDecoration: "none", color: "var(--ink)" }}>
                   <div style={{ padding: "3px", border: "1.5px dashed #CDB894", borderRadius: "4px", background: "var(--surface)", flexShrink: "0" }}>
                     <div style={{ width: "52px", height: "52px", borderRadius: "2px", background: p.tone, color: "var(--surface)", fontFamily: "var(--font-accent)", fontSize: "13px", display: "flex", alignItems: "flex-end", padding: "4px", boxSizing: "border-box" }}>{p.mr}</div>
                   </div>
@@ -115,15 +119,30 @@ export default function DeccanExploreView({ v }: ViewProps) {
                     <div style={{ fontSize: "13px", color: "var(--muted)" }}>{p.meta}</div>
                     <div style={{ fontSize: "12.5px", color: p.helpColor }}>{p.help}</div>
                   </div>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 6l6 6-6 6" />
-                  </svg>
                 </Link>
+                <button className="tap" onClick={p.toggle} aria-label={p.addLabel} aria-pressed={p.pressed} style={{ width: "42px", height: "42px", borderRadius: "21px", border: `1.5px dashed ${p.addBd}`, background: p.addBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0", cursor: "pointer" }}>
+                  {p.added && (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--surface)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12l5 5 9-10" />
+                    </svg>
+                  )}
+                  {p.notAdded && (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.8" strokeLinecap="round">
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                  )}
+                </button>
+                </div>
               </Fragment>
             ))}
           </div>
         </div>
       </div>
+      {v.showToast && (
+        <div className="toast" role="status" style={{ position: "absolute", left: "22px", right: "100px", bottom: "104px", padding: "13px 16px", borderRadius: "14px", background: "var(--ink)", color: "var(--bg)", fontSize: "13.5px", display: "flex", alignItems: "center", gap: "10px", boxShadow: "0 16px 30px -14px rgba(35,28,23,0.6)", borderLeft: "3px solid var(--gold)", zIndex: "3" }}>
+          {v.toastText}
+        </div>
+      )}
       <Link to="/sos" className="tap sos" aria-label="Emergency SOS" style={{ position: "absolute", right: "22px", bottom: "100px", width: "60px", height: "60px", borderRadius: "30px", background: "#C8321C", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "700", letterSpacing: "0.1em", textDecoration: "none", boxShadow: "0 14px 30px -12px rgba(200,50,28,0.75)" }}>SOS</Link>
       <nav className="rise d6" aria-label="Main" style={{ position: "absolute", left: "16px", right: "16px", bottom: "20px", height: "64px", borderRadius: "32px", background: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px", boxSizing: "border-box", boxShadow: "0 20px 40px -18px rgba(35,28,23,0.6)", borderTop: "2px solid var(--gold)" }}>
         <Link to="/" className="tap navi" aria-label="Home" style={{ width: "48px", height: "48px", borderRadius: "24px", color: "#B5A795", display: "flex", alignItems: "center", justifyContent: "center" }}>

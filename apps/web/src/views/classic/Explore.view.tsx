@@ -49,7 +49,7 @@ export default function ExploreView({ v }: ViewProps) {
                 <circle cx="11" cy="11" r="7" />
                 <path d="M20 20l-3.5-3.5" />
               </svg>
-              <input placeholder="Search places" style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
+              <input type="search" enterKeyHint="search" aria-label="Search places" placeholder="Search places" value={v.q} onChange={v.onQuery} style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
             </label>
             <Link to="/explore/filters" className="tap" aria-label="Filters" style={{ width: "50px", height: "50px", flexShrink: "0", borderRadius: "25px", background: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="1.6" strokeLinecap="round">
@@ -68,25 +68,25 @@ export default function ExploreView({ v }: ViewProps) {
           </div>
           <div className="rise d4" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <div className="slide" onScroll={v.onSlide} style={{ display: "flex", gap: "10px", margin: "0 -24px", padding: "0 24px", scrollPaddingInline: "24px" }}>
-              <Link to="/plan" className="lift" style={{ flex: "0 0 290px", height: "132px", boxSizing: "border-box", borderRadius: "24px", background: "var(--primary)", color: "var(--bg)", padding: "18px 20px", display: "flex", flexDirection: "column", justifyContent: "space-between", textDecoration: "none" }}>
+              <Link to="/plan" className="lift" onClick={v.routes?.[0]?.load} style={{ flex: "0 0 290px", height: "132px", boxSizing: "border-box", borderRadius: "24px", background: "var(--primary)", color: "var(--bg)", padding: "18px 20px", display: "flex", flexDirection: "column", justifyContent: "space-between", textDecoration: "none" }}>
                 <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.16em", color: "#A9CFC6" }}>ROUTE · ON FOOT</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <div style={{ fontFamily: "var(--font-display)", fontSize: "28px", lineHeight: "1" }}>Old Pune peth walk</div>
-                  <div style={{ fontSize: "12.5px", color: "#CFE3DE" }}>5 stops · help within 1.5 km</div>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: "28px", lineHeight: "1" }}>{v.routes?.[0]?.title}</div>
+                  <div style={{ fontSize: "12.5px", color: "#CFE3DE" }}>{v.routes?.[0]?.summary}</div>
                 </div>
               </Link>
-              <Link to="/plan" className="lift" style={{ flex: "0 0 290px", height: "132px", boxSizing: "border-box", borderRadius: "24px", background: "#4A3426", color: "var(--bg)", padding: "18px 20px", display: "flex", flexDirection: "column", justifyContent: "space-between", textDecoration: "none" }}>
+              <Link to="/plan" className="lift" onClick={v.routes?.[1]?.load} style={{ flex: "0 0 290px", height: "132px", boxSizing: "border-box", borderRadius: "24px", background: "#4A3426", color: "var(--bg)", padding: "18px 20px", display: "flex", flexDirection: "column", justifyContent: "space-between", textDecoration: "none" }}>
                 <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.16em", color: "#E2C9B4" }}>ROUTE · BY CAR</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <div style={{ fontFamily: "var(--font-display)", fontSize: "28px", lineHeight: "1" }}>Fort day trip</div>
-                  <div style={{ fontSize: "12.5px", color: "#EADBCD" }}>2 forts · offline pack included</div>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: "28px", lineHeight: "1" }}>{v.routes?.[1]?.title}</div>
+                  <div style={{ fontSize: "12.5px", color: "#EADBCD" }}>{v.routes?.[1]?.summary}</div>
                 </div>
               </Link>
-              <Link to="/plan" className="lift" style={{ flex: "0 0 290px", height: "132px", boxSizing: "border-box", borderRadius: "24px", background: "#26303B", color: "var(--bg)", padding: "18px 20px", display: "flex", flexDirection: "column", justifyContent: "space-between", textDecoration: "none" }}>
+              <Link to="/plan" className="lift" onClick={v.routes?.[2]?.load} style={{ flex: "0 0 290px", height: "132px", boxSizing: "border-box", borderRadius: "24px", background: "#26303B", color: "var(--bg)", padding: "18px 20px", display: "flex", flexDirection: "column", justifyContent: "space-between", textDecoration: "none" }}>
                 <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.16em", color: "#BFCAD6" }}>ROUTE · BY AUTO</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <div style={{ fontFamily: "var(--font-display)", fontSize: "28px", lineHeight: "1" }}>Temple morning</div>
-                  <div style={{ fontSize: "12.5px", color: "#D3DCE5" }}>4 stops · done by noon</div>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: "28px", lineHeight: "1" }}>{v.routes?.[2]?.title}</div>
+                  <div style={{ fontSize: "12.5px", color: "#D3DCE5" }}>{v.routes?.[2]?.summary}</div>
                 </div>
               </Link>
             </div>
@@ -101,17 +101,17 @@ export default function ExploreView({ v }: ViewProps) {
           <div className="rise d5" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingBottom: "6px" }}>
               <h2 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "26px", fontWeight: "400" }}>{v.heading}</h2>
-              <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>By distance</div>
+              <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>{v.sortLabel}</div>
             </div>
             {v.empty && (
               <>
-                <div style={{ padding: "28px 0", textAlign: "center", fontSize: "14px", color: "var(--muted)" }}>Nothing here yet. Try another category.</div>
+                <div style={{ padding: "28px 0", textAlign: "center", fontSize: "14px", color: "var(--muted)" }}>{v.emptyText}</div>
               </>
             )}
             {((v.places ?? []) as any[]).map((p: any, pIndex: number) => (
               <Fragment key={p?.key ?? pIndex}>
                 <div className="row" style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 8px", margin: "0 -8px", borderRadius: "18px", borderBottom: "1px solid var(--line)" }}>
-                  <Link to="/place" style={{ flex: "1", minWidth: "0", display: "flex", alignItems: "center", gap: "14px", textDecoration: "none", color: "var(--ink)" }}>
+                  <Link to={p.href} style={{ flex: "1", minWidth: "0", display: "flex", alignItems: "center", gap: "14px", textDecoration: "none", color: "var(--ink)" }}>
                     <div style={{ width: "58px", height: "58px", borderRadius: "16px", background: p.tone, flexShrink: "0" }} />
                     <div style={{ flex: "1", minWidth: "0", display: "flex", flexDirection: "column", gap: "3px" }}>
                       <div style={{ fontSize: "15px", fontWeight: "600" }}>{p.name}</div>

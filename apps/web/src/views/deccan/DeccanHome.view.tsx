@@ -36,13 +36,13 @@ export default function DeccanHomeView({ v }: ViewProps) {
         <div style={{ padding: "54px 22px 0", display: "flex", flexDirection: "column", gap: "18px" }}>
           <div className="rise d1" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <div style={{ fontSize: "14px", fontWeight: "500", color: "var(--muted)" }}>नमस्कार, Sourav · Pune 29°</div>
+              <div style={{ fontSize: "14px", fontWeight: "500", color: "var(--muted)" }}>{v.greetingLine}</div>
               <h1 style={{ margin: "0", fontFamily: "'Yatra One', var(--font-body)", fontSize: "40px", fontWeight: "400", lineHeight: "1.1", color: "var(--primary)" }}>चला, फिरूया!</h1>
               <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: "17px", color: "#4A3D33" }}>Let's explore Pune today</div>
             </div>
             <Link to="/settings/language" className="tap" aria-label="Language" style={{ width: "44px", height: "44px", boxSizing: "border-box", borderRadius: "22px", border: "1px solid #DCCDB6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>अ</Link>
           </div>
-          <Link to="/plan" className="rise d2 lift" style={{ position: "relative", height: "212px", borderRadius: "22px", overflow: "hidden", background: "#0E5B5E", color: "var(--surface)", textDecoration: "none", display: "block" }}>
+          <Link to={v.nextHref} className="rise d2 lift" style={{ position: "relative", height: "212px", borderRadius: "22px", overflow: "hidden", background: "#0E5B5E", color: "var(--surface)", textDecoration: "none", display: "block" }}>
             <svg width="390" height="12" viewBox="0 0 390 12" aria-hidden="true" style={{ position: "absolute", top: "0", left: "0" }}>
               <defs>
                 <pattern id="zh" width="12" height="12" patternUnits="userSpaceOnUse">
@@ -59,9 +59,9 @@ export default function DeccanHomeView({ v }: ViewProps) {
               <path d="M182 96 V80 a10 10 0 0 1 20 0 V96 Z" fill="#0E5B5E" />
             </svg>
             <div style={{ position: "absolute", left: "20px", top: "28px", right: "20px", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <div style={{ fontSize: "11.5px", fontWeight: "600", letterSpacing: "0.16em", color: "#B9DAD6" }}>NEXT STOP · 9:30 AM</div>
-              <div style={{ fontFamily: "var(--font-display)", fontSize: "32px", lineHeight: "1.05" }}>Shaniwar Wada</div>
-              <div style={{ fontSize: "13.5px", color: "#D4E8E5" }}>Peshwa-era palace fort · 18 min · hospital 1.2 km</div>
+              <div style={{ fontSize: "11.5px", fontWeight: "600", letterSpacing: "0.16em", color: "#B9DAD6" }}>{v.nextKicker}</div>
+              <div style={{ fontFamily: "var(--font-display)", fontSize: "32px", lineHeight: "1.05" }}>{v.nextName}</div>
+              <div style={{ fontSize: "13.5px", color: "#D4E8E5" }}>{v.nextMetaDeccan}</div>
             </div>
           </Link>
           {v.notReady && (
@@ -74,7 +74,7 @@ export default function DeccanHomeView({ v }: ViewProps) {
                 <div style={{ flex: "1", fontSize: "14px" }}>
                   <b style={{ fontWeight: "600" }}>Safety not set up</b>
                   {" "}
-                  <span style={{ color: "#8A4A12" }}>· 1 step left</span>
+                  <span style={{ color: "#8A4A12" }}>{v.stepsLeft}</span>
                 </div>
                 <span style={{ height: "32px", padding: "0 12px", borderRadius: "16px", background: "#8A4A12", color: "#FDF0E1", display: "flex", alignItems: "center", fontSize: "13px", fontWeight: "600" }}>Set up</span>
               </Link>
@@ -90,7 +90,7 @@ export default function DeccanHomeView({ v }: ViewProps) {
                 <div style={{ flex: "1", fontSize: "14px" }}>
                   <b style={{ fontWeight: "600" }}>Safety ready</b>
                   {" "}
-                  <span style={{ color: "var(--muted)" }}>· offline pack · 2 contacts</span>
+                  <span style={{ color: "var(--muted)" }}>{v.readyTextDeccan}</span>
                 </div>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 6l6 6-6 6" />
@@ -104,39 +104,39 @@ export default function DeccanHomeView({ v }: ViewProps) {
               <Link to="/explore" style={{ fontSize: "14px", fontWeight: "600", textDecoration: "none" }}>See all</Link>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "12px" }}>
-              <Link to="/explore" className="lift" style={{ padding: "5px", borderRadius: "6px", background: "var(--surface)", border: "2px dashed #D8C6A6", textDecoration: "none" }}>
+              <Link to="/explore" onClick={v.collections?.[0]?.open} className="lift" style={{ padding: "5px", borderRadius: "6px", background: "var(--surface)", border: "2px dashed #D8C6A6", textDecoration: "none" }}>
                 <div style={{ height: "70px", borderRadius: "3px", background: "var(--primary)", color: "var(--surface)", padding: "8px 10px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                   <div style={{ fontFamily: "var(--font-accent)", fontSize: "18px", lineHeight: "1" }}>गड-किल्ले</div>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#F2D5E3" }}>
                     <span>Forts</span>
-                    <span>12 places</span>
+                    <span>{v.collections?.[0]?.countText}</span>
                   </div>
                 </div>
               </Link>
-              <Link to="/explore" className="lift" style={{ padding: "5px", borderRadius: "6px", background: "var(--surface)", border: "2px dashed #D8C6A6", textDecoration: "none" }}>
+              <Link to="/explore" onClick={v.collections?.[1]?.open} className="lift" style={{ padding: "5px", borderRadius: "6px", background: "var(--surface)", border: "2px dashed #D8C6A6", textDecoration: "none" }}>
                 <div style={{ height: "70px", borderRadius: "3px", background: "#A4462B", color: "var(--surface)", padding: "8px 10px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                   <div style={{ fontFamily: "var(--font-accent)", fontSize: "18px", lineHeight: "1" }}>मंदिरे</div>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#F6D9CC" }}>
                     <span>Temples</span>
-                    <span>18 places</span>
+                    <span>{v.collections?.[1]?.countText}</span>
                   </div>
                 </div>
               </Link>
-              <Link to="/explore" className="lift" style={{ padding: "5px", borderRadius: "6px", background: "var(--surface)", border: "2px dashed #D8C6A6", textDecoration: "none" }}>
+              <Link to="/explore" onClick={v.collections?.[2]?.open} className="lift" style={{ padding: "5px", borderRadius: "6px", background: "var(--surface)", border: "2px dashed #D8C6A6", textDecoration: "none" }}>
                 <div style={{ height: "70px", borderRadius: "3px", background: "#0E5B5E", color: "var(--surface)", padding: "8px 10px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                   <div style={{ fontFamily: "var(--font-accent)", fontSize: "18px", lineHeight: "1" }}>वारसा</div>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#CDE5E2" }}>
                     <span>Heritage</span>
-                    <span>9 places</span>
+                    <span>{v.collections?.[2]?.countText}</span>
                   </div>
                 </div>
               </Link>
-              <Link to="/explore" className="lift" style={{ padding: "5px", borderRadius: "6px", background: "var(--surface)", border: "2px dashed #D8C6A6", textDecoration: "none" }}>
+              <Link to="/explore" onClick={v.collections?.[3]?.open} className="lift" style={{ padding: "5px", borderRadius: "6px", background: "var(--surface)", border: "2px dashed #D8C6A6", textDecoration: "none" }}>
                 <div style={{ height: "70px", borderRadius: "3px", background: "var(--gold)", color: "var(--ink)", padding: "8px 10px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                   <div style={{ fontFamily: "var(--font-accent)", fontSize: "18px", lineHeight: "1" }}>खाऊगल्ली</div>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#4A3418" }}>
                     <span>Food lanes</span>
-                    <span>14 places</span>
+                    <span>{v.collections?.[3]?.countText}</span>
                   </div>
                 </div>
               </Link>

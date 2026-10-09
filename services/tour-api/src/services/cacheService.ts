@@ -27,6 +27,8 @@ let hasLoggedRedisNotice = false;
 let redis: Redis | null = null;
 
 try {
+  // Tests share the developer's Redis; keep them on the in-memory cache instead
+  if (env.isTest) throw new Error('memory cache in tests');
   redis = new Redis(redisUrl, {
     maxRetriesPerRequest: 1,
     enableOfflineQueue: false, // Never block or queue commands when offline

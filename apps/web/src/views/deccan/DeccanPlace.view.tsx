@@ -25,9 +25,11 @@ const css = `
 .scr-deccan-DeccanPlace .ghost{transition:background-color .3s,transform .25s}
 .scr-deccan-DeccanPlace .ghost:hover{background-color:var(--surface)}
 @media (prefers-reduced-motion:reduce){.scr-deccan-DeccanPlace *,.scr-deccan-DeccanPlace *::after{animation:none!important;transition:none!important}}
+@keyframes dDeccanPlace-toast{0%{opacity:0;transform:translateY(-8px)}12%{opacity:1;transform:none}85%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-4px)}}
+.scr-deccan-DeccanPlace .toast{animation:dDeccanPlace-toast 2.4s ease both}
 `;
 
-export default function DeccanPlaceView(_props: ViewProps) {
+export default function DeccanPlaceView({ v }: ViewProps) {
   return (
     <div className="scr scr-deccan-DeccanPlace" style={{ width: "100%", height: "100%", boxSizing: "border-box", position: "relative", overflow: "hidden", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--ink)" }}>
       <style href="scr-deccan-DeccanPlace" precedence="screens">{css}</style>
@@ -52,61 +54,68 @@ export default function DeccanPlaceView(_props: ViewProps) {
             </defs>
             <rect width="390" height="12" fill="url(#zp)" />
           </svg>
-          <Link to="/explore" className="tap" aria-label="Back" style={{ position: "absolute", top: "54px", left: "20px", width: "44px", height: "44px", borderRadius: "22px", background: "rgba(255,251,243,0.18)", border: "1px solid rgba(255,251,243,0.35)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Link to="/explore" className="tap" aria-label="Back" onClick={v.back} style={{ position: "absolute", top: "54px", left: "20px", width: "44px", height: "44px", borderRadius: "22px", background: "rgba(255,251,243,0.18)", border: "1px solid rgba(255,251,243,0.35)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--surface)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 5l-7 7 7 7" />
             </svg>
           </Link>
-          <div style={{ position: "absolute", top: "60px", right: "20px", fontSize: "12px", letterSpacing: "0.14em", color: "#B9DAD6", border: "1px dashed #5E9590", borderRadius: "10px", padding: "6px 10px" }}>PLACE PHOTO</div>
+          <button className="tap" onClick={v.toggleSave} aria-label={v.saveLabel} aria-pressed={v.savePressed} style={{ position: "absolute", top: "54px", right: "20px", width: "44px", height: "44px", borderRadius: "22px", background: v.saveBg, border: "1px solid rgba(255,251,243,0.35)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill={v.saveFill} stroke={v.saveStroke} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 3h12v18l-6-4-6 4z" />
+            </svg>
+          </button>
+          {v.showToast && (
+            <div className="toast" role="status" style={{ position: "absolute", top: "110px", right: "20px", padding: "10px 14px", borderRadius: "12px", background: "var(--surface)", color: "var(--ink)", fontSize: "13.5px", fontWeight: "600", boxShadow: "0 14px 28px -14px rgba(35,28,23,0.6)", borderLeft: "3px solid var(--gold)", zIndex: "3" }}>{v.toastText}</div>
+          )}
         </div>
-        <div className="rise d2" style={{ position: "absolute", top: "300px", left: "18px", right: "18px", background: "var(--surface)", borderRadius: "10px", padding: "22px 20px 18px", boxShadow: "0 24px 40px -24px rgba(35,28,23,0.55)", display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div className="rise d2" style={{ position: "relative", margin: "-60px 18px 0", background: "var(--surface)", borderRadius: "10px", padding: "22px 20px 18px", boxShadow: "0 24px 40px -24px rgba(35,28,23,0.55)", display: "flex", flexDirection: "column", gap: "12px" }}>
           <div className="stampin" style={{ position: "absolute", top: "-26px", right: "18px", padding: "4px", background: "var(--surface)", border: "2px dashed #CDB894", borderRadius: "4px", transform: "rotate(-8deg)" }}>
             <div style={{ width: "62px", height: "72px", background: "var(--primary)", color: "var(--surface)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2px" }}>
-              <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", lineHeight: "1" }}>1892</div>
-              <div style={{ fontSize: "9.5px", letterSpacing: "0.14em", color: "#F2C9DC" }}>EST.</div>
+              <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", lineHeight: "1" }}>{v.stampTop}</div>
+              <div style={{ fontSize: "9.5px", letterSpacing: "0.14em", color: "#F2C9DC" }}>{v.stampBottom}</div>
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "2px", paddingRight: "80px" }}>
-            <div style={{ fontSize: "11.5px", fontWeight: "600", letterSpacing: "0.16em", color: "#A4462B" }}>HERITAGE · KALYANI NAGAR</div>
-            <h1 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "34px", fontWeight: "400", lineHeight: "1" }}>Aga Khan Palace</h1>
-            <div style={{ fontFamily: "var(--font-accent)", fontSize: "17px", color: "var(--primary)" }}>आगा खान पॅलेस</div>
+            <div style={{ fontSize: "11.5px", fontWeight: "600", letterSpacing: "0.16em", color: "#A4462B" }}>{v.kicker}</div>
+            <h1 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "34px", fontWeight: "400", lineHeight: "1" }}>{v.name}</h1>
+            <div style={{ fontFamily: "var(--font-accent)", fontSize: "17px", color: "var(--primary)" }}>{v.nameMr}</div>
           </div>
           <p style={{ margin: "0", fontSize: "15px", lineHeight: "1.5", color: "#3E342C" }}>
-            The palace held Mahatma Gandhi and Kasturba Gandhi during the Quit India movement. Kasturba's memorial stands in the gardens.
+            {v.description}
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", borderTop: "1.5px dashed #D8C6A6", paddingTop: "10px" }}>
             <div>
               <div style={{ fontSize: "10.5px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>OPEN</div>
-              <div style={{ fontFamily: "var(--font-display)", fontSize: "18px" }}>[HOURS]</div>
+              <div style={{ fontFamily: "var(--font-display)", fontSize: "18px" }}>{v.hours}</div>
             </div>
             <div>
               <div style={{ fontSize: "10.5px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>ENTRY</div>
-              <div style={{ fontFamily: "var(--font-display)", fontSize: "18px" }}>[FEE]</div>
+              <div style={{ fontFamily: "var(--font-display)", fontSize: "18px" }}>{v.fee}</div>
             </div>
             <div>
               <div style={{ fontSize: "10.5px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>VISIT</div>
-              <div style={{ fontFamily: "var(--font-display)", fontSize: "18px" }}>1.5 hr</div>
+              <div style={{ fontFamily: "var(--font-display)", fontSize: "18px" }}>{v.visit}</div>
             </div>
           </div>
         </div>
-        <div className="rise d4" style={{ position: "absolute", left: "22px", right: "22px", top: "668px", display: "flex", flexDirection: "column", gap: "14px" }}>
-          <Link to="/map" className="tap" style={{ display: "flex", alignItems: "center", gap: "12px", textDecoration: "none", color: "var(--ink)" }}>
+        <div className="rise d4" style={{ position: "relative", margin: "26px 22px 32px", display: "flex", flexDirection: "column", gap: "14px" }}>
+          <Link to={v.helpHref} className="tap" style={{ display: "flex", alignItems: "center", gap: "12px", textDecoration: "none", color: "var(--ink)" }}>
             <span style={{ width: "34px", height: "34px", borderRadius: "17px", border: "1px solid #E5B3AA", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C8321C" strokeWidth="2.6" strokeLinecap="round">
                 <path d="M12 5v14M5 12h14" />
               </svg>
             </span>
             <span style={{ flex: "1", fontSize: "14.5px" }}>
-              <b style={{ fontWeight: "600" }}>Ruby Hall Clinic</b>
+              <b style={{ fontWeight: "600" }}>{v.hospitalName}</b>
               {" "}
-              <span style={{ color: "var(--muted)" }}>· nearest hospital · 4 km</span>
+              <span style={{ color: "var(--muted)" }}>· nearest hospital{v.hospitalKm}</span>
             </span>
           </Link>
           <div style={{ display: "flex", gap: "10px" }}>
-            <Link to="/directions" className="ghost" style={{ flex: "1", height: "56px", borderRadius: "28px", border: "1px solid #CDB894", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "15.5px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>Directions</Link>
-            <Link to="/plan" className="cta" style={{ flex: "1.4", height: "56px", borderRadius: "28px", background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "15.5px", fontWeight: "600", color: "var(--surface)", textDecoration: "none" }}>
-              Add to journey{" "}
-              <span style={{ fontSize: "13px", color: "#F2C9DC" }}>+40 XP</span>
+            <Link to={v.directionsHref} className="ghost" style={{ flex: "1", height: "56px", borderRadius: "28px", border: "1px solid #CDB894", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "15.5px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>Directions</Link>
+            <Link to="/plan" className="cta" onClick={v.addToPlan} style={{ flex: "1.4", height: "56px", borderRadius: "28px", background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "15.5px", fontWeight: "600", color: "var(--surface)", textDecoration: "none" }}>
+              {v.ctaLabelDeccan}{" "}
+              <span style={{ fontSize: "13px", color: "#F2C9DC" }}>{v.xpLabel}</span>
             </Link>
           </div>
         </div>

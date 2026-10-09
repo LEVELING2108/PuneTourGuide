@@ -1,11 +1,12 @@
-import { useState } from 'react';
 import { Themed } from '../../components/Themed';
+import { usePlaceCount } from '../../features/places';
 import { chipColors, toggleColors, usePalette } from '../../lib/palette';
+import { useExploreStore, type Distance } from '../../stores/explore';
 import FiltersView from '../../views/classic/Filters.view';
 import DeccanFiltersView from '../../views/deccan/DeccanFilters.view';
-import ExploreScreen from './ExploreScreen';
+import ExploreScreen, { useExploreQuery } from './ExploreScreen';
 
-const DISTANCES = ['1 km', '5 km', '10 km', 'Any'] as const;
+const DISTANCES: Distance[] = ['1 km', '5 km', '10 km', 'Any'];
 const DEFS = [
   { key: 'open', title: 'Open now', sub: 'Hide places that are closed right now' },
   { key: 'free', title: 'Free entry', sub: 'No ticket needed' },
@@ -13,29 +14,23 @@ const DEFS = [
   { key: 'help', title: 'Hospital within 2 km', sub: 'Only places close to medical help' },
 ] as const;
 
-type FilterState = { dist: string; open: boolean; free: boolean; access: boolean; help: boolean };
-
+/** Filters sheet over Explore; "Show N places" uses GET /places/count with the same filters. */
 export default function FiltersScreen() {
   const p = usePalette();
-  const [s, setS] = useState<FilterState>({ dist: '5 km', open: true, free: false, access: false, help: true });
-
-  const base = ({ '1 km': 6, '5 km': 18, '10 km': 24, Any: 31 } as Record<string, number>)[s.dist];
-  let count = base;
-  if (s.open) count -= 3;
-  if (s.free) count -= 5;
-  if (s.access) count -= 6;
-  if (s.help) count -= 2;
+  const s = useExploreStore();
+  const query = useExploreQuery();
+  const count = usePlaceCount({ ...query, limit: undefined });
 
   const v = {
     underlay: <ExploreScreen />,
-    dists: DISTANCES.map((label) => ({ label, key: label, ...chipColors(p, label === s.dist), pick: () => setS({ ...s, dist: label }) })),
+    dists: DISTANCES.map((label) => ({ label, key: label, ...chipColors(p, label === s.dist), pick: () => s.set({ dist: label }) })),
     toggles: DEFS.map((d) => {
       const on = s[d.key];
       const t = toggleColors(p, on);
-      return { ...d, pressed: t.pressed, trackBg: t.track, knob: t.knob, flip: () => setS({ ...s, [d.key]: !on }) };
+      return { ...d, pressed: t.pressed, trackBg: t.track, knob: t.knob, flip: () => s.set({ [d.key]: !on }) };
     }),
-    count: Math.max(1, count),
-    reset: () => setS({ dist: 'Any', open: false, free: false, access: false, help: false }),
+    count: count.data ?? '…',
+    reset: () => s.reset(),
   };
   return <Themed classic={FiltersView} deccan={DeccanFiltersView} v={v} />;
 }
