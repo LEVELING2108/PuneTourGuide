@@ -82,6 +82,8 @@ npm run dev                                         # web :5050 · tour-api :300
 
 ### Before going to production
 
+The full step-by-step list, with a real-world check for each service, is in **[docs/LAUNCH_SETUP.md](./docs/LAUNCH_SETUP.md)**. In short:
+
 - **Map tiles:** set `VITE_MAP_TILE_URL` (and `VITE_MAP_TILE_ATTRIBUTION`) to a tile provider with your key. The default OSM tile server is for development only.
 - **Routing:** set `OSRM_URL` / `OSRM_FOOT_URL` to a provider or self-hosted OSRM. The defaults are public demo servers.
 - **Overpass:** set `OVERPASS_ENDPOINTS` for the safety service and the import, ideally a self-hosted instance.
