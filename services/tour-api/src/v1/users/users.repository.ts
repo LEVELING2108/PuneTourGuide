@@ -21,6 +21,31 @@ export const usersRepo = {
     const visitedPlaces = new Set(visited.map((s) => s.placeId ?? s.name)).size;
     return { stamps, saved, visitedPlaces };
   },
+
+  /** Passport: every stamp with its place, newest first, plus how many places can be stamped. */
+  async stamps(userId: number) {
+    const [rows, total, forts] = await Promise.all([
+      prisma.stamp.findMany({
+        where: { userId },
+        orderBy: { collectedAt: 'desc' },
+        select: { collectedAt: true, place: { select: { id: true, name: true, name_mr: true, category: true, kind: true, estYear: true } } },
+      }),
+      prisma.place.count({ where: { curated: true } }),
+      prisma.stamp.count({ where: { userId, place: { category: 'Fort' } } }),
+    ]);
+    return { rows, total, forts };
+  },
+
+  // ── Avatar (stored re-encoded; served by random key) ─────────
+  setAvatar: (userId: number, key: string, data: Buffer, avatarUrl: string) =>
+    prisma.$transaction([
+      prisma.avatar.deleteMany({ where: { userId } }),
+      prisma.avatar.create({ data: { key, userId, data } }),
+      prisma.user.update({ where: { id: userId }, data: { avatarUrl } }),
+    ]),
+  removeAvatar: (userId: number) =>
+    prisma.$transaction([prisma.avatar.deleteMany({ where: { userId } }), prisma.user.update({ where: { id: userId }, data: { avatarUrl: null } })]),
+  avatarByKey: (key: string) => prisma.avatar.findUnique({ where: { key }, select: { data: true, mime: true } }),
 };
 
 export const refreshTokensRepo = {

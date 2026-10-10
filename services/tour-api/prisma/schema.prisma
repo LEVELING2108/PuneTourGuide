@@ -101,6 +101,7 @@ model User {
   sosEvents      SosEvent[]
   tripShares     TripShare[]
   smsMessages    SmsMessage[]
+  avatar         Avatar?
 }
 
 model UserSavedPlace {
@@ -315,4 +316,15 @@ model HelpPlace {
   updatedAt DateTime                              @updatedAt
 
   @@index([category])
+}
+
+/// Profile photo, re-encoded server-side (256 px WebP, metadata stripped). Served at
+/// /api/v1/avatars/:key.webp; the random key changes on every upload, so it can be cached forever.
+model Avatar {
+  key       String   @id
+  userId    Int      @unique
+  data      Bytes
+  mime      String   @default("image/webp")
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

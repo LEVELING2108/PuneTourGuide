@@ -1,4 +1,6 @@
-import { conflict, notFound } from '../../lib/errors';
+import sharp from 'sharp';
+import { badRequest, conflict, notFound } from '../../lib/errors';
+import { randomToken } from '../../lib/crypto';
 import { levelFor } from '../../lib/levels';
 import { toUserDto } from './users.dto';
 import { usersRepo } from './users.repository';
@@ -20,8 +22,49 @@ export const usersService = {
     return toUserDto(user);
   },
 
-  async setAvatar(userId: number, avatarUrl: string | null) {
-    return toUserDto(await usersRepo.update(userId, { avatarUrl }));
+  /**
+   * Profile photo: decoded and re-encoded by sharp (rejects anything that is not really an image),
+   * rotated per EXIF then stripped of all metadata, so a photo cannot leak where it was taken.
+   */
+  async setAvatar(userId: number, upload: Buffer) {
+    let webp: Buffer;
+    try {
+      webp = await sharp(upload, { limitInputPixels: 40_000_000 })
+        .rotate()
+        .resize(256, 256, { fit: 'cover' })
+        .webp({ quality: 82 })
+        .toBuffer();
+    } catch {
+      throw badRequest('IMAGE_INVALID', 'Choose a JPEG, PNG, WebP or HEIC photo');
+    }
+    const key = randomToken(18);
+    await usersRepo.setAvatar(userId, key, webp, `/api/v1/avatars/${key}.webp`);
+    return this.me(userId);
+  },
+
+  async removeAvatar(userId: number) {
+    await usersRepo.removeAvatar(userId);
+    return this.me(userId);
+  },
+
+  avatar: (key: string) => usersRepo.avatarByKey(key),
+
+  async stamps(userId: number) {
+    const { rows, total, forts } = await usersRepo.stamps(userId);
+    return {
+      total,
+      collected: rows.length,
+      forts,
+      stamps: rows.map((r) => ({
+        placeId: r.place.id,
+        name: r.place.name,
+        nameMr: r.place.name_mr,
+        category: r.place.category,
+        kind: r.place.kind,
+        estYear: r.place.estYear || null,
+        collectedAt: r.collectedAt.toISOString(),
+      })),
+    };
   },
 
   async stats(userId: number) {
