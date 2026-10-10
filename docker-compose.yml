@@ -1,5 +1,7 @@
 # Local stack: PostGIS, Redis, Tour API (Express) and Safety service (FastAPI).
-# The web app runs outside Docker with `npm run dev:web` for fast reloads.
+# `npm run setup` starts only postgres + redis; `npm run dev` runs the apps outside Docker.
+# Host ports are unusual on purpose (5440, 6390, 8010) so they never clash with other
+# projects or a PostgreSQL installed on the machine.
 services:
   postgres:
     image: postgis/postgis:16-3.4
@@ -10,7 +12,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: Pune_Tour_Guide
     ports:
-      - "5432:5432"
+      - "5440:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -24,7 +26,7 @@ services:
     container_name: pune_explorer_redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "6390:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -58,7 +60,7 @@ services:
     environment:
       REDIS_URL: redis://redis:6379
     ports:
-      - "8000:8000"
+      - "8010:8000"
     depends_on:
       redis:
         condition: service_healthy

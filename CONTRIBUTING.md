@@ -35,11 +35,8 @@ We are committed to providing a welcoming, inclusive, and harassment-free enviro
 ## 🛠️ Development Setup
 
 ### Prerequisites
-- **Node.js** (v18.0 or higher) & **npm**
-- **Git**
-- **Docker & Docker Compose** (Recommended for zero-configuration Postgres + Redis setup), OR:
-  - Local **PostgreSQL 14+** (with PostGIS extension enabled)
-  - Local **Redis** (optional, caching fallback will degrade gracefully to PostgreSQL)
+- **Node.js 20+** & **npm**, **Python 3.12+**, **Git**
+- **Docker Desktop** (runs the project's PostgreSQL + PostGIS and Redis). Without Docker, use your own PostgreSQL 16+ with PostGIS and Redis via `npm run setup -- --no-docker`
 
 ### 1. Fork & Clone
 ```bash
@@ -48,42 +45,17 @@ git clone https://github.com/<your-username>/PuneTourGuide.git
 cd PuneTourGuide
 ```
 
-### 2. Environment Variables
-Create `.env` files for both frontend and backend using the provided templates:
-
+### 2. Set Everything Up (one command)
+With Docker Desktop running:
 ```bash
-# 1. Frontend Environment (Root)
-cp .env.example .env
-
-# 2. Backend Environment
-cp services/tour-api/.env.example services/tour-api/.env
+npm run setup
 ```
+This creates the `.env` files and starts the project's own PostgreSQL + PostGIS (port 5440) and Redis (port 6390) in Docker. It also installs packages, applies migrations, loads the curated places, builds the safety service's Python environment and imports real help points from OpenStreetMap. It's safe to re-run. See the README for options and troubleshooting.
 
-Review both `.env` files and update database credentials or API keys if necessary.
-
-### 3. Start Database & Cache Services (Docker)
-If you have Docker installed, start PostgreSQL with PostGIS and Redis with a single command:
+### 3. Start Development Servers
 ```bash
-docker compose up -d
+npm run dev    # web :5050, tour-api :3001, safety service :8010
 ```
-
-### 4. Install Dependencies & Migrate Database
-```bash
-npm install                              # all workspaces (apps/web, services/tour-api)
-npm run prisma:generate
-npm run prisma:deploy
-npm run seed -w services/tour-api        # places, events, sample itineraries
-```
-
-### 5. Start Development Servers
-```bash
-npm run dev    # web :5050, tour-api :3001, safety service :8000
-```
-
-* **Terminal 2: Frontend Server** (runs on `http://localhost:5173`):
-  ```bash
-  npm run dev
-  ```
 
 ---
 

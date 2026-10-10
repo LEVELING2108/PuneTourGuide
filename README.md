@@ -45,40 +45,64 @@ design-reference/    Approved UI mockups + TECH_DESIGN.md / FEATURES.md (source 
 ```
 
 ### Prerequisites
-- **Node.js 20+** and npm, **Python 3.12+**
-- **PostgreSQL 16+ with PostGIS** and **Redis** — or just `docker compose up -d postgres redis`
-  (Redis is optional locally; both APIs fall back to in-memory caches.)
+Install these once:
+- **Node.js 20+** (with npm): https://nodejs.org
+- **Python 3.12+**: https://www.python.org/downloads/ (on Windows, tick "Add python.exe to PATH")
+- **Docker Desktop**, running: https://www.docker.com/products/docker-desktop/
 
-### First run
+### First run (one command)
 
 ```bash
-npm install                                         # installs web + tour-api
-cp services/tour-api/.env.example services/tour-api/.env
-cp apps/web/.env.example apps/web/.env
-
-npm run prisma:deploy                               # apply migrations
-npm run seed -w services/tour-api                   # dev bootstrap: curated places + routes
-npm run refresh:help                                # real hospitals, clinics, police, fire stations from OpenStreetMap
-
-# Safety service virtualenv (once)
-cd services/safety && python -m venv .venv && .venv/Scripts/pip install -r requirements-dev.txt && cd ../..
-#   (macOS/Linux: .venv/bin/pip)
-
-npm run dev                                         # web :5050 · tour-api :3001 · safety :8000
+npm run setup
 ```
+
+It checks the tools, then:
+- **Settings:** creates the `.env` files, with random development secrets.
+- **Database:** starts this project's own **PostgreSQL + PostGIS (port 5440)** and **Redis (port 6390)** in Docker, applies the migrations and loads the 26 curated places.
+- **Safety service:** builds its Python environment.
+- **Help points:** imports Pune's real hospitals, clinics, police and fire stations from OpenStreetMap, which takes a few minutes.
+
+It's safe to run again. Add `--skip-help` to skip the OpenStreetMap import, or `--no-docker` to use your own PostgreSQL and Redis from `services/tour-api/.env`.
+
+### Every day
+
+```bash
+npm run dev          # starts the web app, Tour API and safety service together
+```
+
+Open **http://localhost:5050**. On a phone on the same Wi-Fi, open `http://<your computer's IP>:5050`. Location, the camera and installing the app need HTTPS on a phone, so test those on `localhost` or a deployed site.
+
+- **Stop:** press `Ctrl+C` to stop the apps. `npm run db:down` stops the database and Redis; `npm run db:up` starts them again (no setup needed).
+- **No SMS is sent locally:** login codes, SOS alerts and reset links are printed in the terminal (phone numbers masked). On Log in → Mobile, the code also shows on screen.
+
+### Something not working?
+
+| Problem | Fix |
+| :--- | :--- |
+| `Docker is not running` | Start Docker Desktop, wait for it to say "running", run `npm run setup` again |
+| `Port 5050 / 3001 / 8010 is already in use` | Another copy is still running: close the other terminal, or restart the computer |
+| Explore is empty | `npm run seed -w services/tour-api` |
+| Help nearby is empty | `npm run refresh:help` (needs internet; the public servers are sometimes busy, so try again later) |
+| Map has no streets | Your internet connection: map tiles come from OpenStreetMap |
+| After pulling new code | `npm install` then `npm run prisma:deploy` |
 
 ### Scripts
 
 | Command | What it does |
 | :--- | :--- |
+| `npm run setup` | One-time local setup (see above); safe to re-run |
 | `npm run dev` | Web, Tour API and Safety service together |
+| `npm run db:up` / `db:down` | Start / stop this project's PostgreSQL and Redis containers |
 | `npm run dev:web` / `dev:api` / `dev:safety` | One of them |
 | `npm run lint` · `npm run typecheck` · `npm test` | Checks for web + tour-api |
 | `npm run build` · `npm run build:api` | Production builds |
 | `npm run prisma:deploy` | Apply database migrations |
 | `npm run worker -w services/tour-api` | Dedicated SMS worker process (optional; the API runs one by default) |
 | `npm run refresh:help` | Import Pune's help points from OpenStreetMap and refresh each place's nearest hospital. Run nightly in production; a failed or partial download keeps the existing data |
-| `docker compose up` | PostGIS, Redis, Tour API and Safety service in containers |
+| `npm run load-test` | Load test the read paths (Explore, place, help, health) |
+| `npm run icons` | Regenerate app icons from `apps/web/art/icon-source.png` |
+| `npm run android:apk -w apps/web` | Android test APK (see docs/LAUNCH_SETUP.md step 23) |
+| `docker compose up` | PostGIS, Redis, Tour API and Safety service all in containers |
 
 ### Before going to production
 
@@ -102,9 +126,11 @@ The full step-by-step list, with a real-world check for each service, is in **[d
 | :--- | :--- |
 | Web app | `http://localhost:5050` |
 | Tour API | `http://localhost:3001/api` |
-| Safety service | `http://localhost:8000` (`/health`, `/api/emergency-services`, `/ws/track/{id}`). If 8000 is taken (e.g. by WSL), run with `SAFETY_PORT=8010` for both `dev:safety` and `dev:web` |
-| PostgreSQL | `localhost:5432` |
-| Redis | `localhost:6379` |
+| Safety service | `http://localhost:8010` (`/health`, `/api/emergency-services`, `/ws/track/{id}`); the web app reaches it at `/safety` |
+| PostgreSQL + PostGIS | `localhost:5440` (user `postgres`, password `password`, database `Pune_Tour_Guide`; development only) |
+| Redis | `localhost:6390` |
+
+These ports avoid the usual ones (5432, 6379, 8000), so a PostgreSQL installed on your computer or other projects' containers never clash with this one.
 
 ---
 

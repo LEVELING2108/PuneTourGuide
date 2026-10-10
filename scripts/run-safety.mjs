@@ -9,10 +9,11 @@ const python = process.platform === 'win32'
   : join(dir, '.venv', 'bin', 'python');
 
 if (!existsSync(python)) {
-  console.error('[safety] No virtualenv found. Run: cd services/safety && python -m venv .venv && .venv/Scripts/pip install -r requirements.txt');
+  console.error('[safety] No virtualenv found. Run: npm run setup');
   process.exit(1);
 }
 
-const port = process.env.SAFETY_PORT || '8000';
+// 8010 by default: 8000 is a common port (other projects, WSL) and the web dev server proxies here
+const port = process.env.SAFETY_PORT || '8010';
 const child = spawn(python, ['-m', 'uvicorn', 'main:app', '--reload', '--port', port], { cwd: dir, stdio: 'inherit' });
 child.on('exit', (code) => process.exit(code ?? 0));

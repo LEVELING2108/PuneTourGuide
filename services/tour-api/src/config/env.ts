@@ -22,7 +22,7 @@ const EnvSchema = z.object({
   CORS_ORIGINS: z.string().optional(),
   COOKIE_SAMESITE: z.enum(['lax', 'strict', 'none']).default('lax'),
   APP_URL: z.string().url().default('http://localhost:5050'),
-  SAFETY_SERVICE_URL: z.string().url().default('http://localhost:8000'),
+  SAFETY_SERVICE_URL: z.string().url().default('http://localhost:8010'),
   OSRM_URL: z.string().url().default('https://router.project-osrm.org'),
   OSRM_FOOT_URL: z.string().url().default('https://routing.openstreetmap.de/routed-foot'),
   GOOGLE_CLIENT_ID: z.string().optional(),
