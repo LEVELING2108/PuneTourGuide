@@ -7,6 +7,9 @@ import { toUserDto, type UserDto } from '../users/users.dto';
 import { refreshTokensRepo, usersRepo } from '../users/users.repository';
 import type { LoginInput, RegisterInput } from './auth.schemas';
 
+/** How long an exchanged refresh token still yields a session (concurrent tabs, network retries). */
+const ROTATION_GRACE_MS = 30_000;
+
 export const BCRYPT_COST = 12;
 
 export type Session = {
@@ -60,12 +63,22 @@ export const authService = {
     if (!token) throw unauthorized('REFRESH_MISSING', 'Session expired, please log in again');
     const row = await refreshTokensRepo.findByHash(sha256(token));
     if (!row) throw unauthorized('REFRESH_INVALID', 'Session expired, please log in again');
+    if (row.expiresAt < new Date()) throw unauthorized('REFRESH_EXPIRED', 'Session expired, please log in again');
+    // Exchanged moments ago: a second tab, or a retry after the response was lost on a mobile
+    // network. Give that request its own session instead of treating it as theft.
+    const justRotated = (r: { rotatedAt: Date | null }) => !!r.rotatedAt && Date.now() - r.rotatedAt.getTime() < ROTATION_GRACE_MS;
     if (row.revokedAt) {
+      if (justRotated(row)) return this.issueSession(row.userId);
+      // Used again long after it was exchanged, or after logout / password reset: someone else has
+      // a copy. End every session of this account.
       await refreshTokensRepo.revokeAllForUser(row.userId);
       throw unauthorized('REFRESH_REUSED', 'Session expired, please log in again');
     }
-    if (row.expiresAt < new Date()) throw unauthorized('REFRESH_EXPIRED', 'Session expired, please log in again');
-    await refreshTokensRepo.revoke(row.id);
+    if (!(await refreshTokensRepo.rotate(row.id))) {
+      // Another request rotated it between our read and write
+      const now = await refreshTokensRepo.findByHash(row.tokenHash);
+      if (!now || !justRotated(now)) throw unauthorized('REFRESH_REUSED', 'Session expired, please log in again');
+    }
     return this.issueSession(row.userId);
   },
 

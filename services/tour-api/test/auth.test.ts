@@ -1,7 +1,13 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { api, resetUsers, signUp } from './helpers';
 
 const refreshCookie = (cookies: string[]) => cookies.find((c) => c.startsWith('pe_rt='))!.split(';')[0];
+
+/** Jump past the 30 s window in which a just-exchanged token is still honoured (tabs, retries). */
+const afterGraceWindow = () => vi.useFakeTimers({ toFake: ['Date'], now: Date.now() + 31_000 });
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe('auth (email)', () => {
   beforeEach(resetUsers);
@@ -66,7 +72,8 @@ describe('auth (email)', () => {
     const second = refreshCookie(r1.headers['set-cookie'] as unknown as string[]);
     expect(second).not.toEqual(first);
 
-    // Replaying the first token is treated as theft: everything is revoked
+    // Replaying the first token later is treated as theft: everything is revoked
+    afterGraceWindow();
     const replay = await api().post('/api/v1/auth/refresh').set('Cookie', first);
     expect(replay.status).toBe(401);
     expect(replay.body.error.code).toBe('REFRESH_REUSED');
@@ -78,8 +85,53 @@ describe('auth (email)', () => {
     const u = await signUp();
     const res = await api().post('/api/v1/auth/login').set('X-Client', 'native').send({ email: u.email, password: u.password });
     expect(res.body.data.refreshToken).toBeTruthy();
+    // No cookies for the app: the token goes to secure storage
+    expect(res.headers['set-cookie']).toBeUndefined();
     const r = await api().post('/api/v1/auth/refresh').set('X-Client', 'native').send({ refreshToken: res.body.data.refreshToken });
     expect(r.status).toBe(200);
+    // Logout ends it
+    const out = await api()
+      .post('/api/v1/auth/logout')
+      .set('X-Client', 'native')
+      .set('Authorization', `Bearer ${r.body.data.accessToken}`)
+      .send({ refreshToken: r.body.data.refreshToken });
+    expect(out.status).toBe(200);
+    const after = await api().post('/api/v1/auth/refresh').set('X-Client', 'native').send({ refreshToken: r.body.data.refreshToken });
+    expect(after.status).toBe(401);
+  });
+
+  it('two tabs refreshing at once both stay signed in (no false theft alarm)', async () => {
+    const u = await signUp();
+    const cookie = refreshCookie(u.cookie);
+    const [a, b] = await Promise.all([
+      api().post('/api/v1/auth/refresh').set('Cookie', cookie),
+      api().post('/api/v1/auth/refresh').set('Cookie', cookie),
+    ]);
+    expect([a.status, b.status]).toEqual([200, 200]);
+    // And both new sessions keep working
+    for (const r of [a, b]) {
+      const next = await api().post('/api/v1/auth/refresh').set('Cookie', refreshCookie(r.headers['set-cookie'] as unknown as string[]));
+      expect(next.status).toBe(200);
+    }
+  });
+
+  it('a retry with the old token moments after rotation gets a session (lost response on mobile)', async () => {
+    const u = await signUp();
+    const cookie = refreshCookie(u.cookie);
+    expect((await api().post('/api/v1/auth/refresh').set('Cookie', cookie)).status).toBe(200);
+    expect((await api().post('/api/v1/auth/refresh').set('Cookie', cookie)).status).toBe(200);
+  });
+
+  it('a token reused after logout ends every session', async () => {
+    const u = await signUp();
+    const cookie = refreshCookie(u.cookie);
+    const other = await api().post('/api/v1/auth/login').send({ email: u.email, password: u.password });
+    await api().post('/api/v1/auth/logout').set('Cookie', cookie).set('Authorization', `Bearer ${u.token}`);
+    const reused = await api().post('/api/v1/auth/refresh').set('Cookie', cookie);
+    expect(reused.status).toBe(401);
+    expect(reused.body.error.code).toBe('REFRESH_REUSED');
+    const otherDevice = await api().post('/api/v1/auth/refresh').set('Cookie', refreshCookie(other.headers['set-cookie'] as unknown as string[]));
+    expect(otherDevice.status).toBe(401);
   });
 
   it('logs out by revoking the refresh token', async () => {

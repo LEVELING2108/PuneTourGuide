@@ -8,7 +8,7 @@ settings to fill in, and a **Verify** check you can run for real. Tick the box w
 Development defaults (console SMS, public demo servers) keep everything working locally, but
 none of them are allowed in production.
 
-_Last updated: Phase 7 (accounts: mobile OTP, Google, password reset)._
+_Last updated: Phase 8 (hardening: logs, error reporting, deploy files, Android app). Every build phase is done; what is left is this list and the real data (steps 6, 13, 14)._
 
 ---
 
@@ -37,6 +37,8 @@ _Last updated: Phase 7 (accounts: mobile OTP, Google, password reset)._
 | Profile photo | Avatars (WebP bytes) | — | — |
 | Offline packs | Places, help points | Pack bundle cache | **Map tiles provider** (only if it allows offline) |
 | Works offline (app shell) | — | — | Needs **HTTPS** (service worker) |
+| Crash and error reports | — | — | **Sentry** (optional, step 19) |
+| Android app | Same as the web app | Same | Google Play (step 23); talks to the same API over HTTPS |
 
 ## 2. What is stored where
 
@@ -44,7 +46,9 @@ _Last updated: Phase 7 (accounts: mobile OTP, Google, password reset)._
 | --- | --- | --- |
 | Postgres | Users, places, plans, stamps, contacts, SOS events, trip shares, help points, avatars, SMS delivery log (masked numbers only), medical profile | Medical free text is AES-256-GCM encrypted. Back up the database **and** `MEDICAL_ENC_KEY` separately |
 | Redis | Rate-limit counters (hashed keys), caches, SMS job queue (job contents encrypted), live-tracking sessions and last location (24 h) | Can be wiped safely; it rebuilds. Without it, limits and caches fall back to one server's memory |
-| Phone (browser) | Theme, language, settings, last position, a copy of emergency contacts (for SOS with no network), offline packs (IndexedDB), cached app shell and map tiles | No login tokens are stored in browser storage. The refresh token is an httpOnly cookie |
+| Phone (browser) | Theme, language, settings, last position, a copy of emergency contacts (for SOS with no network), offline packs (IndexedDB), cached app shell and map tiles | No login tokens are stored in browser storage. The refresh token is an httpOnly cookie (`SameSite=Lax`); a second cookie, `pe_session=1`, only says "signed in" and holds nothing secret |
+| Phone (Android app) | The same, plus the refresh token | The token is encrypted with a key in the Android Keystore. App data is excluded from cloud backups and device transfers |
+| Logs (your host) | One JSON line per request: time, request id, method, path, status | Never bodies, query strings, tokens, codes or medical data; phone numbers masked. Keep 14–30 days |
 
 ---
 
@@ -52,7 +56,7 @@ _Last updated: Phase 7 (accounts: mobile OTP, Google, password reset)._
 
 ### ☐ 1. Domain and HTTPS
 **Needed by:** everything. Browsers only allow location, the camera, the service worker (offline) and secure cookies on HTTPS.
-- Get a domain and serve the web app and the Tour API from the **same origin** (the API under `/api`), which is how the refresh cookie works.
+- Get a domain and serve the web app and the Tour API from the **same origin** (the API under `/api`), which is how the refresh cookie works. The production image does exactly this; step 20 has two ready-made ways to host it.
 - Settings (Tour API): `APP_URL=https://your-domain`, `CORS_ORIGINS=https://your-domain`, `NODE_ENV=production`.
 - **Verify:** open the site on a phone. The browser shows a padlock, the location prompt appears on Home, and logging in survives a reload.
 
@@ -100,7 +104,7 @@ _Last updated: Phase 7 (accounts: mobile OTP, Google, password reset)._
   - `VITE_MAP_TILE_URL=https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=YOUR_KEY`
   - `VITE_MAP_TILE_ATTRIBUTION` with the HTML the provider requires.
   - `VITE_MAP_TILES_OFFLINE=true` **only if** the provider's terms allow offline caching.
-- If the tile host is not `api.maptiler.com`, add it to `imgSrc` in `services/tour-api/src/app.ts` (Content-Security-Policy).
+- Settings (Tour API): `MAP_TILE_ORIGINS` = the tile host(s), comma-separated, e.g. `https://api.maptiler.com`. The browser refuses tiles from any host not listed (Content-Security-Policy).
 - **Verify:**
   - The Map shows tiles with the provider's attribution at the top right.
   - On the Offline packs screen, download "Old Pune peths". With offline tiles enabled the pack no longer says "no map tiles".
@@ -160,8 +164,11 @@ _Last updated: Phase 7 (accounts: mobile OTP, Google, password reset)._
 
 ### ☐ 15. App install (PWA)
 **Needed by:** "Add to Home screen" and opening offline.
-- Check that `apps/web/public/manifest.json` (name, colours, icons 192 and 512) matches your branding.
-- **Verify:** on Android Chrome, use "Install app". Open it in aeroplane mode: Home and SOS open, and SOS still offers to call 112.
+- Icons are generated from `apps/web/art/icon-source.png` by `npm run icons` (normal, maskable, Apple and Android sizes). Replace that file and rerun it if the logo changes.
+- **Verify:**
+  - On Android Chrome, use "Install app": the home-screen icon is the fort tile with no grey corners.
+  - Long-press the icon: an **SOS** shortcut appears and opens the SOS screen.
+  - Open it in aeroplane mode: Home and SOS open, and SOS still offers to call 112.
 
 ---
 
@@ -184,11 +191,83 @@ _Last updated: Phase 7 (accounts: mobile OTP, Google, password reset)._
 **Needed by:** sign-up consent. Accounts store when the terms were accepted (`termsAcceptedAt`). Publish real Terms and Privacy Policy pages (India's DPDP Act: say what you collect, especially location, contacts and medical info, and why) and point the "Terms" links in the sign-up views at them.
 - **Verify:** every "Terms" link on Sign up, Almost there and Google sign-in opens the published pages.
 
+### ☐ 19. Error reporting (Sentry)
+**Needed by:** finding out about crashes before users tell you. Optional, and free for a small app.
+- Create a [Sentry](https://sentry.io) organisation with two projects: one *Node* (Tour API and worker), one *Browser JavaScript* (web app). The safety service can share the Node one or have a *Python* project.
+- Settings: `SENTRY_DSN` (Tour API, worker, safety service), `VITE_SENTRY_DSN` (web build), optionally `SENTRY_ENVIRONMENT`. `RELEASE` (compose) or Render's commit id tags each report with the version.
+- What is sent: the error, stack and screen or route. Bodies, headers, cookies, query strings, IP addresses, user details and breadcrumbs are stripped before sending, so tokens, codes, phone numbers and medical data never reach Sentry.
+- **Verify:** stop the database for a moment and load Explore.
+  - One "unhandled error" event appears in Sentry, showing the route but no request data.
+  - The user sees "Something went wrong", and the response's `X-Request-Id` matches the log line.
+
+### ☐ 20. Deploy
+Pick **one** of these. Both serve the app and API from one domain and keep SOS working if the API is down.
+
+**A. One server with Docker (VPS, e.g. DigitalOcean, Hetzner, AWS Lightsail; 2 GB RAM or more)**
+1. Point your domain's DNS `A` record at the server and install Docker.
+2. `cp deploy/.env.production.example deploy/.env.production` and fill it in. Every line names its step here.
+3. `docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production up -d --build`
+4. Caddy fetches the HTTPS certificate by itself. The app, a separate SMS worker, the safety service (under `/safety`), Redis (password-protected, persistent) and Postgres + PostGIS all start. Migrations run automatically.
+5. Nightly help import (step 6): add a cron line on the server:
+   `30 21 * * * cd /path/to/repo && docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production run --rm refresh-help`
+6. More traffic: `... up -d --scale app=3`. Caddy spreads requests, and Redis keeps rate limits and live tracking shared.
+7. Backups: use a managed Postgres, or schedule `pg_dump` off the server. Keep `MEDICAL_ENC_KEY` separately (step 4).
+
+**B. Render (managed; what TECH_DESIGN suggests)**
+1. Render → New → Blueprint → this repository. `render.yaml` creates the app, the safety service, Redis, Postgres and the nightly import job.
+2. Fill in the values it asks for. The safety service gets its own address, so set:
+   - `VITE_SAFETY_URL` and `SAFETY_PUBLIC_URL` to `https://<safety>.onrender.com`,
+   - `ALLOWED_ORIGINS` on the safety service to the app's URL.
+3. Add your domain in the app service's settings and set `APP_URL` / `CORS_ORIGINS` to it.
+4. Use paid instances: free ones sleep, and an SOS alert must never wait for a cold start.
+
+- **Verify (either way):**
+  - `https://your-domain/api/v1/health/ready` returns `{"status":"ready","db":true,"redis":true}`.
+  - `curl -I https://your-domain/` shows `Strict-Transport-Security`, `Content-Security-Policy` and `X-Request-Id`.
+  - Open the site on a phone, sign up, reload: still signed in.
+  - The browser console shows no "Content Security Policy" errors on Home, Map and Log in.
+
+### ☐ 21. Logs and uptime
+- Logs are JSON on standard output: your host's log viewer (Render Logs, `docker compose logs app`) is enough to start. Search by `reqId` to follow one request. Set `LOG_LEVEL=info` (or `warn` to reduce volume).
+- Add a free uptime monitor (UptimeRobot, Better Stack) on `https://your-domain/api/v1/health/ready` and `https://your-domain/safety/health`, alerting your phone.
+- Lines to set alerts on: `"No SMS provider configured"`, `"sms queue unavailable"`, `"Redis unavailable"`, and any `"level":50` (error) spike.
+- **Verify:** stop the safety service for two minutes: the uptime monitor alerts you, and SOS in the app still dials 112.
+
+### ☐ 22. Load test before launch
+- Run against **staging**, never production: production limits each IP to 600 API calls a minute, so a single test machine mostly measures the limiter.
+  `BASE=https://staging.your-domain CONNECTIONS=100 DURATION=60 npm run load-test`
+- It hits Explore near me, place detail, Help nearby and the health check, with locations spread around Pune, and fails if p97.5 latency goes over 500 ms or any request errors.
+- Reference: one API instance on a laptop handled about 600 Explore requests a second at p97.5 = 176 ms (50 connections), and about 2,300 a second for Help nearby. Use your staging numbers to choose the instance size and count.
+- **Verify:** the script prints `PASS` and the server logs show no errors during the run.
+
+### ☐ 23. Android app (Google Play)
+**Needed by:** people who prefer an installed app. It is the same web build inside Capacitor (`apps/web/android`), with the login token in the Android Keystore.
+1. Install Android Studio (it brings the SDK and Java), then `cp apps/web/.env.android.example apps/web/.env.android` and set your HTTPS domain in it.
+2. Allow the app's origin: add `https://localhost` to `CORS_ORIGINS` (Tour API) and to `ALLOWED_ORIGINS` (safety service).
+3. Test build: `npm run android:apk -w apps/web` → `apps/web/android/app/build/outputs/apk/debug/app-debug.apk`. Install it on a phone.
+4. Release:
+   - Create an upload key once (command in `apps/web/android/keystore.properties.example`) and back up the `.jks` file and its passwords: every Play update needs them.
+   - Then run `npm run android:release -w apps/web` to produce `app-release.aab`.
+   - Upload it in the Play Console. That requires a developer account (one-time fee) and a privacy policy URL (step 18).
+   - Declare location use in the Data safety form.
+5. Before the first upload, decide the package name in `apps/web/capacitor.config.ts` and `android/app/build.gradle` (now `com.puneexplorer.app`). **It can never change afterwards.**
+6. Not in the app yet: Google sign-in. Google blocks its web sign-in inside apps, so the app offers email and mobile, and `VITE_GOOGLE_CLIENT_ID` stays empty in `.env.android`. Adding it needs a native Google sign-in plugin.
+- **Verify** (all were checked on an Android 14 emulator against a local production build):
+  - Log in, close the app completely, reopen: still signed in.
+  - Profile → Sign out → reopen: signed out.
+  - Hardware back walks back through screens.
+  - SOS → after the countdown the dialer opens with 112.
+  - Allow location: Home and Help nearby use the phone's position.
+
 ---
 
 ## 4. Settings not used yet
 `CLOUDINARY_URL` (avatars are stored in Postgres instead), `WEATHER_API_KEY` and `GEMINI_API_KEY` (left over from the old app) can stay empty.
 
 ## 5. Notes for your proxy and security headers
-- If the safety service runs on a **different domain** from the app, add it to `connectSrc` in `services/tour-api/src/app.ts` (both `https://` and `wss://`) and set `VITE_SAFETY_URL`.
-- The Content-Security-Policy already allows Google sign-in (`accounts.google.com/gsi`) and the tile hosts listed in step 7.
+- If the safety service runs on a **different domain** from the app, set `SAFETY_PUBLIC_URL` (Tour API, for the Content-Security-Policy) and `VITE_SAFETY_URL` (web build) to its address. It must support WebSockets.
+- The Content-Security-Policy allows Google sign-in (`accounts.google.com/gsi`), Sentry, and the tile hosts in `MAP_TILE_ORIGINS` (step 7). The one inline script (theme before first paint) is allowed by its hash, computed from the build at start-up, so no `unsafe-inline` is needed for scripts.
+- Caching: files under `/assets/` are cached for a year (their names change every build); `index.html`, `sw.js` and `manifest.json` are re-checked on every visit, so a deploy reaches phones on their next open. A CDN in front must keep these headers.
+- Your proxy must pass `X-Forwarded-For` (exactly one proxy hop is trusted) and may pass `X-Request-Id`; the API reuses it in its logs.
+- Cookies are `SameSite=Lax`. Only if the web app and API end up on **different sites** set `COOKIE_SAMESITE=none` and list the web origin in `CORS_ORIGINS`.
+- Fonts are served by the app itself (no Google Fonts), so nothing extra is needed for them.

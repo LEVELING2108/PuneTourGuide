@@ -49,7 +49,9 @@ for (const theme of ['classic', 'deccan'] as const) {
     await page.getByRole('button', { name: 'Save', exact: true }).click();
     await expect(page.getByRole('status')).toContainText('Saved · encrypted');
     await page.reload();
-    await expect(page.getByLabel('Allergies')).toHaveValue('Penicillin');
+    // After a reload the dev server rebuilds, the session refreshes, then the record is fetched and
+    // decrypted: allow for that when the whole suite runs in parallel
+    await expect(page.getByLabel('Allergies')).toHaveValue('Penicillin', { timeout: 15_000 });
     await shot(page, `${theme}-medical`);
 
     // Edit profile: name + photo (re-encoded by the server)

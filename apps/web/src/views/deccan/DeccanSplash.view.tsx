@@ -58,7 +58,7 @@ export default function DeccanSplashView({ v }: ViewProps) {
         <path d="M0 120 V86 H30 V72 a14 14 0 0 1 28 0 V86 H110 V78 H118 V72 H126 V78 H134 V72 H142 V78 H150 V86 H170 V62 a22 22 0 0 1 44 0 V86 H260 V74 a12 12 0 0 1 24 0 V86 H330 V68 a16 16 0 0 1 32 0 V86 H390 V120 Z" fill="#4E0F30" />
         <path d="M182 120 V102 a10 10 0 0 1 20 0 V120 Z" fill="var(--primary)" />
       </svg>
-      <div className="hint" style={{ position: "absolute", bottom: "140px", fontSize: "12px", letterSpacing: "0.16em", color: "#F2C9DC" }}>TAP TO BEGIN</div>
+      <div className="hint" style={{ position: "absolute", left: "0", right: "0", textAlign: "center", bottom: "140px", fontSize: "12px", letterSpacing: "0.16em", color: "#F2C9DC" }}>TAP TO BEGIN</div>
     </div>
   );
 }

@@ -222,6 +222,9 @@ model RefreshToken {
   tokenHash String    @unique
   expiresAt DateTime
   revokedAt DateTime?
+  /// Set when this token was exchanged for a new one (not on logout or password reset), so a
+  /// retry or a second tab arriving moments later is not mistaken for a stolen token.
+  rotatedAt DateTime?
   createdAt DateTime  @default(now())
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 

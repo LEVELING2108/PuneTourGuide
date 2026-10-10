@@ -52,6 +52,16 @@ export const refreshTokensRepo = {
   create: (data: { userId: number; tokenHash: string; expiresAt: Date }) => prisma.refreshToken.create({ data }),
   findByHash: (tokenHash: string) => prisma.refreshToken.findUnique({ where: { tokenHash } }),
   revoke: (id: string) => prisma.refreshToken.update({ where: { id }, data: { revokedAt: new Date() } }),
+  /** Retire a token because it is being exchanged. Atomic: false if another request got there first. */
+  rotate: async (id: string) => {
+    const now = new Date();
+    const { count } = await prisma.refreshToken.updateMany({ where: { id, revokedAt: null }, data: { revokedAt: now, rotatedAt: now } });
+    return count === 1;
+  },
+  /** Sign out everywhere (password reset, stolen token): also closes the rotation grace window. */
   revokeAllForUser: (userId: number) =>
-    prisma.refreshToken.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } }),
+    prisma.$transaction([
+      prisma.refreshToken.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } }),
+      prisma.refreshToken.updateMany({ where: { userId, rotatedAt: { not: null } }, data: { rotatedAt: null } }),
+    ]),
 };

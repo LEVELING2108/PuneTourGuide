@@ -1,9 +1,10 @@
 /**
  * Fetch wrapper for the Tour API (/api/v1):
  * - adds the in-memory access token
- * - on 401 refreshes once via the httpOnly cookie, then retries
+ * - on 401 refreshes once via the httpOnly cookie (web) or the securely stored token (Android app), then retries
  * - unwraps { data, meta } and turns { error } into ApiError
  */
+import { isNative, nativeRefresh } from '../lib/native';
 
 export const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api/v1';
 
@@ -64,12 +65,23 @@ async function raw<T>(path: string, opts: Options = {}): Promise<{ data: T; meta
   if (opts.blob) headers['Content-Type'] = opts.blob.type || 'application/octet-stream';
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
+  // Android app: no cookies across origins, so the refresh token travels in the body (and back)
+  const native = isNative();
+  let body = opts.body;
+  if (native) {
+    headers['X-Client'] = 'native';
+    if (path === '/auth/refresh' || path === '/auth/logout') {
+      const refreshToken = await nativeRefresh.get();
+      if (refreshToken) body = { ...(body as object), refreshToken };
+    }
+  }
+
   let res: Response;
   try {
     res = await fetch(buildUrl(path, opts.query), {
       method: opts.method ?? (opts.body !== undefined || opts.form || opts.blob ? 'POST' : 'GET'),
       headers,
-      body: opts.blob ?? opts.form ?? (opts.body !== undefined ? JSON.stringify(opts.body) : undefined),
+      body: opts.blob ?? opts.form ?? (body !== undefined ? JSON.stringify(body) : undefined),
       credentials: 'include',
       signal: opts.signal,
       keepalive: opts.keepalive,
@@ -88,6 +100,12 @@ async function raw<T>(path: string, opts: Options = {}): Promise<{ data: T; meta
     const e = (json as { error?: { code?: string; message?: string; details?: unknown } }).error;
     throw new ApiError(res.status, e?.code ?? 'HTTP_' + res.status, e?.message ?? 'Something went wrong', e?.details);
   }
+  // A new session for the app: keep the refresh token in secure storage, never in app state
+  const data = (json as { data?: { refreshToken?: unknown } }).data;
+  if (native && data && typeof data.refreshToken === 'string') {
+    await nativeRefresh.set(data.refreshToken);
+    delete data.refreshToken;
+  }
   return json as { data: T; meta?: Record<string, unknown> };
 }
 
@@ -100,7 +118,7 @@ export async function apiWithMeta<T, M = Record<string, unknown>>(path: string, 
   return { data: r.data, meta: (r.meta ?? {}) as M };
 }
 
-/** Exchange the refresh cookie for a new access token. Concurrent callers share one request. */
+/** Exchange the refresh cookie (or the app's stored token) for a new access token. Concurrent callers share one request. */
 export function refreshSession(): Promise<boolean> {
   if (!refreshing) {
     refreshing = raw<{ accessToken: string; user: unknown }>('/auth/refresh', { method: 'POST', body: {}, noRetry: true })
@@ -109,9 +127,11 @@ export function refreshSession(): Promise<boolean> {
         onSessionChange?.(data.accessToken, data.user);
         return true;
       })
-      .catch(() => {
+      .catch(async (err) => {
         accessToken = null;
         onSessionChange?.(null, null);
+        // Rejected by the server (expired, revoked): forget it. Offline: keep it for later.
+        if (isNative() && err instanceof ApiError && err.status === 401) await nativeRefresh.clear();
         return false;
       })
       .finally(() => {

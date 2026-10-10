@@ -10,6 +10,7 @@ import { startLanguageSync } from './features/preferences';
 import './styles/fonts';
 import './styles/base.css';
 import { initMonitoring } from './lib/monitoring';
+import { isNative, startNativeShell } from './lib/nativeShell';
 
 initMonitoring();
 
@@ -18,9 +19,10 @@ const root = document.documentElement;
 window.addEventListener('keydown', (e) => e.key === 'Tab' && (root.dataset.input = 'keyboard'), true);
 window.addEventListener('pointerdown', () => (root.dataset.input = 'pointer'), true);
 startLanguageSync();
+if (isNative()) startNativeShell();
 
 // Offline support (production builds only; the dev server never registers it)
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+if (import.meta.env.PROD && 'serviceWorker' in navigator && !isNative()) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => undefined);
   });

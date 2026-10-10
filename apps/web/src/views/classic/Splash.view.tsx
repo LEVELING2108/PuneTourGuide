@@ -42,7 +42,7 @@ export default function SplashView({ v }: ViewProps) {
         <span className="wave" />
         <span className="wave w2" />
       </div>
-      <div className="hint" style={{ position: "absolute", bottom: "56px", fontSize: "12px", letterSpacing: "0.16em", color: "#A9CFC6" }}>TAP TO BEGIN</div>
+      <div className="hint" style={{ position: "absolute", left: "0", right: "0", textAlign: "center", bottom: "56px", fontSize: "12px", letterSpacing: "0.16em", color: "#A9CFC6" }}>TAP TO BEGIN</div>
     </div>
   );
 }

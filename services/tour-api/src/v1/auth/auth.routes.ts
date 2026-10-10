@@ -15,7 +15,7 @@ const isNative = (req: Request) => req.get('X-Client') === 'native';
 
 /** Web gets the refresh token as an httpOnly cookie; native apps get it in the body for secure storage. */
 export function sendSession(req: Request, res: Response, s: Session, status = 200) {
-  setRefreshCookie(res, s.refreshToken, s.refreshExpires);
+  if (!isNative(req)) setRefreshCookie(res, s.refreshToken, s.refreshExpires);
   return ok(
     res,
     {
