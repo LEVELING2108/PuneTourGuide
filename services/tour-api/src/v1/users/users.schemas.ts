@@ -17,6 +17,8 @@ export const updateMeSchema = z
     shakeToSos: z.boolean(),
     smsWhenOffline: z.boolean(),
     tripReminders: z.boolean(),
+    /** "Almost there" / first sign-in: records consent (true only). */
+    acceptTerms: z.literal(true),
   })
   .partial()
   .strict();

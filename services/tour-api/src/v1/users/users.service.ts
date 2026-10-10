@@ -18,7 +18,8 @@ export const usersService = {
       const owner = await usersRepo.findByEmail(patch.email);
       if (owner && owner.id !== userId) throw conflict('EMAIL_TAKEN', 'That email is already used by another account');
     }
-    const user = await usersRepo.update(userId, patch);
+    const { acceptTerms, ...rest } = patch;
+    const user = await usersRepo.update(userId, { ...rest, ...(acceptTerms ? { termsAcceptedAt: new Date() } : {}) });
     return toUserDto(user);
   },
 

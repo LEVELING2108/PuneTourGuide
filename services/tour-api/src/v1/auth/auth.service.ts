@@ -42,6 +42,7 @@ export const authService = {
       interests: input.interests ?? [],
       theme: input.theme ?? 'classic',
       language: input.language ?? 'en',
+      termsAcceptedAt: new Date(),
     });
     return this.issueSession(user.id, true);
   },

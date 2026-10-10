@@ -56,3 +56,12 @@ export function testSms(to: Recipient, from: string): Sms {
   const body = `TEST - no action needed. ${who} added you as an emergency contact on Pune Explorer. In an emergency you will get their live location by SMS.`;
   return { kind: 'test', to: to.phone, body, logBody: body, vars: { name: who } };
 }
+
+/** Login code. The code is never written to logs; the domain line lets Android autofill it (Web OTP). */
+export function otpSms(phone: string, code: string): Sms {
+  const host = new URL(env.APP_URL).host;
+  const body = `${code} is your Pune Explorer login code. It expires in 5 minutes. Do not share it.
+
+@${host} #${code}`;
+  return { kind: 'otp', to: phone, body, logBody: 'Login code [hidden]', vars: { otp: code } };
+}

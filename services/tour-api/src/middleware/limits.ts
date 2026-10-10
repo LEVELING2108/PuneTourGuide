@@ -30,7 +30,10 @@ export const loginLimit = make('login', 60_000, 5, field('email'));
 export const registerLimit = make('register', 15 * 60_000, 30);
 /** OTP: max 5 sends/hour per phone (30-s cooldown is enforced in the service). */
 export const otpSendLimit = make('otp-send', 60 * 60_000, 5, field('phone'));
-export const otpVerifyLimit = make('otp-verify', 15 * 60_000, 20);
+/** Code checks per IP + phone (the service also locks a code after 5 wrong tries). */
+export const otpVerifyLimit = make('otp-verify', 15 * 60_000, 20, field('phone'));
+export const googleLimit = make('google', 60_000, 20);
+export const resetSubmitLimit = make('pw-reset-submit', 60 * 60_000, 20);
 export const passwordResetLimit = make('pw-reset', 60 * 60_000, 5, field('email'));
 /**
  * Session refresh runs on every app open. Limited per session (the refresh token, hashed by the

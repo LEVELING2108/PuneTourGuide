@@ -11,6 +11,7 @@ export function toUserDto(u: User) {
     phoneVerified: u.phoneVerified,
     avatarUrl: u.avatarUrl,
     hasPassword: !!u.password,
+    termsAccepted: !!u.termsAcceptedAt,
     hasGoogle: !!u.googleId,
     language: u.language,
     theme: u.theme as 'classic' | 'deccan',

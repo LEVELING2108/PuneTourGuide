@@ -71,37 +71,39 @@ model Event {
 }
 
 model User {
-  id             Int                @id @default(autoincrement())
-  name           String
-  email          String?            @unique
+  id              Int                @id @default(autoincrement())
+  name            String
+  email           String?            @unique
   /// bcrypt hash; null for phone / Google users
-  password       String?
+  password        String?
   /// E.164, e.g. +9198XXXXXXXX
-  phone          String?            @unique
-  phoneVerified  Boolean            @default(false)
-  googleId       String?            @unique
-  avatarUrl      String?
-  language       String             @default("en")
+  phone           String?            @unique
+  phoneVerified   Boolean            @default(false)
+  googleId        String?            @unique
+  /// When the person accepted the terms and privacy policy (consent record)
+  termsAcceptedAt DateTime?
+  avatarUrl       String?
+  language        String             @default("en")
   /// classic | deccan
-  theme          String             @default("classic")
-  interests      String[]           @default([])
-  shakeToSos     Boolean            @default(true)
-  smsWhenOffline Boolean            @default(true)
-  tripReminders  Boolean            @default(false)
-  xp             Int                @default(0)
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-  itineraryDays  ItineraryDay[]
-  savedPlaces    UserSavedPlace[]
-  contacts       EmergencyContact[]
-  medical        MedicalProfile?
-  stamps         Stamp[]
-  refreshTokens  RefreshToken[]
-  passwordResets PasswordReset[]
-  sosEvents      SosEvent[]
-  tripShares     TripShare[]
-  smsMessages    SmsMessage[]
-  avatar         Avatar?
+  theme           String             @default("classic")
+  interests       String[]           @default([])
+  shakeToSos      Boolean            @default(true)
+  smsWhenOffline  Boolean            @default(true)
+  tripReminders   Boolean            @default(false)
+  xp              Int                @default(0)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  itineraryDays   ItineraryDay[]
+  savedPlaces     UserSavedPlace[]
+  contacts        EmergencyContact[]
+  medical         MedicalProfile?
+  stamps          Stamp[]
+  refreshTokens   RefreshToken[]
+  passwordResets  PasswordReset[]
+  sosEvents       SosEvent[]
+  tripShares      TripShare[]
+  smsMessages     SmsMessage[]
+  avatar          Avatar?
 }
 
 model UserSavedPlace {

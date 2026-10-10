@@ -2,7 +2,7 @@ import axios from 'axios';
 import { env } from '../config/env';
 import { maskPhone } from '../lib/phone';
 
-export type SmsKind = 'sos' | 'safe' | 'trip' | 'test';
+export type SmsKind = 'sos' | 'safe' | 'trip' | 'test' | 'otp';
 
 export type Sms = {
   kind: SmsKind;
@@ -68,4 +68,26 @@ export function sendSms(sms: Sms): Promise<SendResult> {
 
 if (env.isProd && smsProvider() === 'console') {
   console.error('[sms] No SMS provider configured in production: SOS alerts to contacts will NOT be delivered. Set SMS_PROVIDER and SMS_API_KEY.');
+}
+
+/**
+ * "Call me" for login codes: a voice call that reads the code twice (Twilio). Other providers
+ * report it as unavailable so the app sends the SMS instead; console mode just logs the call.
+ */
+export async function callWithCode(to: string, code: string): Promise<'voice' | 'unavailable'> {
+  const provider = smsProvider();
+  if (provider === 'console') {
+    console.log(`[voice:console] login code call → ${maskPhone(to)}`);
+    return 'voice';
+  }
+  if (provider !== 'twilio') return 'unavailable';
+  const [sid, token] = (env.SMS_API_KEY ?? '').split(':');
+  const digits = code.split('').join(', ');
+  const twiml = `<Response><Say voice="alice" language="en-IN">Your Pune Explorer code is ${digits}. Again: ${digits}.</Say></Response>`;
+  await http.post(
+    `https://api.twilio.com/2010-04-01/Accounts/${sid}/Calls.json`,
+    new URLSearchParams({ To: to, From: env.SMS_SENDER_ID ?? '', Twiml: twiml }).toString(),
+    { auth: { username: sid, password: token }, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+  );
+  return 'voice';
 }
