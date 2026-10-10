@@ -4,19 +4,16 @@ import { authApi } from '../../api/auth';
 import { ApiError } from '../../api/client';
 import { Themed } from '../../components/Themed';
 import { usePalette } from '../../lib/palette';
-import { useAuthStore } from '../../stores/auth';
+import { googleIdToken } from '../../features/google';
+import { afterSignIn, otpTarget, safeNext } from '../../features/signin';
 import LoginView from '../../views/classic/Login.view';
 import DeccanLoginView from '../../views/deccan/DeccanLogin.view';
-import { modeTabs } from './shared';
-
-export const errorText = (err: unknown) =>
-  err instanceof ApiError ? (err.isOffline ? 'You are offline. Connect and try again.' : err.message) : 'Something went wrong. Try again.';
+import { errorText, modeTabs } from './shared';
 
 export default function LoginScreen() {
   const p = usePalette();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const setSession = useAuthStore((s) => s.setSession);
   const [mode, setMode] = useState<'email' | 'phone'>('email');
   const [show, setShow] = useState(false);
   const [email, setEmail] = useState('');
@@ -25,7 +22,7 @@ export default function LoginScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const next = params.get('next') || '/';
+  const next = safeNext(params.get('next'));
 
   const submitEmail = async (e?: React.SyntheticEvent) => {
     e?.preventDefault();
@@ -37,8 +34,7 @@ export default function LoginScreen() {
     setBusy(true);
     setError('');
     try {
-      setSession(await authApi.login({ email: email.trim(), password }));
-      navigate(next, { replace: true });
+      navigate(afterSignIn(await authApi.login({ email: email.trim(), password }), next), { replace: true });
     } catch (err) {
       setError(errorText(err));
     } finally {
@@ -46,15 +42,25 @@ export default function LoginScreen() {
     }
   };
 
-  const sendCode = (e?: React.SyntheticEvent) => {
+  const sendCode = async (e?: React.SyntheticEvent) => {
     e?.preventDefault();
+    if (busy) return;
     const digits = phone.replace(/\D/g, '');
-    if (digits.length < 10) {
+    if (!/^[6-9]\d{9}$/.test(digits)) {
       setError('Enter your 10-digit mobile number.');
       return;
     }
+    setBusy(true);
     setError('');
-    navigate('/otp', { state: { phone: digits, next } });
+    try {
+      const r = await authApi.otpSend(digits);
+      otpTarget.set({ phone: digits, next });
+      navigate('/otp', { state: { devCode: r.devCode } });
+    } catch (err) {
+      setError(errorText(err));
+    } finally {
+      setBusy(false);
+    }
   };
 
   const v = {
@@ -83,11 +89,20 @@ export default function LoginScreen() {
     sendCode,
     busy: busy ? 'true' : 'false',
     loginLabel: busy ? 'Logging in…' : 'Log in',
-    sendLabel: 'Send code',
+    sendLabel: busy && mode === 'phone' ? 'Sending…' : 'Send code',
     error,
-    google: (e: React.MouseEvent) => {
+    google: async (e: React.MouseEvent) => {
       e.preventDefault();
-      setError('Google sign-in is coming soon. Use email or mobile for now.');
+      if (busy) return;
+      setError('');
+      setBusy(true);
+      try {
+        navigate(afterSignIn(await authApi.google(await googleIdToken('signin')), next), { replace: true });
+      } catch (err) {
+        setError(err instanceof Error && !(err instanceof ApiError) ? err.message : errorText(err));
+      } finally {
+        setBusy(false);
+      }
     },
   };
   return <Themed classic={LoginView} deccan={DeccanLoginView} v={v} />;

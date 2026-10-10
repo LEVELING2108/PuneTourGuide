@@ -6,6 +6,7 @@ export type User = {
   phoneVerified: boolean;
   avatarUrl: string | null;
   hasPassword: boolean;
+  termsAccepted: boolean;
   hasGoogle: boolean;
   language: string;
   theme: 'classic' | 'deccan';

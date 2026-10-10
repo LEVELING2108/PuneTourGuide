@@ -68,18 +68,18 @@ Medical info is sensitive: store encrypted at rest, only return it to the owner,
 ### Account
 | Control | Behaviour | Backend |
 |---|---|---|
-| Continue / Sign up with Google | Google Identity Services → ID token → server verifies → JWT. New user → Onboard | **NEW** `POST /api/auth/google` |
+| ✅ Continue / Sign up with Google | Google Identity Services → ID token → server verifies → JWT. New user → Onboard | **NEW** `POST /api/auth/google` |
 | ✅ Email / Mobile number tabs | Switch form | — |
 | ✅ Log in (email) | | EXISTS `/users/login` |
-| Create account (email) + password strength | Strength computed client-side; disabled until Terms ticked | EXISTS `/users/register` (EXTEND for interests/theme defaults) |
-| Send code (mobile) | Rate-limited; send 6-digit SMS | **NEW** `POST /api/auth/otp/send` (SMS provider e.g. MSG91/Twilio/Firebase Phone Auth) |
-| OTP boxes, auto-fill | `autocomplete="one-time-code"`; Web OTP API on Android | — |
-| Verify | Returns `{token, isNewUser}` → new → PhoneName, existing → Home | **NEW** `POST /api/auth/otp/verify` |
-| Resend SMS / Call me (after 30 s) | Resend / voice OTP | same endpoint with `channel` |
-| Almost there → Continue | Save name, optional email, accept terms | **NEW** `PATCH /api/users/me` |
-| Onboard: Pick from my contacts | Contact Picker API (Android Chrome) or Capacitor Contacts; fallback to manual | — |
-| Onboard: Save & start exploring / Skip | Save first contact | **NEW** `POST /api/contacts` |
-| Forgot? → Send reset link / Send again | Always show “check inbox” (no account enumeration); link valid 30 min | **NEW** `POST /api/auth/password/forgot`, `POST /api/auth/password/reset` (email via Resend/Nodemailer) |
+| ✅ Create account (email) + password strength | Strength computed client-side; disabled until Terms ticked | EXISTS `/users/register` (EXTEND for interests/theme defaults) |
+| ✅ Send code (mobile) | Rate-limited; send 6-digit SMS | **NEW** `POST /api/auth/otp/send` (SMS provider e.g. MSG91/Twilio/Firebase Phone Auth) |
+| ✅ OTP boxes, auto-fill | `autocomplete="one-time-code"`; Web OTP API on Android | — |
+| ✅ Verify | Returns `{token, isNewUser}` → new → PhoneName, existing → Home | **NEW** `POST /api/auth/otp/verify` |
+| ✅ Resend SMS / Call me (after 30 s) | Resend / voice OTP | same endpoint with `channel` |
+| ✅ Almost there → Continue | Save name, optional email, accept terms | **NEW** `PATCH /api/users/me` |
+| ✅ Onboard: Pick from my contacts | Contact Picker API (Android Chrome) or Capacitor Contacts; fallback to manual | — |
+| ✅ Onboard: Save & start exploring / Skip | Save first contact | **NEW** `POST /api/contacts` |
+| ✅ Forgot? → Send reset link / Send again | Always show “check inbox” (no account enumeration); link valid 30 min | **NEW** `POST /api/auth/password/forgot`, `POST /api/auth/password/reset` (email via Resend/Nodemailer) |
 | ✅ Skip for now | Guest mode: Explore/Map/SOS work, save/plan prompt login | — |
 
 ### Main tabs

@@ -63,10 +63,11 @@ export default function ForgotPasswordView({ v }: ViewProps) {
               <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 <span style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>EMAIL</span>
                 <span className="field" style={{ height: "50px", borderRadius: "14px", border: "1px solid #DDE1DD", background: "var(--surface)", display: "flex", alignItems: "center", padding: "0 16px" }}>
-                  <input type="email" placeholder="you@example.com" autoComplete="email" style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
+                  <input type="email" placeholder="you@example.com" autoComplete="email" aria-label="Email" value={v.email} onChange={v.onEmail} onKeyDown={v.onEnter} style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
                 </span>
               </label>
-              <button className="cta" onClick={v.send} style={{ height: "56px", borderRadius: "28px", border: "none", background: "var(--primary)", color: "var(--bg)", fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", cursor: "pointer" }}>Send reset link</button>
+              {v.error && <div role="alert" style={{ fontSize: "13px", color: "#A3281A", lineHeight: "1.4" }}>{v.error}</div>}
+              <button className="cta" onClick={v.send} disabled={v.busy} style={{ height: "56px", borderRadius: "28px", border: "none", background: "var(--primary)", color: "var(--bg)", fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", cursor: "pointer" }}>Send reset link</button>
               <div style={{ fontSize: "13px", lineHeight: "1.45", color: "var(--muted)", textAlign: "center" }}>
                 Signed up with your mobile?{" "}
                 <Link to="/login" style={{ fontWeight: "600", textDecoration: "none" }}>Log in with a code instead</Link>
@@ -91,7 +92,8 @@ export default function ForgotPasswordView({ v }: ViewProps) {
               </div>
               <a className="cta" href="mailto:" style={{ width: "100%", height: "56px", borderRadius: "28px", background: "var(--primary)", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>Open email app</a>
               <div style={{ display: "flex", gap: "18px", fontSize: "13.5px" }}>
-                <button className="tap" onClick={v.again} style={{ border: "none", background: "transparent", padding: "0", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "600", color: "var(--primary)", cursor: "pointer" }}>Send again</button>
+                {v.devLink && <a href={v.devLink} style={{ fontSize: "12.5px" }}>Development: open the reset link</a>}
+              <button className="tap" onClick={v.again} style={{ border: "none", background: "transparent", padding: "0", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "600", color: "var(--primary)", cursor: "pointer" }}>Send again</button>
                 <Link to="/login" style={{ fontWeight: "600", textDecoration: "none" }}>Back to log in</Link>
               </div>
             </div>

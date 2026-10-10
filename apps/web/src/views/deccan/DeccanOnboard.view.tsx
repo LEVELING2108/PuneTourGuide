@@ -88,7 +88,7 @@ export default function DeccanOnboardView({ v }: ViewProps) {
         <label className="rise d4" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
           <span style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>NAME</span>
           <span className="field" style={{ height: "48px", borderRadius: "14px", border: "1px solid #DCCDB6", background: "var(--surface)", display: "flex", alignItems: "center", padding: "0 16px" }}>
-            <input placeholder="e.g. Aai" value={v.name} onChange={v.onName} style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
+            <input placeholder="e.g. Aai" aria-label="Their name" maxLength={60} value={v.name} onChange={v.onName} style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
           </span>
         </label>
         <div className="rise d4" style={{ display: "flex", flexWrap: "wrap", gap: "6px" }} role="radiogroup" aria-label="Relation">
@@ -102,7 +102,7 @@ export default function DeccanOnboardView({ v }: ViewProps) {
           <span style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>MOBILE NUMBER</span>
           <span className="field" style={{ height: "48px", borderRadius: "14px", border: "1px solid #DCCDB6", background: "var(--surface)", display: "flex", alignItems: "center", gap: "12px", padding: "0 16px 0 5px" }}>
             <span style={{ height: "38px", padding: "0 10px", borderRadius: "10px", background: "#EFE4D2", display: "flex", alignItems: "center", fontSize: "14.5px", fontWeight: "600", color: "var(--ink)" }}>+91</span>
-            <input type="tel" inputMode="numeric" placeholder="98XXX XXXXX" value={v.phone} style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "16px", letterSpacing: "0.04em", background: "transparent", color: "var(--ink)" }} readOnly />
+            <input type="tel" inputMode="numeric" placeholder="98XXX XXXXX" aria-label="Their mobile number" autoComplete="off" value={v.phone} onChange={v.onPhone} style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "16px", letterSpacing: "0.04em", background: "transparent", color: "var(--ink)" }} />
           </span>
         </label>
         <div className="rise d5" style={{ borderRadius: "16px", background: "var(--surface)", border: "1px solid var(--line)", padding: "12px 14px", display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -111,8 +111,9 @@ export default function DeccanOnboardView({ v }: ViewProps) {
             Sourav started an SOS on Pune Explorer. Live location: [link]. Nearest hospital: KEM, 1.2 km.
           </div>
         </div>
-        <Link to="/" className="rise d6 cta" style={{ height: "56px", flexShrink: "0", borderRadius: "28px", background: "var(--primary)", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none", marginTop: "auto" }}>Save & start exploring</Link>
-        <Link to="/" className="rise d6" style={{ textAlign: "center", fontSize: "13px", color: "var(--muted)", textDecoration: "none" }}>Skip for now · SOS will still call 112</Link>
+        {v.error && <div role="alert" style={{ fontSize: "13px", color: "#A3281A", lineHeight: "1.4" }}>{v.error}</div>}
+        <Link to="/" onClick={v.save} aria-disabled={v.saveDisabled} className="rise d6 cta" style={{ height: "56px", flexShrink: "0", borderRadius: "28px", background: "var(--primary)", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none", marginTop: "auto" }}>Save & start exploring</Link>
+        <Link to="/" onClick={v.skip} className="rise d6" style={{ textAlign: "center", fontSize: "13px", color: "var(--muted)", textDecoration: "none" }}>Skip for now · SOS will still call 112</Link>
       </div>
     </div>
   );

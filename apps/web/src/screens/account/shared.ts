@@ -1,3 +1,4 @@
+import { ApiError } from '../../api/client';
 import type { Palette } from '../../lib/palette';
 
 /** Email / Mobile segmented control used by Login and SignUp. */
@@ -39,3 +40,7 @@ export function passwordScore(pw: string) {
 }
 
 export const RELATIONS = ['Parent', 'Partner', 'Sibling', 'Friend', 'Other'] as const;
+
+/** A message a person can act on, for any error from the API or the network. */
+export const errorText = (err: unknown) =>
+  err instanceof ApiError ? (err.isOffline ? 'You are offline. Connect and try again.' : err.message) : 'Something went wrong. Try again.';

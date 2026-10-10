@@ -73,7 +73,7 @@ export default function DeccanPhoneNameView({ v }: ViewProps) {
         <label className="rise d3" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
           <span style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>WHAT SHOULD WE CALL YOU?</span>
           <span className="field" style={{ height: "50px", borderRadius: "14px", border: "1px solid #DCCDB6", background: "var(--surface)", display: "flex", alignItems: "center", padding: "0 16px" }}>
-            <input placeholder="Your name" autoComplete="name" style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
+            <input placeholder="Your name" autoComplete="name" aria-label="Your name" maxLength={60} value={v.name} onChange={v.onName} style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
           </span>
         </label>
         <label className="rise d4" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -82,7 +82,7 @@ export default function DeccanPhoneNameView({ v }: ViewProps) {
             <span style={{ fontSize: "12px", color: "var(--muted)" }}>Optional</span>
           </span>
           <span className="field" style={{ height: "50px", borderRadius: "14px", border: "1px solid #DCCDB6", background: "var(--surface)", display: "flex", alignItems: "center", padding: "0 16px" }}>
-            <input type="email" placeholder="For trip summaries and account recovery" autoComplete="email" style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "14.5px", background: "transparent", color: "var(--ink)" }} />
+            <input type="email" placeholder="For trip summaries and account recovery" autoComplete="email" aria-label="Email (optional)" value={v.email} onChange={v.onEmail} style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "14.5px", background: "transparent", color: "var(--ink)" }} />
           </span>
         </label>
         <button className="rise d5" onClick={v.toggleAgree} role="checkbox" aria-checked={v.agreeChecked} style={{ display: "flex", alignItems: "flex-start", gap: "10px", border: "none", background: "transparent", padding: "0", textAlign: "left", cursor: "pointer", fontFamily: "var(--font-body)" }}>
@@ -98,7 +98,8 @@ export default function DeccanPhoneNameView({ v }: ViewProps) {
             <span style={{ color: "var(--primary)", fontWeight: "600" }}>Privacy Policy</span>
           </span>
         </button>
-        <Link to="/first-contact" className="rise d5 cta" aria-disabled={v.ctaDisabled} style={{ height: "56px", borderRadius: "28px", background: v.ctaBg, color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "15px", fontWeight: "600", textDecoration: "none", marginTop: "4px" }}>
+        {v.error && <div role="alert" style={{ fontSize: "13px", color: "#A3281A", lineHeight: "1.4" }}>{v.error}</div>}
+        <Link to="/first-contact" onClick={v.submit} className="rise d5 cta" aria-disabled={v.ctaDisabled} style={{ height: "56px", borderRadius: "28px", background: v.ctaBg, color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "15px", fontWeight: "600", textDecoration: "none", marginTop: "4px" }}>
           Continue{" "}
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M5 12h14M13 6l6 6-6 6" />

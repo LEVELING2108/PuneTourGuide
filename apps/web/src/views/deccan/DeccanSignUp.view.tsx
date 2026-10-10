@@ -74,7 +74,7 @@ export default function DeccanSignUpView({ v }: ViewProps) {
         </div>
       </div>
       <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "206px", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "24px 24px 24px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "13px" }}>
-        <Link to="/first-contact" className="rise d3 tap gbtn" style={{ height: "54px", boxSizing: "border-box", flexShrink: "0", borderRadius: "27px", border: "1px solid #D8C6A6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>
+        <Link to="/first-contact" onClick={v.google} className="rise d3 tap gbtn" style={{ height: "54px", boxSizing: "border-box", flexShrink: "0", borderRadius: "27px", border: "1px solid #D8C6A6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>
           <span aria-hidden="true" style={{ width: "22px", height: "22px", borderRadius: "6px", border: "1px dashed #B3A28A", boxSizing: "border-box", fontSize: "7px", color: "var(--muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>LOGO</span>
           {" "}Sign up with Google
         </Link>
@@ -86,7 +86,7 @@ export default function DeccanSignUpView({ v }: ViewProps) {
         <label className="rise d4" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
           <span style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>NAME</span>
           <span className="field" style={{ height: "48px", borderRadius: "14px", border: "1px solid #DCCDB6", background: "var(--surface)", display: "flex", alignItems: "center", padding: "0 16px" }}>
-            <input placeholder="Your name" autoComplete="name" style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
+            <input placeholder="Your name" autoComplete="name" aria-label="Your name" maxLength={60} value={v.name} onChange={v.onName} style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
           </span>
         </label>
         {v.isEmail && (
@@ -95,13 +95,13 @@ export default function DeccanSignUpView({ v }: ViewProps) {
               <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 <span style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>EMAIL</span>
                 <span className="field" style={{ height: "48px", borderRadius: "14px", border: "1px solid #DCCDB6", background: "var(--surface)", display: "flex", alignItems: "center", padding: "0 16px" }}>
-                  <input type="email" placeholder="you@example.com" autoComplete="email" style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
+                  <input type="email" placeholder="you@example.com" autoComplete="email" aria-label="Email" value={v.email} onChange={v.onEmail} style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
                 </span>
               </label>
               <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 <span style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>PASSWORD</span>
                 <span className="field" style={{ height: "48px", borderRadius: "14px", border: "1px solid #DCCDB6", background: "var(--surface)", display: "flex", alignItems: "center", padding: "0 16px" }}>
-                  <input type="password" placeholder="At least 8 characters" autoComplete="new-password" onInput={v.onPw} style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
+                  <input type="password" placeholder="At least 8 characters" autoComplete="new-password" aria-label="Password" value={v.pw} onChange={v.onPw} style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
                 </span>
               </label>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -129,7 +129,7 @@ export default function DeccanSignUpView({ v }: ViewProps) {
                       <path d="M6 9l6 6 6-6" />
                     </svg>
                   </span>
-                  <input type="tel" inputMode="numeric" autoComplete="tel-national" placeholder="98XXX XXXXX" style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "16px", letterSpacing: "0.04em", background: "transparent", color: "var(--ink)" }} />
+                  <input type="tel" inputMode="numeric" autoComplete="tel-national" aria-label="Mobile number" placeholder="98XXX XXXXX" value={v.phone} onChange={v.onPhone} style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "16px", letterSpacing: "0.04em", background: "transparent", color: "var(--ink)" }} />
                 </span>
               </label>
               <div style={{ fontSize: "12.5px", lineHeight: "1.45", color: "var(--muted)" }}>
@@ -151,7 +151,8 @@ export default function DeccanSignUpView({ v }: ViewProps) {
             <span style={{ color: "var(--primary)", fontWeight: "600" }}>Privacy Policy</span>
           </span>
         </button>
-        <Link className="rise d5 cta" to={v.ctaHref} aria-disabled={v.ctaDisabled} style={{ height: "56px", flexShrink: "0", borderRadius: "28px", background: v.ctaBg, color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>{v.ctaLabel}</Link>
+        {v.error && <div role="alert" style={{ fontSize: "13px", color: "#A3281A", lineHeight: "1.4" }}>{v.error}</div>}
+        <Link className="rise d5 cta" to={v.ctaHref} onClick={v.submit} aria-disabled={v.ctaDisabled} style={{ height: "56px", flexShrink: "0", borderRadius: "28px", background: v.ctaBg, color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>{v.ctaLabel}</Link>
         <div className="rise d6" style={{ marginTop: "auto", textAlign: "center", fontSize: "13.5px", color: "var(--muted)" }}>
           Already have an account?{" "}
           <Link to="/login" style={{ fontWeight: "600", textDecoration: "none" }}>Log in</Link>

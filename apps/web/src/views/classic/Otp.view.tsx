@@ -56,7 +56,7 @@ export default function OtpView({ v }: ViewProps) {
             </h1>
             <div style={{ fontSize: "14px", color: "#CFE3DE" }}>
               We sent a 6-digit code to{" "}
-              <b style={{ color: "var(--bg)", fontWeight: "600" }}>+91 98••• ••210</b>
+              <b style={{ color: "var(--bg)", fontWeight: "600" }}>{v.phoneMasked}</b>
             </div>
           </div>
         </div>
@@ -81,7 +81,7 @@ export default function OtpView({ v }: ViewProps) {
                 </span>
               </Fragment>
             ))}
-            <input aria-label="6-digit code" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} onInput={v.onCode} style={{ position: "absolute", inset: "0", width: "100%", height: "100%", opacity: "0", border: "none", fontSize: "16px", color: "transparent", background: "transparent", caretColor: "transparent", cursor: "text" }} />
+            <input aria-label="6-digit code" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} autoFocus value={v.code} onChange={v.onCode} style={{ position: "absolute", inset: "0", width: "100%", height: "100%", opacity: "0", border: "none", fontSize: "16px", color: "transparent", background: "transparent", caretColor: "transparent", cursor: "text" }} />
           </span>
         </label>
         <div className="rise d4" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "13.5px" }}>
@@ -97,13 +97,15 @@ export default function OtpView({ v }: ViewProps) {
           {v.canResend && (
             <>
               <span style={{ display: "flex", gap: "16px" }}>
-                <button className="tap" onClick={v.resend} style={{ border: "none", background: "transparent", padding: "0", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "600", color: "var(--primary)", cursor: "pointer" }}>Resend SMS</button>
-                <button className="tap" onClick={v.resend} style={{ border: "none", background: "transparent", padding: "0", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "600", color: "var(--primary)", cursor: "pointer" }}>Call me</button>
+                <button className="tap" onClick={v.resendSms} style={{ border: "none", background: "transparent", padding: "0", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "600", color: "var(--primary)", cursor: "pointer" }}>Resend SMS</button>
+                <button className="tap" onClick={v.callMe} style={{ border: "none", background: "transparent", padding: "0", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "600", color: "var(--primary)", cursor: "pointer" }}>Call me</button>
               </span>
             </>
           )}
         </div>
-        <Link to="/almost-there" className="rise d5 cta" aria-disabled={v.ctaDisabled} style={{ height: "56px", borderRadius: "28px", background: v.ctaBg, color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>Verify</Link>
+        {v.error && <div role="alert" style={{ fontSize: "13px", color: "#A3281A", lineHeight: "1.4" }}>{v.error}</div>}
+{v.devCode && <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>Development: your code is {v.devCode}</div>}
+        <Link to="/almost-there" onClick={v.verify} className="rise d5 cta" aria-disabled={v.ctaDisabled} style={{ height: "56px", borderRadius: "28px", background: v.ctaBg, color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>Verify</Link>
         <div className="rise d6" style={{ marginTop: "auto", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px", fontSize: "13px", color: "var(--muted)", textAlign: "center" }}>
           <div>
             Wrong number?{" "}

@@ -8,7 +8,7 @@ settings to fill in, and a **Verify** check you can run for real. Tick the box w
 Development defaults (console SMS, public demo servers) keep everything working locally, but
 none of them are allowed in production.
 
-_Last updated: Phase 6 (settings, medical, offline packs). Phase 7 items are listed at the end as "coming next"._
+_Last updated: Phase 7 (accounts: mobile OTP, Google, password reset)._
 
 ---
 
@@ -17,6 +17,9 @@ _Last updated: Phase 6 (settings, medical, offline packs). Phase 7 items are lis
 | Feature | Database (Postgres + PostGIS) | Redis | Other services |
 | --- | --- | --- | --- |
 | Log in, sign up, sessions | Users, refresh tokens | Rate limits | — |
+| Mobile sign-in (OTP) | Users, one-time codes (hashed) | Resend wait, codes per hour, rate limits | **SMS provider** (OTP template); Twilio for “Call me” |
+| Sign in with Google | Users | Rate limits | **Google Identity Services** (OAuth client ID) |
+| Forgot / reset password | Users, reset links (hashed) | Rate limits | **Email provider** (Resend) |
 | Explore, filters, place detail | Places (PostGIS distance), saved places | Places cache, rate limits | — |
 | Home weather | — | Weather cache | **Open-Meteo** |
 | Explore address search | — | Geocode cache, 1 request/s slot | **Nominatim** (OSM geocoder) |
@@ -116,16 +119,18 @@ _Last updated: Phase 6 (settings, medical, offline packs). Phase 7 items are lis
 ### ☐ 9. SMS provider
 **Needed by:** SOS alerts to contacts, "I'm safe", Share live trip, and the contacts test alert (and OTP in Phase 7). **Without it, SOS alerts are only printed to the server log.**
 - **India (MSG91):** DLT registration is required by law and takes several days. Register your entity and a sender ID, then get one template approved per message type:
+  - Login code / OTP (variable: otp). Keep the last line `@your-domain #code` so Android can fill the code in automatically
   - SOS alert (variables: name, link, map, hospital, medical)
   - I'm safe (name, time)
   - Trip link (name, link)
   - Test alert (name)
-  - OTP, coming in Phase 7
 
   The exact message texts are in `services/tour-api/src/v1/notify/messages.ts`.
-  - Settings: `SMS_PROVIDER=msg91`, `SMS_API_KEY=<authkey>`, `MSG91_TEMPLATE_SOS`, `MSG91_TEMPLATE_SAFE`, `MSG91_TEMPLATE_TRIP`, `MSG91_TEMPLATE_TEST`.
+  - Settings: `SMS_PROVIDER=msg91`, `SMS_API_KEY=<authkey>`, `MSG91_TEMPLATE_OTP`, `MSG91_TEMPLATE_SOS`, `MSG91_TEMPLATE_SAFE`, `MSG91_TEMPLATE_TRIP`, `MSG91_TEMPLATE_TEST`.
+- **“Call me” (voice code)** works with Twilio only. With MSG91 the app sends the SMS again and says so.
 - **International or testing (Twilio):** `SMS_PROVIDER=twilio`, `SMS_API_KEY=AccountSid:AuthToken`, `SMS_SENDER_ID=+1…`.
 - **Verify:**
+  - Log in → Mobile with your own number: the code arrives within seconds and Android offers to fill it in.
   - Settings → Emergency contacts → Send a test alert: your contact's phone receives the TEST message, and the `SmsMessage` table shows `sent`.
   - Then do one real SOS drill with a friend who knows it is a drill (you can hang up the 112 call before it connects): they receive the alert with the live link and the hospital line; tap "I'm safe" and they receive the follow-up.
 
@@ -160,11 +165,30 @@ _Last updated: Phase 6 (settings, medical, offline packs). Phase 7 items are lis
 
 ---
 
+### ☐ 16. Email provider (password reset)
+**Needed by:** Forgot password. Without it, reset emails are only noted in the server log (recipient and subject, never the link).
+- Create a [Resend](https://resend.com) account, verify your sending domain (it gives you SPF and DKIM DNS records to add), and create an API key.
+- Settings (Tour API): `EMAIL_API_KEY`, `EMAIL_FROM="Pune Explorer <no-reply@your-domain>"`.
+- **Verify:** Log in → Forgot? → your email → the email arrives (check that it isn't in spam). The link opens `/reset`, you set a new password, other phones are signed out, and the old link no longer works.
+
+### ☐ 17. Sign in with Google
+**Needed by:** the "Continue with Google" buttons on Log in and Sign up. Without it, the button explains that Google sign-in isn't set up.
+- In Google Cloud Console → APIs & Services → Credentials, create an **OAuth client ID** of type *Web application*. Add `https://your-domain` (and `http://localhost:5050` for development) to **Authorised JavaScript origins**. Fill in the OAuth consent screen (app name, privacy policy URL).
+- Settings: `GOOGLE_CLIENT_ID` (Tour API) and `VITE_GOOGLE_CLIENT_ID` (web build), both set to the same client ID.
+- **Verify:**
+  - Tap Continue with Google: Google's account chooser opens, and a new account lands on "Add your first contact".
+  - Doing it again logs straight in.
+  - If you already had an email account with the same Gmail address, it is linked rather than duplicated.
+
+### ☐ 18. Terms and privacy policy pages
+**Needed by:** sign-up consent. Accounts store when the terms were accepted (`termsAcceptedAt`). Publish real Terms and Privacy Policy pages (India's DPDP Act: say what you collect, especially location, contacts and medical info, and why) and point the "Terms" links in the sign-up views at them.
+- **Verify:** every "Terms" link on Sign up, Almost there and Google sign-in opens the published pages.
+
+---
+
 ## 4. Settings not used yet
 `CLOUDINARY_URL` (avatars are stored in Postgres instead), `WEATHER_API_KEY` and `GEMINI_API_KEY` (left over from the old app) can stay empty.
 
-## 5. Coming next (Phase 7: accounts)
-These are added to the list above when Phase 7 is built:
-- **Google sign-in:** a Google Cloud OAuth client ID (`GOOGLE_CLIENT_ID`, `VITE_GOOGLE_CLIENT_ID`) with your domain as an authorised origin.
-- **Email for password reset:** an email provider key (`EMAIL_API_KEY`, `EMAIL_FROM`) and a verified sending domain (SPF/DKIM).
-- **Mobile OTP:** the OTP template on the SMS provider (MSG91 DLT).
+## 5. Notes for your proxy and security headers
+- If the safety service runs on a **different domain** from the app, add it to `connectSrc` in `services/tour-api/src/app.ts` (both `https://` and `wss://`) and set `VITE_SAFETY_URL`.
+- The Content-Security-Policy already allows Google sign-in (`accounts.google.com/gsi`) and the tile hosts listed in step 7.

@@ -28,11 +28,13 @@ app.use(
       ? {
           directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'"],
-            styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+            // Google Identity Services (sign in with Google) loads a script, a stylesheet and an iframe
+            scriptSrc: ["'self'", "'unsafe-inline'", 'https://accounts.google.com/gsi/client'],
+            styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://accounts.google.com/gsi/style'],
+            frameSrc: ['https://accounts.google.com/gsi/'],
             fontSrc: ["'self'", 'https://fonts.gstatic.com'],
             imgSrc: ["'self'", 'data:', 'blob:', 'https://tile.openstreetmap.org', 'https://*.tile.openstreetmap.org', 'https://*.basemaps.cartocdn.com', 'https://api.maptiler.com'],
-            connectSrc: ["'self'", 'https://router.project-osrm.org'],
+            connectSrc: ["'self'", 'https://accounts.google.com/gsi/', 'wss:'],
           },
         }
       : false,

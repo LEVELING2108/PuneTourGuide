@@ -16,6 +16,7 @@ const OtpScreen = lazy(() => import('../screens/account/OtpScreen'));
 const PhoneNameScreen = lazy(() => import('../screens/account/PhoneNameScreen'));
 const OnboardScreen = lazy(() => import('../screens/account/OnboardScreen'));
 const ForgotPasswordScreen = lazy(() => import('../screens/account/ForgotPasswordScreen'));
+const ResetPasswordScreen = lazy(() => import('../screens/account/ResetPasswordScreen'));
 const ExploreScreen = lazy(() => import('../screens/explore/ExploreScreen'));
 const FiltersScreen = lazy(() => import('../screens/explore/FiltersScreen'));
 const MapScreen = lazy(() => import('../screens/map/MapScreen'));
@@ -69,6 +70,7 @@ export const router = createBrowserRouter([
       { path: '/almost-there', element: <PhoneNameScreen /> },
       { path: '/first-contact', element: <OnboardScreen /> },
       { path: '/forgot', element: <ForgotPasswordScreen /> },
+      { path: '/reset', element: <ResetPasswordScreen /> },
       { path: '/explore', element: <ExploreScreen /> },
       { path: '/explore/filters', element: <FiltersScreen /> },
       { path: '/map', element: <MapScreen /> },
