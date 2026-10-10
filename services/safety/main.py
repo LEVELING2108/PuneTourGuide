@@ -18,11 +18,45 @@ from typing import Dict, List
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 
-# Configure Logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 load_dotenv()
+
+# Logs: one line per event with a timestamp. Never log tokens, coordinates in bulk, or
+# connection strings with passwords (CLAUDE.md).
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s %(levelname)s safety %(message)s",
+)
+logger = logging.getLogger("safety")
+
+
+def _scrub_event(event, _hint):
+    """Error reports keep the error and route only: no bodies, headers, query strings or IPs."""
+    req = event.get("request")
+    if req:
+        event["request"] = {"method": req.get("method"), "url": (req.get("url") or "").split("?")[0]}
+    event.pop("user", None)
+    event.pop("extra", None)
+    return event
+
+
+# Error reporting (TECH_DESIGN §12): off unless SENTRY_DSN is set
+if os.getenv("SENTRY_DSN"):
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=os.getenv("SENTRY_DSN"),
+        environment=os.getenv("SENTRY_ENVIRONMENT", "production"),
+        release=os.getenv("SENTRY_RELEASE") or os.getenv("RENDER_GIT_COMMIT"),
+        send_default_pii=False,
+        traces_sample_rate=0,
+        before_send=_scrub_event,
+    )
+
+
+def _safe_url(url: str) -> str:
+    """redis://user:secret@host:6379 -> redis://host:6379 for logs."""
+    scheme, _, rest = url.partition("://")
+    return f"{scheme}://{rest.rsplit('@', 1)[-1]}"
 
 # Redis Configuration
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
@@ -100,14 +134,14 @@ def get_healthy_endpoint(preferred_idx: int) -> str:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Initializing ROADSoS Backend...")
-    logger.info(f"Attempting to connect to Redis at: {REDIS_URL}")
+    logger.info(f"Connecting to Redis at {_safe_url(REDIS_URL)}")
     global REDIS_OK
     try:
         await redis_client.ping()
         REDIS_OK = True
-        logger.info(f"Successfully connected to Redis at {REDIS_URL}")
+        logger.info("Redis connected")
     except Exception as e:
-        logger.error(f"Redis Connection Error ({REDIS_URL}): {e}. Using in-memory fallback.")
+        logger.error(f"Redis unavailable ({type(e).__name__}). Using in-memory fallback: live tracking is NOT shared across instances.")
     
     yield
     await http_client.aclose()

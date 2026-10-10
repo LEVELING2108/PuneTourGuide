@@ -70,7 +70,7 @@ export default function PlanView({ v }: ViewProps) {
                     <div className="card" style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "20px", padding: "14px 16px", display: "flex", flexDirection: "column", gap: "6px", opacity: s.opacity }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                         <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", lineHeight: "1.05" }}>{s.name}</div>
-                        <div style={{ fontSize: "12px", fontWeight: "600", color: "#8A6420" }}>{s.xp}</div>
+                        <div style={{ fontSize: "12px", fontWeight: "600", color: "#86611F" }}>{s.xp}</div>
                       </div>
                       <div style={{ fontSize: "12.5px", color: s.helpColor }}>{s.help}</div>
                     </div>

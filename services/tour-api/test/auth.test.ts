@@ -17,6 +17,11 @@ describe('auth (email)', () => {
     const cookie = (res.headers['set-cookie'] as unknown as string[]).find((c) => c.startsWith('pe_rt='))!;
     expect(cookie).toMatch(/HttpOnly/i);
     expect(cookie).toMatch(/Path=\/api\/v1\/auth/);
+    expect(cookie).toMatch(/SameSite=Lax/i);
+    // Session hint for the web app: readable by scripts, so it must never hold the token
+    const hint = (res.headers['set-cookie'] as unknown as string[]).find((c) => c.startsWith('pe_session='))!;
+    expect(hint).toMatch(/^pe_session=1;/);
+    expect(hint).not.toMatch(/HttpOnly/i);
   });
 
   it('rejects registration without accepting terms', async () => {
@@ -82,6 +87,9 @@ describe('auth (email)', () => {
     const cookie = refreshCookie(u.cookie);
     const out = await api().post('/api/v1/auth/logout').set('Cookie', cookie).set('Authorization', `Bearer ${u.token}`);
     expect(out.status).toBe(200);
+    const cleared = (out.headers['set-cookie'] as unknown as string[]).join(' | ');
+    expect(cleared).toMatch(/pe_rt=;/);
+    expect(cleared).toMatch(/pe_session=;/);
     const again = await api().post('/api/v1/auth/refresh').set('Cookie', cookie);
     expect(again.status).toBe(401);
   });

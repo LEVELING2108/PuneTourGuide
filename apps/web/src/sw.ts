@@ -8,7 +8,7 @@
  */
 import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
-import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
+import { CacheFirst, NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: (string | { url: string; revision: string | null })[] };
@@ -44,12 +44,6 @@ registerRoute(
 registerRoute(
   ({ url }) => url.pathname.startsWith('/api/v1/avatars/'),
   new CacheFirst({ cacheName: 'avatars', plugins: [new ExpirationPlugin({ maxEntries: 20 })] })
-);
-
-// Fonts
-registerRoute(
-  ({ url }) => url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com',
-  new StaleWhileRevalidate({ cacheName: 'fonts', plugins: [new ExpirationPlugin({ maxEntries: 30 })] })
 );
 
 self.addEventListener('message', (e) => {

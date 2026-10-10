@@ -134,7 +134,7 @@ export default function DeccanHomeView({ v }: ViewProps) {
               <Link to="/explore" onClick={v.collections?.[3]?.open} className="lift" style={{ padding: "5px", borderRadius: "6px", background: "var(--surface)", border: "2px dashed #D8C6A6", textDecoration: "none" }}>
                 <div style={{ height: "70px", borderRadius: "3px", background: "var(--gold)", color: "var(--ink)", padding: "8px 10px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                   <div style={{ fontFamily: "var(--font-accent)", fontSize: "18px", lineHeight: "1" }}>खाऊगल्ली</div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#4A3418" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#48321A" }}>
                     <span>Food lanes</span>
                     <span>{v.collections?.[3]?.countText}</span>
                   </div>

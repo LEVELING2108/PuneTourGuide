@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { env } from '../config/env';
+import { logger } from '../lib/logger';
 
 export type Email = { to: string; subject: string; text: string; html: string };
 
@@ -14,7 +15,7 @@ export const emailProvider = () => (env.EMAIL_API_KEY ? 'resend' : 'console');
  */
 export async function sendEmail(mail: Email): Promise<void> {
   if (emailProvider() === 'console') {
-    console.log(`[email:console] → ${maskEmail(mail.to)}: ${mail.subject}`);
+    logger.info({ to: maskEmail(mail.to) }, `email (console): ${mail.subject}`);
     return;
   }
   await axios.post(
@@ -25,5 +26,5 @@ export async function sendEmail(mail: Email): Promise<void> {
 }
 
 if (env.isProd && emailProvider() === 'console') {
-  console.error('[email] No email provider configured in production: password-reset emails will NOT be delivered. Set EMAIL_API_KEY.');
+  logger.error('No email provider configured in production: password-reset emails will NOT be delivered. Set EMAIL_API_KEY.');
 }

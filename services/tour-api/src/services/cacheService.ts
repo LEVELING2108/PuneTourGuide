@@ -1,5 +1,6 @@
 import Redis from 'ioredis';
 import { env } from '../config/env';
+import { logger } from '../lib/logger';
 
 const redisUrl = env.REDIS_URL;
 
@@ -39,7 +40,7 @@ try {
 
   redis.on('connect', () => {
     isRedisConnected = true;
-    console.log('[Cache] Connected to Redis successfully.');
+    logger.info('redis connected');
   });
 
   redis.on('ready', () => {
@@ -55,8 +56,8 @@ try {
     if (!hasLoggedRedisNotice) {
       // Never print the URL: it can carry a password.
       const msg = `[Cache] Redis unavailable (${err.message}). Falling back to per-process memory.`;
-      if (env.isProd) console.error(`${msg} Rate limits and cooldowns are NOT shared across instances until Redis is back.`);
-      else console.warn(msg);
+      if (env.isProd) logger.error(`${msg} Rate limits and cooldowns are NOT shared across instances until Redis is back.`);
+      else logger.warn(msg);
       hasLoggedRedisNotice = true;
     }
   });

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import axios from 'axios';
 import { getCachedData, setCachedData } from '../services/cacheService';
+import { logger, errText } from '../lib/logger';
 
 let memoryWeather = 'Sunny';
 let memoryTemp = 30;
@@ -52,7 +53,7 @@ export const getWeather = async (req: Request, res: Response) => {
 
     res.json({ weather: memoryWeather, temp: memoryTemp });
   } catch (error) {
-    console.error('Failed to fetch live weather from Open-Meteo:', error);
+    logger.error({ err: errText(error) }, 'Failed to fetch live weather from Open-Meteo:');
     res.json({ weather: memoryWeather, temp: memoryTemp });
   }
 };
@@ -78,10 +79,10 @@ export const toggleWeather = async (req: Request, res: Response) => {
     const weatherResult = { weather: newWeather, temp: newTemp };
     await setCachedData(cacheKey, weatherResult, 900);
 
-    console.log(`[Weather] Toggled weather override to ${newWeather} (${newTemp}°C)`);
+    logger.info(`[Weather] Toggled weather override to ${newWeather} (${newTemp}°C)`);
     res.json(weatherResult);
   } catch (error) {
-    console.error('Failed to toggle weather override:', error);
+    logger.error({ err: errText(error) }, 'Failed to toggle weather override:');
     res.status(500).json({ error: 'Failed to toggle weather status' });
   }
 };

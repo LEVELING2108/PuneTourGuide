@@ -45,7 +45,7 @@ export default function IntroView({ v }: ViewProps) {
           </div>
           <Link to="/permissions" onClick={v.done} style={{ height: "44px", display: "flex", alignItems: "center", padding: "0 4px", fontSize: "14px", fontWeight: "600", color: "var(--muted)", textDecoration: "none" }}>Skip</Link>
         </div>
-        <div className="track" ref={v.trackRef} onScroll={v.onSlide} style={{ position: "absolute", top: "112px", left: "0", width: "100%", height: "560px", display: "flex" }}>
+        <div className="track" ref={v.trackRef} onScroll={v.onSlide} tabIndex={0} role="region" aria-label="Introduction" style={{ position: "absolute", top: "112px", left: "0", width: "100%", height: "560px", display: "flex" }}>
           <section aria-label="Discover" style={{ flex: "0 0 100%", boxSizing: "border-box", padding: "0 24px", display: "flex", flexDirection: "column", gap: "26px" }}>
             <div style={{ height: "380px", borderRadius: "32px", background: "var(--primary)", position: "relative", overflow: "hidden" }}>
               <svg width="360" height="360" viewBox="0 0 360 360" aria-hidden="true" style={{ position: "absolute", right: "-150px", bottom: "-150px", opacity: "0.14" }}>
@@ -104,7 +104,7 @@ export default function IntroView({ v }: ViewProps) {
                 <div style={{ background: "var(--surface)", borderRadius: "22px", padding: "18px 18px 8px", boxShadow: "0 22px 40px -22px rgba(0,0,0,0.6)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingBottom: "10px" }}>
                     <div style={{ fontFamily: "var(--font-display)", fontSize: "22px" }}>Saturday</div>
-                    <div style={{ fontSize: "12px", fontWeight: "700", color: "#8A6420" }}>+150 XP</div>
+                    <div style={{ fontSize: "12px", fontWeight: "700", color: "#86611F" }}>+150 XP</div>
                   </div>
                   <div style={{ display: "flex", gap: "12px" }}>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "16px", paddingTop: "4px" }}>

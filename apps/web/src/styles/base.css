@@ -60,6 +60,14 @@ body {
   outline-offset: 2px;
 }
 
+/* Text fields hide their own outline (mockup styling), so the field's box shows the focus instead.
+   An outline, so it adds to (never replaces) each screen's own focus border and glow. Keyboard only:
+   text fields count as focus-visible on a tap too, and touch users already see the screen's own border. */
+[data-input='keyboard'] .scr :has(> input:not([type='checkbox'], [type='radio'], [aria-hidden='true']):focus-visible, > textarea:focus-visible, > select:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

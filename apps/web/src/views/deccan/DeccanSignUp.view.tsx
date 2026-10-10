@@ -2,6 +2,7 @@
 import { Link } from 'react-router';
 import { Fragment } from 'react';
 import type { ViewProps } from '../types';
+import { GoogleG } from '../../components/GoogleG';
 
 const css = `
 .scr-deccan-DeccanSignUp a{color:var(--primary)}
@@ -75,7 +76,7 @@ export default function DeccanSignUpView({ v }: ViewProps) {
       </div>
       <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "206px", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "24px 24px 24px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "13px" }}>
         <Link to="/first-contact" onClick={v.google} className="rise d3 tap gbtn" style={{ height: "54px", boxSizing: "border-box", flexShrink: "0", borderRadius: "27px", border: "1px solid #D8C6A6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>
-          <span aria-hidden="true" style={{ width: "22px", height: "22px", borderRadius: "6px", border: "1px dashed #B3A28A", boxSizing: "border-box", fontSize: "7px", color: "var(--muted)", display: "flex", alignItems: "center", justifyContent: "center" }}>LOGO</span>
+          <GoogleG />
           {" "}Sign up with Google
         </Link>
         <div className="rise d4" role="tablist" aria-label="Sign up with" style={{ position: "relative", height: "44px", flexShrink: "0", borderRadius: "22px", background: "#E7DAC4", padding: "4px", boxSizing: "border-box", display: "flex" }}>

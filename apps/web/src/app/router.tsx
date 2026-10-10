@@ -5,6 +5,7 @@ import { useTripGuard } from '../features/trip';
 import { isOnboarded } from '../stores/onboarding';
 import HomeScreen from '../screens/home/HomeScreen';
 import SosScreen from '../screens/sos/SosScreen';
+import AppErrorScreen from '../screens/AppErrorScreen';
 
 // SOS and Home are eager (must open instantly, also offline); the rest load on demand.
 const SplashScreen = lazy(() => import('../screens/onboarding/SplashScreen'));
@@ -59,6 +60,7 @@ function RootLayout() {
 export const router = createBrowserRouter([
   {
     element: <RootLayout />,
+    errorElement: <AppErrorScreen />,
     children: [
       { path: '/', element: <HomeScreen /> },
       { path: '/welcome', element: <SplashScreen /> },

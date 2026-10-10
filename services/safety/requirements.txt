@@ -6,3 +6,4 @@ python-dotenv==1.2.4
 redis==8.1.0
 slowapi==0.1.10
 websockets==17.2
+sentry-sdk[fastapi]==2.69.2

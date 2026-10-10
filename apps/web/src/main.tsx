@@ -7,9 +7,16 @@ import { queryClient } from './lib/queryClient';
 import { useAuthStore } from './stores/auth';
 import './i18n';
 import { startLanguageSync } from './features/preferences';
+import './styles/fonts';
 import './styles/base.css';
+import { initMonitoring } from './lib/monitoring';
 
+initMonitoring();
 
+// Keyboard vs touch, for focus rings that only keyboard users need (base.css)
+const root = document.documentElement;
+window.addEventListener('keydown', (e) => e.key === 'Tab' && (root.dataset.input = 'keyboard'), true);
+window.addEventListener('pointerdown', () => (root.dataset.input = 'pointer'), true);
 startLanguageSync();
 
 // Offline support (production builds only; the dev server never registers it)

@@ -173,7 +173,7 @@ export default function MapView({ v }: ViewProps) {
                   )}
                 </div>
               ))}
-              {v.helpLoading && <div style={{ fontSize: "13px", color: "var(--muted)", lineHeight: "1.4" }}>Finding hospitals and police near you…</div>}
+              {v.helpLoading && <div role="status" style={{ fontSize: "13px", color: "var(--muted)", lineHeight: "1.4", minHeight: "192px" }}>Finding hospitals and police near you…</div>}
               {v.helpError && !v.helpLoading && (
                 <div className="row" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "10px 8px", margin: "0 -8px", borderRadius: "16px" }}>
                   <div style={{ width: "8px", height: "8px", borderRadius: "4px", background: "#C8321C", flexShrink: "0" }} />

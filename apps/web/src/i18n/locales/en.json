@@ -31,5 +31,13 @@
     "cancel": "I'm safe, cancel"
   },
   "and": " and ",
-  "more": " and {{count}} more"
+  "more": " and {{count}} more",
+  "crash": {
+    "title": "Something went wrong",
+    "body": "This screen hit a problem. Reloading usually fixes it.",
+    "updated": "A new version of the app is ready. Reload to continue.",
+    "reload": "Reload",
+    "home": "Go to Home",
+    "call": "Emergency? Call 112"
+  }
 }

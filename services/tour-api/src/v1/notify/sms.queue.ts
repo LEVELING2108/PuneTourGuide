@@ -3,6 +3,7 @@ import IORedis from 'ioredis';
 import { sendSms, smsProvider, type Sms } from '../../clients/sms';
 import { env } from '../../config/env';
 import { decrypt, encrypt } from '../../lib/crypto';
+import { logger } from '../../lib/logger';
 import { maskPhone } from '../../lib/phone';
 import { notifyRepo } from './notify.repository';
 
@@ -78,7 +79,7 @@ export async function enqueueSms(userId: number | null, messages: Sms[]): Promis
       );
       return logs.map((l) => l.id);
     } catch {
-      console.error('[sms] Queue unavailable, sending directly');
+      logger.error('sms queue unavailable, sending directly');
     }
   }
   const inline = Promise.all(jobs.map((j) => deliverInline(j.logId, j.sms)));

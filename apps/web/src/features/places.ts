@@ -57,7 +57,8 @@ const DECCAN_TONE: Record<string, string> = {
   Fort: '#0E5B5E',
   Museum: '#0E5B5E',
   Nature: '#0E5B5E',
-  Food: '#C59A3A',
+  // Dark gold: white Marathi text on the brighter #C59A3A failed contrast (2.5:1)
+  Food: '#86611F',
 };
 
 /** Category colour for tickets and pins, per theme. */

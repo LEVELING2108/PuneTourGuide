@@ -56,6 +56,8 @@ async function bestFix(): Promise<{ lat: number; lng: number; acc?: number } | n
 }
 
 const vibrate = (p: number | number[]) => {
+  // Browsers refuse (and log an error) until the person has touched the page
+  if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
   try {
     navigator.vibrate?.(p);
   } catch {

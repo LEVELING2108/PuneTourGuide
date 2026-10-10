@@ -1,0 +1,129 @@
+# Production on one server (a VPS with Docker). See docs/LAUNCH_SETUP.md, "Deploy".
+#
+#   cp deploy/.env.production.example deploy/.env.production   # fill it in
+#   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production up -d --build
+#
+# Scale the app later:  ... up -d --scale app=3   (Caddy load-balances; Redis keeps limits shared)
+name: pune-explorer
+
+x-app-env: &app-env
+  env_file: .env.production
+  restart: unless-stopped
+
+services:
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+      - safety
+
+  app:
+    <<: *app-env
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        VITE_MAP_TILE_URL: ${VITE_MAP_TILE_URL:-}
+        VITE_MAP_TILE_ATTRIBUTION: ${VITE_MAP_TILE_ATTRIBUTION:-}
+        VITE_MAP_TILES_OFFLINE: ${VITE_MAP_TILES_OFFLINE:-false}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+        VITE_RELEASE: ${RELEASE:-}
+    image: pune-explorer-app
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      # The worker service below sends SMS; app instances only queue them
+      RUN_WORKERS: "false"
+      SAFETY_SERVICE_URL: http://safety:8000
+      SENTRY_RELEASE: ${RELEASE:-}
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+        required: false
+
+  worker:
+    <<: *app-env
+    image: pune-explorer-app
+    environment:
+      NODE_ENV: production
+      RUN_MODE: worker
+      SENTRY_RELEASE: ${RELEASE:-}
+    depends_on:
+      - app
+      - redis
+
+  safety:
+    build: ../services/safety
+    restart: unless-stopped
+    environment:
+      REDIS_URL: ${REDIS_URL}
+      ALLOWED_ORIGINS: https://${DOMAIN}
+      OVERPASS_ENDPOINTS: ${OVERPASS_ENDPOINTS:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_RELEASE: ${RELEASE:-}
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Password-protected; persisted so queued SOS texts survive a restart
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+  # Self-hosted Postgres + PostGIS. With a managed database (recommended: backups, failover),
+  # delete this service and point DATABASE_URL at the provider instead.
+  postgres:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pune}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-pune_explorer}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-pune}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Nightly hospital / police / fire import from OpenStreetMap (step 6)
+  refresh-help:
+    <<: *app-env
+    image: pune-explorer-app
+    restart: "no"
+    profiles: ["jobs"]
+    environment:
+      NODE_ENV: production
+    command: ["node", "dist/scripts/refresh-help.js"]
+
+volumes:
+  caddy_data:
+  caddy_config:
+  redis_data:
+  postgres_data:

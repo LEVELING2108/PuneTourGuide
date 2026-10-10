@@ -17,7 +17,7 @@ import DeccanContactsView from '../../views/deccan/DeccanContacts.view';
 const MAX = 5;
 const TONES = {
   classic: ['#4A3426', '#26303B', '#0F4C42', '#1B2220', '#5E6763'],
-  deccan: ['#A4462B', '#0E5B5E', '#7A1F4E', '#8A6420', '#3A2A22'],
+  deccan: ['#A4462B', '#0E5B5E', '#7A1F4E', '#86611F', '#3A2A22'],
 };
 
 /** "+91 ••••• •4521": the screen shows only the last digits; the call button uses the full number. */

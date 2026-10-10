@@ -81,7 +81,7 @@ export default function PermissionsView({ v }: ViewProps) {
                 )}
                 {p.granted && (
                   <>
-                    <span className="ok" aria-label="Allowed" style={{ width: "36px", height: "36px", borderRadius: "18px", background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0" }}>
+                    <span className="ok" role="img" aria-label="Allowed" style={{ width: "36px", height: "36px", borderRadius: "18px", background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0" }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M5 12l5 5 9-10" />
                       </svg>

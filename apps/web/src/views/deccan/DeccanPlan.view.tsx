@@ -45,7 +45,7 @@ export default function DeccanPlanView({ v }: ViewProps) {
               </h1>
             </div>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", color: "#8A6420" }}>{v.xp}</div>
+              <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", color: "#86611F" }}>{v.xp}</div>
               <div style={{ fontSize: "11px", letterSpacing: "0.14em", color: "var(--muted)" }}>XP TODAY</div>
             </div>
           </div>
@@ -77,7 +77,7 @@ export default function DeccanPlanView({ v }: ViewProps) {
                   <div style={{ flex: "1", minWidth: "0", padding: "12px 14px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "2px" }}>
                     <div style={{ fontFamily: "var(--font-display)", fontSize: "19px", lineHeight: "1.1" }}>{s.name}</div>
                     <div style={{ fontSize: "13px", color: s.helpColor }}>{s.help}</div>
-                    <div style={{ fontSize: "12.5px", fontWeight: "600", color: "#8A6420" }}>+{s.xp}{" XP"}</div>
+                    <div style={{ fontSize: "12.5px", fontWeight: "600", color: "#86611F" }}>+{s.xp}{" XP"}</div>
                   </div>
                   <button className="tap" onClick={s.toggle} aria-label={s.tickLabel} aria-pressed={s.pressed} style={{ alignSelf: "center", marginRight: "12px", width: "40px", height: "40px", borderRadius: "20px", border: `1.5px solid ${s.ring}`, background: s.fill, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: "0" }}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={s.tick} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">

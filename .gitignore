@@ -50,3 +50,8 @@ __pycache__/
 # Playwright
 test-results/
 playwright-report/
+
+# Any filled-in env file (production secrets). Only the *.example templates are committed.
+.env.*
+!.env.example
+!.env.*.example

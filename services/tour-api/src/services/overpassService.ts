@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getCooldown, setCooldown } from './cacheService';
+import { logger, errText } from '../lib/logger';
 
 const OVERPASS_ENDPOINTS = [
   'https://lz4.overpass-api.de/api/interpreter',
@@ -280,7 +281,7 @@ export const searchOSMPlaces = async (query: string): Promise<any[]> => {
   const cooldownKey = `places:discovery:cooldown:search:${sanitizedQuery.toLowerCase()}`;
   const isCooldownActive = await getCooldown(cooldownKey);
   if (isCooldownActive) {
-    console.log(`[OSM] Discovery cooldown active for search query: ${sanitizedQuery}. Skipping query.`);
+    logger.info(`[OSM] Discovery cooldown active for search query: ${sanitizedQuery}. Skipping query.`);
     return [];
   }
   await setCooldown(cooldownKey, 300); // 5 min cooldown
@@ -306,7 +307,7 @@ export const fetchOSMPlacesByCategory = async (category: string, customBbox?: st
   const cooldownKey = `places:discovery:cooldown:cat:${category.toLowerCase()}:${targetBbox}`;
   const isCooldownActive = await getCooldown(cooldownKey);
   if (isCooldownActive) {
-    console.log(`[OSM] Discovery cooldown active for category ${category}. Skipping query.`);
+    logger.info(`[OSM] Discovery cooldown active for category ${category}. Skipping query.`);
     return [];
   }
   await setCooldown(cooldownKey, 120); // 2 min cooldown
@@ -520,11 +521,11 @@ export const executeOverpassQuery = async (query: string): Promise<any[]> => {
         })
         .filter((p: any) => p !== null && p.name && p.latitude && p.longitude);
     } catch (error: any) {
-      console.warn(`[OSM] Request failed on ${endpoint}: ${error.message}. Retrying mirror...`);
+      logger.warn(`[OSM] Request failed on ${endpoint}: ${error.message}. Retrying mirror...`);
       lastError = error;
     }
   }
 
-  console.error('[OSM] All Overpass API mirrors failed:', lastError?.message);
+  logger.error({ err: errText(lastError?.message) }, '[OSM] All Overpass API mirrors failed:');
   return [];
 };

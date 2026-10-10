@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { AuthRequest } from '../middleware/auth';
 import { JWT_SECRET } from '../config/jwt';
+import { logger, errText } from '../lib/logger';
 
 const prisma = new PrismaClient();
 
@@ -96,7 +97,7 @@ export const registerUser = async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Registration error:', error);
+    logger.error({ err: errText(error) }, 'Registration error:');
     res.status(500).json({ error: 'Registration failed' });
   }
 };
@@ -131,7 +132,7 @@ export const loginUser = async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
+    logger.error({ err: errText(error) }, 'Login error:');
     res.status(500).json({ error: 'Login failed' });
   }
 };
@@ -196,7 +197,7 @@ export const getUserStats = async (req: AuthRequest, res: Response) => {
       totalPoints
     });
   } catch (error) {
-    console.error('Failed to calculate user stats:', error);
+    logger.error({ err: errText(error) }, 'Failed to calculate user stats:');
     res.status(500).json({ error: 'Failed to calculate user stats' });
   }
 };

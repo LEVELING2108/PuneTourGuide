@@ -3,6 +3,7 @@ import { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
 import { AuthRequest } from '../middleware/auth';
+import { logger, errText } from '../lib/logger';
 
 const prisma = new PrismaClient();
 
@@ -96,7 +97,7 @@ export const getItinerary = async (req: AuthRequest, res: Response) => {
 
     res.json(itinerary);
   } catch (error) {
-    console.error("Failed to fetch itinerary:", error);
+    logger.error({ err: errText(error) }, "Failed to fetch itinerary:");
     res.status(500).json({ error: 'Failed to fetch itinerary' });
   }
 };
@@ -134,12 +135,12 @@ export const toggleStopStatus = async (req: AuthRequest, res: Response) => {
         where: { id: userId },
         data: { xp: { increment: 50 } }
       });
-      console.log(`[XP] User ${userId} gained +50 XP for completing stop: ${stop.name}`);
+      logger.info(`[XP] User ${userId} gained +50 XP for completing stop: ${stop.name}`);
     }
 
     res.json(updatedStop);
   } catch (error) {
-    console.error("Failed to update stop status:", error);
+    logger.error({ err: errText(error) }, "Failed to update stop status:");
     res.status(500).json({ error: 'Failed to update stop status' });
   }
 };
@@ -183,7 +184,7 @@ export const addStopToItinerary = async (req: AuthRequest, res: Response) => {
     });
     res.json(newStop);
   } catch (error) {
-    console.error("Failed to add stop to itinerary:", error);
+    logger.error({ err: errText(error) }, "Failed to add stop to itinerary:");
     res.status(500).json({ error: 'Failed to add stop' });
   }
 };
@@ -212,7 +213,7 @@ export const deleteStopFromItinerary = async (req: AuthRequest, res: Response) =
     });
     res.json({ success: true, message: "Stop deleted successfully" });
   } catch (error) {
-    console.error("Failed to delete stop:", error);
+    logger.error({ err: errText(error) }, "Failed to delete stop:");
     res.status(500).json({ error: 'Failed to delete stop' });
   }
 };
@@ -303,11 +304,11 @@ export const optimizeItinerary = async (req: AuthRequest, res: Response) => {
       
       return res.json(optimizedStops);
     } else {
-      console.warn('[OSRM] Optimization failed. Code:', data.code);
+      logger.warn({ err: errText(data.code) }, '[OSRM] Optimization failed. Code:');
       return res.status(400).json({ error: 'Trip optimization failed' });
     }
   } catch (error) {
-    console.error('Optimization error:', error);
+    logger.error({ err: errText(error) }, 'Optimization error:');
     res.status(500).json({ error: 'Failed to optimize itinerary' });
   }
 };
@@ -417,7 +418,7 @@ Do not include any conversational markdown tags or prefix/suffix. Just return th
           }
         }
       } catch (geminiError) {
-        console.error("Gemini Generation failed, running fallback selector:", geminiError);
+        logger.error({ err: errText(geminiError) }, "Gemini Generation failed, running fallback selector:");
       }
     }
 
@@ -497,7 +498,7 @@ Do not include any conversational markdown tags or prefix/suffix. Just return th
               sortedStopsData = sortedWaypoints.map((wp: any) => dayStopsData[wp.waypoint_index]);
             }
           } catch (osrmError) {
-            console.error("OSRM Trip Optimization failed for generated day:", osrmError);
+            logger.error({ err: errText(osrmError) }, "OSRM Trip Optimization failed for generated day:");
           }
         }
 
@@ -539,7 +540,7 @@ Do not include any conversational markdown tags or prefix/suffix. Just return th
 
     res.json(createdItinerary);
   } catch (error) {
-    console.error("Failed to generate itinerary:", error);
+    logger.error({ err: errText(error) }, "Failed to generate itinerary:");
     res.status(500).json({ error: 'Failed to generate itinerary' });
   }
 };
@@ -709,7 +710,7 @@ export const adaptWeather = async (req: AuthRequest, res: Response) => {
             }
           }
         } catch (osrmError) {
-          console.error("OSRM Trip Optimization failed during weather adaptation:", osrmError);
+          logger.error({ err: errText(osrmError) }, "OSRM Trip Optimization failed during weather adaptation:");
         }
       }
     }
@@ -730,7 +731,7 @@ export const adaptWeather = async (req: AuthRequest, res: Response) => {
       day: finalDay
     });
   } catch (error) {
-    console.error("Failed to adapt itinerary for weather:", error);
+    logger.error({ err: errText(error) }, "Failed to adapt itinerary for weather:");
     res.status(500).json({ error: 'Failed to adapt itinerary for weather' });
   }
 };

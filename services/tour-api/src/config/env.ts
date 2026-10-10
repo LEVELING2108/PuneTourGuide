@@ -20,6 +20,7 @@ const EnvSchema = z.object({
   JWT_SECRET: prodRequired(z.string().min(32, 'JWT_SECRET must be at least 32 characters')),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
   CORS_ORIGINS: z.string().optional(),
+  COOKIE_SAMESITE: z.enum(['lax', 'strict', 'none']).default('lax'),
   APP_URL: z.string().url().default('http://localhost:5050'),
   SAFETY_SERVICE_URL: z.string().url().default('http://localhost:8000'),
   OSRM_URL: z.string().url().default('https://router.project-osrm.org'),
@@ -34,6 +35,18 @@ const EnvSchema = z.object({
   MEDICAL_ENC_KEY: prodRequired(z.string().regex(/^[0-9a-f]{64}$/i, 'MEDICAL_ENC_KEY must be 32 bytes hex')),
   WEATHER_API_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).optional(),
+  SENTRY_DSN: z.string().url().optional().or(z.literal('')),
+  SENTRY_ENVIRONMENT: z.string().optional(),
+  // Release tag for error reports: set by CI, or Render's commit variable
+  SENTRY_RELEASE: z.string().optional(),
+  RENDER_GIT_COMMIT: z.string().optional(),
+  // Public origin of the safety service when it is not served under /safety on the app's domain
+  SAFETY_PUBLIC_URL: z.string().url().optional().or(z.literal('')),
+  // Map tile hosts the page may load from (CSP), comma-separated. Must match VITE_MAP_TILE_URL.
+  MAP_TILE_ORIGINS: z
+    .string()
+    .default('https://tile.openstreetmap.org,https://*.tile.openstreetmap.org,https://*.basemaps.cartocdn.com,https://api.maptiler.com'),
 });
 
 const parsed = EnvSchema.safeParse(process.env);
@@ -41,6 +54,32 @@ if (!parsed.success) {
   const issues = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
   // Refuse to start with a broken config (TECH_DESIGN §8)
   throw new Error(`Invalid environment configuration:\n${issues}`);
+}
+
+/**
+ * A half-configured SMS provider only fails when an SOS is sent, which is the worst moment to
+ * find out. In production, refuse to start instead.
+ */
+export function smsConfigProblems(e: Record<string, string | undefined>, provider: string): string[] {
+  if (provider === 'msg91') {
+    const kinds = ['SOS', 'SAFE', 'TRIP', 'TEST', 'OTP'];
+    return [
+      ...(e.SMS_API_KEY ? [] : ['SMS_API_KEY (MSG91 auth key)']),
+      ...kinds.filter((k) => !e[`MSG91_TEMPLATE_${k}`]).map((k) => `MSG91_TEMPLATE_${k} (DLT template id)`),
+    ];
+  }
+  if (provider === 'twilio') {
+    return [
+      ...(/^AC\w+:\w+$/.test(e.SMS_API_KEY ?? '') ? [] : ['SMS_API_KEY ("AccountSid:AuthToken")']),
+      ...(e.SMS_SENDER_ID ? [] : ['SMS_SENDER_ID (Twilio number)']),
+    ];
+  }
+  return [];
+}
+
+if (isProd) {
+  const missing = smsConfigProblems(process.env, parsed.data.SMS_PROVIDER);
+  if (missing.length) throw new Error(`SMS_PROVIDER=${parsed.data.SMS_PROVIDER} is missing:\n${missing.map((m) => `  - ${m}`).join('\n')}`);
 }
 
 const DEV_JWT_SECRET = 'pune_explorer_dev_secret_insecure_local_only_0000';

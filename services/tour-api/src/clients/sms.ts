@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { env } from '../config/env';
+import { logger } from '../lib/logger';
 import { maskPhone } from '../lib/phone';
 
 export type SmsKind = 'sos' | 'safe' | 'trip' | 'test' | 'otp';
@@ -21,7 +22,7 @@ const http = axios.create({ timeout: 10_000 });
 
 /** Development: print instead of sending. Phone masked; medical text never printed. */
 async function sendConsole(sms: Sms): Promise<SendResult> {
-  console.log(`[sms:console] ${sms.kind} → ${maskPhone(sms.to)}: ${sms.logBody}`);
+  logger.info({ kind: sms.kind, to: maskPhone(sms.to) }, `sms (console): ${sms.logBody}`);
   return { provider: 'console', providerId: null };
 }
 
@@ -67,7 +68,7 @@ export function sendSms(sms: Sms): Promise<SendResult> {
 }
 
 if (env.isProd && smsProvider() === 'console') {
-  console.error('[sms] No SMS provider configured in production: SOS alerts to contacts will NOT be delivered. Set SMS_PROVIDER and SMS_API_KEY.');
+  logger.error('No SMS provider configured in production: SOS alerts to contacts will NOT be delivered. Set SMS_PROVIDER and SMS_API_KEY.');
 }
 
 /**
@@ -77,7 +78,7 @@ if (env.isProd && smsProvider() === 'console') {
 export async function callWithCode(to: string, code: string): Promise<'voice' | 'unavailable'> {
   const provider = smsProvider();
   if (provider === 'console') {
-    console.log(`[voice:console] login code call → ${maskPhone(to)}`);
+    logger.info({ to: maskPhone(to) }, 'voice call (console): login code');
     return 'voice';
   }
   if (provider !== 'twilio') return 'unavailable';

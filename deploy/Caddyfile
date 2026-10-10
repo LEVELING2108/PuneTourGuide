@@ -1,0 +1,38 @@
+# One public origin for everything (docs/LAUNCH_SETUP.md step 1). Caddy gets and renews the
+# HTTPS certificate automatically once DOMAIN's DNS points at this server.
+#
+#   https://DOMAIN/            web app + Tour API (/api/...)    → app instances
+#   https://DOMAIN/safety/...  safety service, incl. WebSockets → safety
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Safety service (live tracking, help fallback). The prefix is stripped; WebSockets pass through.
+	handle_path /safety/* {
+		reverse_proxy safety:8000 {
+			health_uri /health
+		}
+	}
+
+	handle {
+		reverse_proxy app:3001 {
+			# Spread over every app replica; skip one that is starting or stuck
+			lb_policy round_robin
+			health_uri /api/v1/health/ready
+			health_interval 10s
+		}
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}
+
+# Old hostnames (www.) forward to the main one
+www.{$DOMAIN} {
+	redir https://{$DOMAIN}{uri} permanent
+}

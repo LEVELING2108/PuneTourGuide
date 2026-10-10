@@ -7,12 +7,13 @@
 import { prisma } from '../lib/prisma';
 import { closeCache } from '../services/cacheService';
 import { helpService } from '../v1/help/help.service';
+import { logger } from '../lib/logger';
 
 helpService
-  .refresh((m) => console.log(`[refresh:help] ${m}`))
+  .refresh((m) => logger.info(`[refresh:help] ${m}`))
   .then(() => (process.exitCode = 0))
   .catch((err: Error) => {
-    console.error(`[refresh:help] Failed, existing data kept.\n${err.message}`);
+    logger.error(`[refresh:help] Failed, existing data kept.\n${err.message}`);
     process.exitCode = 1;
   })
   .finally(async () => {

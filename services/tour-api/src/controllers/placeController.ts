@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../config/jwt';
 import { searchOSMPlaces, fetchOSMPlacesByCategory, fetchOSMPlacesInBounds } from '../services/overpassService';
 import { getCachedData, setCachedData, invalidateCache } from '../services/cacheService';
+import { logger, errText } from '../lib/logger';
 
 const prisma = new PrismaClient();
 
@@ -96,7 +97,7 @@ export const getAllPlaces = async (req: Request, res: Response) => {
 
         // If live refresh explicitly requested, fetch directly from OpenStreetMap
         if (live === 'true') {
-          console.log(`[OSM] Fetching live places in map bounds [${south}, ${west}, ${north}, ${east}] for category ${category || 'All'}...`);
+          logger.info(`[OSM] Fetching live places in map bounds [${south}, ${west}, ${north}, ${east}] for category ${category || 'All'}...`);
           try {
             const discovered = await fetchOSMPlacesInBounds(
               { south, west, north, east },
@@ -110,7 +111,7 @@ export const getAllPlaces = async (req: Request, res: Response) => {
               });
             }
           } catch (osmErr) {
-            console.error('[OSM] Error fetching places in bounds:', osmErr);
+            logger.error({ err: errText(osmErr) }, '[OSM] Error fetching places in bounds:');
           }
         }
 
@@ -161,7 +162,7 @@ export const getAllPlaces = async (req: Request, res: Response) => {
 
       // Synchronous Category Hydration from OpenStreetMap if DB count is low (e.g. Wellness)
       if (category && category !== 'All' && places.length < 5 && !q) {
-        console.log(`[OSM] Low count for category ${category} (${places.length}). Hydrating from OpenStreetMap...`);
+        logger.info(`[OSM] Low count for category ${category} (${places.length}). Hydrating from OpenStreetMap...`);
         try {
           const discovered = await fetchOSMPlacesByCategory(String(category));
           if (discovered.length > 0) {
@@ -172,13 +173,13 @@ export const getAllPlaces = async (req: Request, res: Response) => {
             });
           }
         } catch (osmErr) {
-          console.error('[OSM] Error hydrating category:', osmErr);
+          logger.error({ err: errText(osmErr) }, '[OSM] Error hydrating category:');
         }
       }
 
       // Synchronous Search Hydration if zero or low results found
       if (q && places.length < 3) {
-        console.log(`[OSM] Low search results for "${q}" (${places.length}). Searching OpenStreetMap...`);
+        logger.info(`[OSM] Low search results for "${q}" (${places.length}). Searching OpenStreetMap...`);
         try {
           const discovered = await searchOSMPlaces(String(q));
           if (discovered.length > 0) {
@@ -189,7 +190,7 @@ export const getAllPlaces = async (req: Request, res: Response) => {
             });
           }
         } catch (osmErr) {
-          console.error('[OSM] Error searching OSM:', osmErr);
+          logger.error({ err: errText(osmErr) }, '[OSM] Error searching OSM:');
         }
       }
 
@@ -219,7 +220,7 @@ export const getAllPlaces = async (req: Request, res: Response) => {
 
     res.json(decoratedPlaces);
   } catch (error) {
-    console.error('Error in getAllPlaces:', error);
+    logger.error({ err: errText(error) }, 'Error in getAllPlaces:');
     res.status(500).json({ error: 'Failed to fetch places' });
   }
 };
@@ -303,7 +304,7 @@ export const toggleSavePlace = async (req: AuthRequest, res: Response) => {
         where: { id: userId },
         data: { xp: { increment: 10 } }
       });
-      console.log(`[XP] User ${userId} gained +10 XP for saving place: ${place.name}`);
+      logger.info(`[XP] User ${userId} gained +10 XP for saving place: ${place.name}`);
     } else if (!shouldSave && existingSave) {
       await prisma.userSavedPlace.delete({
         where: {
@@ -323,7 +324,7 @@ export const toggleSavePlace = async (req: AuthRequest, res: Response) => {
       isSaved: shouldSave
     });
   } catch (error) {
-    console.error('Failed to toggle save status:', error);
+    logger.error({ err: errText(error) }, 'Failed to toggle save status:');
     res.status(500).json({ error: 'Failed to toggle save status' });
   }
 };

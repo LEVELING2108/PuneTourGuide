@@ -51,7 +51,8 @@ export const useAuthStore = create<AuthState>()((set) => ({
     queryClient.clear();
   },
   bootstrap: async () => {
-    await refreshSession();
+    // The server sets pe_session alongside the httpOnly refresh cookie; guests have neither
+    if (/(?:^|;\s*)pe_session=1/.test(document.cookie)) await refreshSession();
     set({ ready: true });
   },
 }));

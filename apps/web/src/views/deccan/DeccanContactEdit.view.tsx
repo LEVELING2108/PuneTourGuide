@@ -111,7 +111,7 @@ export default function DeccanContactEditView({ v }: ViewProps) {
           {v.error && (
             <div role="alert" style={{ fontSize: "13px", color: "#A3281A" }}>{v.error}</div>
           )}
-          <button className="cta" onClick={v.save} disabled={v.saving} style={{ height: "56px", borderRadius: "28px", background: "var(--primary)", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" , border: "none", fontFamily: "var(--font-body)", cursor: "pointer", opacity: v.saveOpacity }}>{v.ctaLabel}</button>
+          <button className="cta" onClick={v.save} disabled={v.saving} aria-disabled={v.saveDisabled} style={{ height: "56px", borderRadius: "28px", background: "var(--primary)", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" , border: "none", fontFamily: "var(--font-body)", cursor: "pointer", opacity: v.saveOpacity }}>{v.ctaLabel}</button>
           {v.canRemove && (
             <>
               {v.notConfirming && (

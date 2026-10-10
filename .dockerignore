@@ -1,0 +1,22 @@
+# Never send secrets, dependencies or build output into an image build context
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules
+**/dist
+**/.venv
+**/venv
+**/__pycache__
+**/.pytest_cache
+**/test-results
+**/playwright-report
+**/*.log
+.git
+.github
+.vscode
+.claude
+UPGRADE
+design-reference
+docs
+apps/web/art
+apps/web/android

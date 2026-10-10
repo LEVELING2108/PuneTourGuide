@@ -21,9 +21,12 @@
     "prisma:generate": "npm run prisma:generate -w services/tour-api",
     "prisma:deploy": "npm run prisma:deploy -w services/tour-api",
     "start": "npm run prisma:deploy && node services/tour-api/dist/server.js",
-    "refresh:help": "npm run refresh:help -w services/tour-api"
+    "refresh:help": "npm run refresh:help -w services/tour-api",
+    "load-test": "node scripts/load-test.mjs",
+    "icons": "node apps/web/scripts/make-icons.mjs"
   },
   "devDependencies": {
+    "autocannon": "^8.0.0",
     "concurrently": "^9.1.2"
   }
 }

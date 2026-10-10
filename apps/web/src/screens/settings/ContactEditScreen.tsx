@@ -57,6 +57,7 @@ export default function ContactEditScreen({ mode }: Props) {
     ctaLabel: save.isPending ? 'Saving…' : add ? 'Add contact' : 'Save changes',
     saving: save.isPending,
     saveOpacity: valid ? 1 : 0.55,
+    saveDisabled: !valid,
     showAvatar: !add || s.picked,
     initial: (s.name || '?').charAt(0).toUpperCase(),
     pickLabel: s.picked ? 'Picked from contacts · change' : 'Pick from phone contacts',
