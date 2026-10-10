@@ -1,16 +1,20 @@
 import rateLimit, { type Options } from 'express-rate-limit';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { env } from '../config/env';
 import { SharedStore } from './rateLimitStore';
 
 const handler: Options['handler'] = (_req, res) =>
   res.status(429).json({ error: { code: 'RATE_LIMITED', message: 'Too many attempts. Please wait and try again.' } });
 
-const make = (name: string, windowMs: number, limit: number, key?: (req: Request) => string) =>
+// The API test suite sends every request from one address; it opts in to limits per request.
+const skipInTests = (req: Request) => env.isTest && req.get('X-Test-Rate-Limit') !== 'on';
+
+const make = (name: string, windowMs: number, limit: number, key?: (req: Request, res: Response) => string) =>
   rateLimit({
     windowMs,
     limit,
     store: new SharedStore(name),
+    skip: skipInTests,
     standardHeaders: 'draft-7',
     legacyHeaders: false,
     handler,
@@ -28,10 +32,17 @@ export const otpSendLimit = make('otp-send', 60 * 60_000, 5, field('phone'));
 export const otpVerifyLimit = make('otp-verify', 15 * 60_000, 20);
 export const passwordResetLimit = make('pw-reset', 60 * 60_000, 5, field('email'));
 export const refreshLimit = make('refresh', 60_000, 30);
-/** SOS alerts must not be blocked by mistake: generous but bounded. */
-export const sosLimit = make('sos', 10 * 60_000, 10);
-/** Test alerts: 3 per day per IP (also enforced per user in the service). */
-export const testAlertLimit = make('test-alert', 24 * 60 * 60_000, 3);
+/**
+ * SOS must never be refused because of someone else: logged-in users are limited per account,
+ * guests per IP (generous, since many phones share a carrier IP). Bounds SMS abuse, not safety.
+ * Mount after optionalAuth.
+ */
+export const sosLimit = make('sos', 10 * 60_000, 30, (req, res) => (res.locals.userId ? `u:${res.locals.userId}` : `ip:${ipKey(req)}`));
+/** Test alerts: the real cap is 3 per user per day (service); this bounds one IP (CGNAT-friendly). */
+export const testAlertLimit = make('test-alert', 24 * 60 * 60_000, 20);
+/** Contact changes and live-trip sharing (each share texts every contact). */
+export const contactsWriteLimit = make('contacts-write', 60 * 60_000, 60);
+export const tripShareLimit = make('trip-share', 60 * 60_000, 10);
 
 /** Directions and Optimise spend the routing provider's quota. Live navigation re-routes occasionally. */
 export const routingLimit = make('routing', 60_000, 30);

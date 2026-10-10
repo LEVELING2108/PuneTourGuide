@@ -7,7 +7,7 @@ export const api = () => request(app);
 /** Empty every user-owned table (places/routes are left for read tests that seed them). */
 export async function resetUsers() {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE "User", "RefreshToken", "PasswordReset", "OtpCode", "EmergencyContact", "MedicalProfile", "Stamp", "SosEvent", "UserSavedPlace", "ItineraryDay", "ItineraryStop" RESTART IDENTITY CASCADE'
+    'TRUNCATE "User", "RefreshToken", "PasswordReset", "OtpCode", "EmergencyContact", "MedicalProfile", "Stamp", "SosEvent", "TripShare", "SmsMessage", "UserSavedPlace", "ItineraryDay", "ItineraryStop" RESTART IDENTITY CASCADE'
   );
 }
 

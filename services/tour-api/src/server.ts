@@ -2,6 +2,10 @@ import app from './app';
 import { env } from './config/env';
 import { prisma } from './lib/prisma';
 import { closeCache } from './services/cacheService';
+import { closeSmsQueue, startSmsWorker } from './v1/notify/sms.queue';
+
+// SMS worker runs in the API unless a dedicated worker process does it (RUN_WORKERS=false here).
+if (process.env.RUN_WORKERS !== 'false') startSmsWorker();
 
 const server = app.listen(env.PORT, () => {
   console.log(`Tour API listening on port ${env.PORT}`);
@@ -31,7 +35,7 @@ const shutdown = (signal: string) => {
   console.log(`[Server] ${signal} received, draining connections`);
   setTimeout(() => process.exit(1), 15_000).unref();
   server.close(async () => {
-    await Promise.allSettled([prisma.$disconnect(), closeCache()]);
+    await Promise.allSettled([closeSmsQueue(), prisma.$disconnect(), closeCache()]);
     process.exit(0);
   });
   server.closeIdleConnections();

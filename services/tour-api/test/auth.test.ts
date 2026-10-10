@@ -89,7 +89,7 @@ describe('auth (email)', () => {
   it('rate-limits repeated login attempts', async () => {
     const statuses: number[] = [];
     for (let i = 0; i < 7; i++) {
-      const r = await api().post('/api/v1/auth/login').send({ email: 'limit@example.com', password: 'wrong-wrong' });
+      const r = await api().post('/api/v1/auth/login').set('X-Test-Rate-Limit', 'on').send({ email: 'limit@example.com', password: 'wrong-wrong' });
       statuses.push(r.status);
     }
     expect(statuses).toContain(429);

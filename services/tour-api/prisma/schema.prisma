@@ -99,6 +99,8 @@ model User {
   refreshTokens  RefreshToken[]
   passwordResets PasswordReset[]
   sosEvents      SosEvent[]
+  tripShares     TripShare[]
+  smsMessages    SmsMessage[]
 }
 
 model UserSavedPlace {
@@ -254,27 +256,62 @@ model SosEvent {
   startedAt       DateTime  @default(now())
   cancelledAt     DateTime?
   user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+}
+
+/// Live trip sharing (Plan toggle): a safety-service session whose link was texted to contacts
+model TripShare {
+  id               Int       @id @default(autoincrement())
+  userId           Int
+  sessionId        String    @unique
+  contactsNotified Int       @default(0)
+  startedAt        DateTime  @default(now())
+  endedAt          DateTime?
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, endedAt])
+}
+
+/// Delivery log for every SMS we send (audit + support). Never stores the text or the full number.
+model SmsMessage {
+  id         Int       @id @default(autoincrement())
+  userId     Int?
+  /// sos | safe | trip | test
+  kind       String
+  toMasked   String
+  /// queued | sent | failed
+  status     String    @default("queued")
+  provider   String
+  providerId String?
+  error      String?
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now())
+  sentAt     DateTime?
+  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, kind, createdAt])
 }
 
 /// Emergency help points imported from OpenStreetMap (npm run refresh:help).
 /// Serves "Help nearby" and each place's nearest hospital without calling Overpass per request.
 model HelpPlace {
-  id        Int      @id @default(autoincrement())
+  id        Int                                   @id @default(autoincrement())
   /// "node/123", "way/456"
-  osmId     String   @unique
+  osmId     String                                @unique
   name      String
   /// hospital | clinic | police | fire_station
   category  String
   /// OSM emergency=yes: 24x7 casualty / trauma care
-  emergency Boolean  @default(false)
+  emergency Boolean                               @default(false)
   phone     String?
   address   String?
   latitude  Float
   longitude Float
   location  Unsupported("geometry(Point, 4326)")?
   /// Last import run that saw this point; rows not seen by a complete run are removed
-  seenAt    DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  seenAt    DateTime                              @default(now())
+  updatedAt DateTime                              @updatedAt
 
   @@index([category])
 }

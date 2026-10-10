@@ -6,6 +6,10 @@ from slowapi.errors import RateLimitExceeded
 import httpx
 import logging
 import uuid
+import hmac
+import hashlib
+import secrets
+import time
 import json
 import os
 import asyncio
@@ -115,16 +119,85 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    # Public, credential-free API. Production sets ALLOWED_ORIGINS to the app's own origins.
+    allow_origins=[o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",") if o.strip()],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+SESSION_TTL = 24 * 3600          # a trip or an SOS rarely runs longer; the app renews by re-creating
+MAX_MESSAGE_BYTES = 512
+
+
+def _token_hash(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def _valid_session_id(session_id: str) -> bool:
+    try:
+        return str(uuid.UUID(session_id, version=4)) == session_id
+    except ValueError:
+        return False
+
+
 @app.post("/api/create-session")
-@limiter.limit("5/minute")
+# Generous per IP: carrier CGNAT puts many phones behind one address, and SOS must not be refused.
+@limiter.limit("30/minute")
 async def create_session(request: Request):
-    return {"session_id": str(uuid.uuid4())}
+    """New tracking session. Only the holder of `publish_token` can send locations;
+    anyone with the session id (the tracking link) can watch."""
+    session_id = str(uuid.uuid4())
+    token = secrets.token_urlsafe(32)
+    meta = json.dumps({"tokenHash": _token_hash(token), "createdAt": int(time.time()), "ended": False})
+    await kv_set(f"sess:{session_id}", meta, ex=SESSION_TTL)
+    return {"session_id": session_id, "publish_token": token, "expires_in": SESSION_TTL}
+
+
+async def _session(session_id: str):
+    if not _valid_session_id(session_id):
+        return None
+    raw = await kv_get(f"sess:{session_id}")
+    return json.loads(raw) if raw else None
+
+
+def _authorised(meta, token) -> bool:
+    return bool(token) and hmac.compare_digest(meta["tokenHash"], _token_hash(token))
+
+
+@app.post("/api/close-session")
+@limiter.limit("30/minute")
+async def close_session(request: Request):
+    """End sharing: watchers are told, and the last location is dropped."""
+    body = await request.json()
+    session_id, token = str(body.get("session_id", "")), str(body.get("publish_token", ""))
+    meta = await _session(session_id)
+    if not meta or not _authorised(meta, token):
+        raise HTTPException(status_code=404, detail="Session not found")
+    meta["ended"] = True
+    await kv_set(f"sess:{session_id}", json.dumps(meta), ex=3600)
+    await kv_set(f"loc:{session_id}", "", ex=1)
+    await publish(f"track:{session_id}", json.dumps({"type": "ended", "ts": int(time.time() * 1000)}))
+    return {"ok": True}
+
+
+def _clean_location(raw: str):
+    """Accept only {lat, lng, acc?, ts?} with sane values; return the JSON to relay, or None."""
+    if len(raw.encode()) > MAX_MESSAGE_BYTES:
+        return None
+    try:
+        d = json.loads(raw)
+        lat, lng = float(d["lat"]), float(d["lng"])
+    except (ValueError, KeyError, TypeError):
+        return None
+    if not (-90 <= lat <= 90 and -180 <= lng <= 180):
+        return None
+    out = {"type": "loc", "lat": round(lat, 6), "lng": round(lng, 6), "ts": int(time.time() * 1000)}
+    acc = d.get("acc")
+    if isinstance(acc, (int, float)) and 0 <= acc < 100000:
+        out["acc"] = round(float(acc), 1)
+    return json.dumps(out)
+
 
 async def redis_listener(websocket: WebSocket, session_id: str):
     if not REDIS_OK:
@@ -156,21 +229,35 @@ async def redis_listener(websocket: WebSocket, session_id: str):
 
 @app.websocket("/ws/track/{session_id}")
 async def websocket_endpoint(websocket: WebSocket, session_id: str):
+    """Watch a session; with ?token=<publish_token> also publish locations to it."""
+    meta = await _session(session_id)
+    if not meta:
+        await websocket.close(code=4404)
+        return
     await websocket.accept()
-    last_loc = await kv_get(f"loc:{session_id}")
-    if last_loc:
-        await websocket.send_text(last_loc)
-    
+    can_publish = _authorised(meta, websocket.query_params.get("token"))
+    if meta.get("ended"):
+        await websocket.send_text(json.dumps({"type": "ended"}))
+    else:
+        last_loc = await kv_get(f"loc:{session_id}")
+        if last_loc:
+            await websocket.send_text(last_loc)
+
     listener_task = asyncio.create_task(redis_listener(websocket, session_id))
     try:
         while True:
             data = await websocket.receive_text()
-            await kv_set(f"loc:{session_id}", data, ex=3600)
-            await publish(f"track:{session_id}", data)
+            if not can_publish:
+                continue  # watchers are read-only
+            clean = _clean_location(data)
+            if clean is None:
+                continue
+            await kv_set(f"loc:{session_id}", clean, ex=SESSION_TTL)
+            await publish(f"track:{session_id}", clean)
     except WebSocketDisconnect:
-        logger.info(f"WebSocket disconnected for session {session_id}")
+        logger.info("Tracking socket closed")
     except Exception as e:
-        logger.error(f"WebSocket Error: {e}")
+        logger.error(f"WebSocket Error: {type(e).__name__}")
     finally:
         listener_task.cancel()
         try:
