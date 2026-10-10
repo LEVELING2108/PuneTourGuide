@@ -13,11 +13,12 @@ const uuid = z.string().uuid();
 const alertSchema = z
   .object({
     sessionId: uuid,
-    lat: z.number().min(-90).max(90),
-    lng: z.number().min(-180).max(180),
+    lat: z.number().min(-90).max(90).optional(),
+    lng: z.number().min(-180).max(180).optional(),
     accuracy: z.number().min(0).max(100000).optional(),
   })
-  .strict();
+  .strict()
+  .refine((b) => (b.lat === undefined) === (b.lng === undefined), 'Send both lat and lng, or neither');
 const cancelSchema = z.object({}).strict();
 const tripSchema = z.object({ sessionId: uuid }).strict();
 

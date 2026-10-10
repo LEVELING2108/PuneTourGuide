@@ -43,7 +43,7 @@ export default function ContactEditView({ v }: ViewProps) {
           <h1 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "26px", fontWeight: "400" }}>{v.title}</h1>
           <div style={{ width: "44px" }} />
         </div>
-        {v.isAdd && (
+        {v.canPick && (
           <>
             <button className="rise d2 tap pick" onClick={v.pickContact} style={{ height: "54px", flexShrink: "0", borderRadius: "27px", border: "1px solid #D5DAD6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", color: "var(--ink)", cursor: "pointer" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -65,7 +65,7 @@ export default function ContactEditView({ v }: ViewProps) {
         <label className="rise d3" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
           <span style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>NAME</span>
           <span className="field" style={{ height: "50px", borderRadius: "14px", border: "1px solid #DDE1DD", background: "var(--surface)", display: "flex", alignItems: "center", padding: "0 16px" }}>
-            <input value={v.name} onChange={v.onName} placeholder="Name" style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
+            <input value={v.name} onChange={v.onName} placeholder="Name" autoComplete="name" maxLength={60} aria-label="Name" style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
           </span>
         </label>
         <div className="rise d3" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -82,13 +82,13 @@ export default function ContactEditView({ v }: ViewProps) {
           <span style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>MOBILE NUMBER</span>
           <span className="field" style={{ height: "50px", borderRadius: "14px", border: "1px solid #DDE1DD", background: "var(--surface)", display: "flex", alignItems: "center", gap: "12px", padding: "0 16px 0 5px" }}>
             <span style={{ height: "40px", padding: "0 10px", borderRadius: "10px", background: "#F0F1EE", display: "flex", alignItems: "center", fontSize: "14.5px", fontWeight: "600" }}>+91</span>
-            <input type="tel" inputMode="numeric" value={v.phone} placeholder="98XXX XXXXX" style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "16px", letterSpacing: "0.04em", background: "transparent", color: "var(--ink)" }} readOnly />
+            <input type="tel" inputMode="numeric" value={v.phone} placeholder="98XXX XXXXX" style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "16px", letterSpacing: "0.04em", background: "transparent", color: "var(--ink)" }} onChange={v.onPhone} autoComplete="tel" aria-label="Mobile number" />
           </span>
         </label>
         <div className="rise d5" style={{ display: "flex", alignItems: "center", gap: "14px" }}>
           <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "2px" }}>
             <div style={{ fontSize: "14.5px", fontWeight: "600" }}>Primary contact</div>
-            <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>Alerted first, and gets a call if they don't open the SMS</div>
+            <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>Alerted first, and gets your location by text when you have no data</div>
           </div>
           <button onClick={v.togglePrimary} aria-label="Primary contact" aria-pressed={v.primaryPressed} style={{ position: "relative", width: "52px", height: "32px", border: "none", padding: "0", background: "transparent", cursor: "pointer", flexShrink: "0" }}>
             <span className="track" style={{ position: "absolute", inset: "0", borderRadius: "16px", background: v.primaryTrack }} />
@@ -96,7 +96,10 @@ export default function ContactEditView({ v }: ViewProps) {
           </button>
         </div>
         <div className="rise d6" style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "12px" }}>
-          <Link to="/settings/contacts" className="cta" style={{ height: "56px", borderRadius: "28px", background: "var(--primary)", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>{v.ctaLabel}</Link>
+          {v.error && (
+            <div role="alert" style={{ fontSize: "13px", color: "#A3281A" }}>{v.error}</div>
+          )}
+          <button className="cta" onClick={v.save} disabled={v.saving} style={{ height: "56px", borderRadius: "28px", background: "var(--primary)", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" , border: "none", fontFamily: "var(--font-body)", cursor: "pointer", opacity: v.saveOpacity }}>{v.ctaLabel}</button>
           {v.canRemove && (
             <>
               {v.notConfirming && (
@@ -109,7 +112,7 @@ export default function ContactEditView({ v }: ViewProps) {
                   <div className="swap" style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "16px", background: "#FBE9E5" }}>
                     <div style={{ flex: "1", fontSize: "13px", color: "#7A1E12" }}>{"Remove "}{v.name}? They won't get SOS alerts.</div>
                     <button className="tap" onClick={v.cancelRemove} style={{ height: "36px", padding: "0 12px", borderRadius: "18px", border: "1px solid #E5B3AA", background: "var(--surface)", fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: "600", color: "var(--ink)", cursor: "pointer" }}>Keep</button>
-                    <Link to="/settings/contacts" className="tap" style={{ height: "36px", padding: "0 12px", borderRadius: "18px", background: "#A3281A", color: "var(--surface)", display: "flex", alignItems: "center", fontSize: "13px", fontWeight: "600", textDecoration: "none" }}>Remove</Link>
+                    <button className="tap" onClick={v.remove} style={{ height: "36px", padding: "0 12px", borderRadius: "18px", background: "#A3281A", color: "var(--surface)", display: "flex", alignItems: "center", fontSize: "13px", fontWeight: "600", textDecoration: "none" , border: "none", fontFamily: "var(--font-body)", cursor: "pointer" }}>Remove</button>
                   </div>
                 </>
               )}

@@ -250,8 +250,9 @@ model SosEvent {
   userId          Int?
   sessionId       String
   idempotencyKey  String    @unique
-  lat             Float
-  lng             Float
+  /// null when the phone had no GPS fix yet (the alert still goes out)
+  lat             Float?
+  lng             Float?
   contactsAlerted Int       @default(0)
   startedAt       DateTime  @default(now())
   cancelledAt     DateTime?

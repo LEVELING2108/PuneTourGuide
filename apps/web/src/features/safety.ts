@@ -1,14 +1,21 @@
 import { usePermissionStore } from '../stores/permissions';
+import { useIsLoggedIn } from '../stores/auth';
+import { cachedContacts, useContacts } from './contacts';
 
 /**
- * One-line safety status for Home ("Offline pack saved · 2 emergency contacts").
- * Contacts and offline packs are added in later phases; until then it reports what is ready.
+ * One-line safety status for Home ("Location on · shake to SOS · 2 emergency contacts").
+ * Offline packs join it in Phase 6.
  */
 export function useSafetySummary() {
   const { location, motion } = usePermissionStore();
-  const parts = [location ? 'Location on' : null, motion ? 'shake to SOS' : null].filter(Boolean);
+  const loggedIn = useIsLoggedIn();
+  const contactsQ = useContacts();
+  const n = loggedIn ? (contactsQ.data?.length ?? cachedContacts().length) : cachedContacts().length;
+  const contacts = n ? `${n} emergency ${n === 1 ? 'contact' : 'contacts'}` : 'no emergency contacts yet';
+  const parts = [location ? 'Location on' : null, motion ? 'shake to SOS' : null, contacts].filter(Boolean);
   return {
-    summary: parts.length ? `${parts.join(' · ')} · SOS calls 112 even offline` : 'SOS calls 112 even offline',
-    short: 'SOS works offline',
+    summary: parts.join(' · '),
+    short: n ? `${n} ${n === 1 ? 'contact' : 'contacts'}` : 'add a contact',
+    contacts: n,
   };
 }

@@ -44,20 +44,20 @@ export const sosService = {
    * SOS at zero (TECH_DESIGN §9.5). Idempotent per key: a retry never texts contacts twice.
    * Guests: the event is recorded, nothing is sent (the phone has already dialled 112).
    */
-  async alert(userId: number | null, input: { idempotencyKey: string; sessionId: string; lat: number; lng: number }) {
+  async alert(userId: number | null, input: { idempotencyKey: string; sessionId: string; lat?: number; lng?: number }) {
     const existing = await sosRepo.byKey(input.idempotencyKey);
     if (existing) {
       if (existing.userId !== userId) throw forbidden('IDEMPOTENCY_KEY_REUSED', 'This alert belongs to someone else');
       return { eventId: existing.id, contactsAlerted: existing.contactsAlerted, trackUrl: trackUrl(existing.sessionId), repeated: true };
     }
-    const { event, created } = await sosRepo.createOnce({ userId, ...input });
+    const { event, created } = await sosRepo.createOnce({ userId, ...input, lat: input.lat ?? null, lng: input.lng ?? null });
     if (!created) return { eventId: event.id, contactsAlerted: event.contactsAlerted, trackUrl: trackUrl(event.sessionId), repeated: true };
 
     let alerted = 0;
     if (userId) {
       const sender = await sosRepo.sender(userId);
       if (sender?.contacts.length) {
-        const hospital = await nearestHospital(input.lat, input.lng);
+        const hospital = input.lat !== undefined && input.lng !== undefined ? await nearestHospital(input.lat, input.lng) : null;
         const medical = medicalSummary(sender.medical);
         await enqueueSms(
           userId,

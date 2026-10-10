@@ -229,13 +229,16 @@ async def redis_listener(websocket: WebSocket, session_id: str):
 
 @app.websocket("/ws/track/{session_id}")
 async def websocket_endpoint(websocket: WebSocket, session_id: str):
-    """Watch a session; with ?token=<publish_token> also publish locations to it."""
+    """Watch a session. The sharing phone first sends {"type":"auth","token":...} to publish.
+    (The token never goes in the URL, so it cannot end up in access logs.)"""
     meta = await _session(session_id)
+    # Accept before closing so the browser receives the 4404 code ("link not valid");
+    # a refused handshake only shows up as a generic network error.
+    await websocket.accept()
     if not meta:
         await websocket.close(code=4404)
         return
-    await websocket.accept()
-    can_publish = _authorised(meta, websocket.query_params.get("token"))
+    can_publish = False
     if meta.get("ended"):
         await websocket.send_text(json.dumps({"type": "ended"}))
     else:
@@ -248,7 +251,14 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         while True:
             data = await websocket.receive_text()
             if not can_publish:
-                continue  # watchers are read-only
+                # Watchers are read-only until a valid auth message arrives.
+                try:
+                    msg = json.loads(data) if len(data) <= MAX_MESSAGE_BYTES else {}
+                except ValueError:
+                    msg = {}
+                if isinstance(msg, dict) and msg.get("type") == "auth" and _authorised(meta, str(msg.get("token", ""))):
+                    can_publish = True
+                continue
             clean = _clean_location(data)
             if clean is None:
                 continue

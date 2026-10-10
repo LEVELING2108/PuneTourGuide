@@ -1,5 +1,6 @@
 // Generated from design-reference/deccan/DeccanContacts.dc.html by scripts/convert-designs.py, then wired up by hand.
 import { Link } from 'react-router';
+import { Fragment } from 'react';
 import type { ViewProps } from '../types';
 
 const css = `
@@ -46,7 +47,7 @@ export default function DeccanContactsView({ v }: ViewProps) {
               <path d="M15 5l-7 7 7 7" />
             </svg>
           </Link>
-          <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>2 of 5</div>
+          <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>{v.countText}</div>
         </div>
         <div className="rise d2" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <div style={{ display: "flex", flexDirection: "column" }}>
@@ -62,49 +63,41 @@ export default function DeccanContactsView({ v }: ViewProps) {
           </p>
         </div>
         <div className="rise d3" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <div className="lift" style={{ background: "var(--surface)", border: "1.5px dashed #D8C6A6", borderRadius: "12px", padding: "14px 16px", display: "flex", alignItems: "center", gap: "14px" }}>
-            <div style={{ width: "48px", height: "48px", borderRadius: "24px", background: "#A4462B", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontSize: "20px", flexShrink: "0" }}>A</div>
-            <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "2px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ fontSize: "15.5px", fontWeight: "600" }}>Aai</span>
-                <span style={{ fontSize: "10.5px", fontWeight: "700", letterSpacing: "0.1em", color: "var(--primary)", border: "1px solid #E3B9CE", borderRadius: "8px", padding: "2px 6px" }}>PRIMARY</span>
+          {((v.contacts ?? []) as any[]).map((c: any) => (
+            <Fragment key={c.key}>
+            <div className="lift" style={{ background: "var(--surface)", border: "1.5px dashed #D8C6A6", borderRadius: "12px", padding: "14px 16px", display: "flex", alignItems: "center", gap: "14px" }}>
+              <div style={{ width: "48px", height: "48px", borderRadius: "24px", background: c.tone, color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontSize: "20px", flexShrink: "0" }}>{c.initial}</div>
+              <div style={{ flex: "1", minWidth: "0", display: "flex", flexDirection: "column", gap: "2px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ fontSize: "15.5px", fontWeight: "600" }}>{c.name}</span>
+                  {c.isPrimary && <span style={{ fontSize: "10.5px", fontWeight: "700", letterSpacing: "0.1em", color: "var(--primary)", border: "1px solid #E3B9CE", borderRadius: "8px", padding: "2px 6px" }}>PRIMARY</span>}
+                </div>
+                <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>{c.meta}</div>
               </div>
-              <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>Mother · +91 ••••• •4521</div>
+              <a className="tap" href={c.tel} aria-label={c.callLabel} style={{ width: "40px", height: "40px", borderRadius: "20px", border: "1px solid #D8C6A6", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" />
+                </svg>
+              </a>
+              <Link to={c.editHref} className="tap" aria-label={c.editLabel} style={{ width: "40px", height: "40px", boxSizing: "border-box", borderRadius: "20px", border: "1px solid #D8C6A6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 20h4L19 9l-4-4L4 16z" />
+                </svg>
+              </Link>
             </div>
-            <a className="tap" href="tel:" aria-label="Call Aai" style={{ width: "40px", height: "40px", borderRadius: "20px", border: "1px solid #D8C6A6", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" />
-              </svg>
-            </a>
-            <Link to="/settings/contacts/edit" className="tap" aria-label="Edit Aai" style={{ width: "40px", height: "40px", boxSizing: "border-box", borderRadius: "20px", border: "1px solid #D8C6A6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 20h4L19 9l-4-4L4 16z" />
-              </svg>
-            </Link>
-          </div>
-          <div className="lift" style={{ background: "var(--surface)", border: "1.5px dashed #D8C6A6", borderRadius: "12px", padding: "14px 16px", display: "flex", alignItems: "center", gap: "14px" }}>
-            <div style={{ width: "48px", height: "48px", borderRadius: "24px", background: "#0E5B5E", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontSize: "20px", flexShrink: "0" }}>A</div>
-            <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "2px" }}>
-              <div style={{ fontSize: "15.5px", fontWeight: "600" }}>Aman</div>
-              <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>Friend · +91 ••••• •7788</div>
-            </div>
-            <a className="tap" href="tel:" aria-label="Call Aman" style={{ width: "40px", height: "40px", borderRadius: "20px", border: "1px solid #D8C6A6", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" />
-              </svg>
-            </a>
-            <Link to="/settings/contacts/edit" className="tap" aria-label="Edit Aman" style={{ width: "40px", height: "40px", boxSizing: "border-box", borderRadius: "20px", border: "1px solid #D8C6A6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 20h4L19 9l-4-4L4 16z" />
-              </svg>
-            </Link>
-          </div>
+            </Fragment>
+          ))}
+          {v.empty && (
+            <p style={{ margin: "0", fontSize: "14px", lineHeight: "1.5", color: "var(--muted)" }}>No contacts yet. Add someone who should know when you need help.</p>
+          )}
+          {v.canAdd && (
           <Link to="/settings/contacts/new" className="add" style={{ height: "64px", boxSizing: "border-box", borderRadius: "20px", border: "1.5px dashed #C9B79C", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontSize: "14.5px", fontWeight: "600", color: "var(--primary)", textDecoration: "none" }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M12 5v14M5 12h14" />
             </svg>
             Add a contact
           </Link>
+          )}
         </div>
         <div className="rise d4" style={{ display: "flex", flexDirection: "column", borderTop: "1px solid var(--line)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 0", borderBottom: "1px solid var(--line)" }}>
@@ -122,7 +115,7 @@ export default function DeccanContactsView({ v }: ViewProps) {
               <div style={{ fontSize: "14.5px", fontWeight: "600" }}>Send a test alert</div>
               <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>Check they receive it, marked as a test</div>
             </div>
-            <button className="tap" onClick={v.sendTest} style={{ height: "40px", padding: "0 16px", borderRadius: "20px", border: `1px solid ${v.testBd}`, background: v.testBg, fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: "600", color: v.testFg, cursor: "pointer" }}>{v.testLabel}</button>
+            <button className="tap" onClick={v.sendTest} disabled={v.testBusy} style={{ height: "40px", padding: "0 16px", borderRadius: "20px", border: `1px solid ${v.testBd}`, background: v.testBg, fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: "600", color: v.testFg, cursor: "pointer" }}>{v.testLabel}</button>
           </div>
         </div>
       </div>
@@ -130,7 +123,7 @@ export default function DeccanContactsView({ v }: ViewProps) {
         <>
           <div className="toast" role="status" style={{ position: "absolute", left: "24px", right: "24px", bottom: "32px", padding: "14px 16px", borderRadius: "16px", background: "var(--ink)", color: "var(--bg)", fontSize: "13.5px", display: "flex", alignItems: "center", gap: "10px", boxShadow: "0 16px 30px -14px rgba(35,28,23,0.6)" }}>
             <span style={{ width: "8px", height: "8px", borderRadius: "4px", background: "#2FA58A", flexShrink: "0" }} />
-            {" "}Test alert sent to Aai and Aman
+            {v.toastText}
           </div>
         </>
       )}

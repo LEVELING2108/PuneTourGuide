@@ -100,26 +100,26 @@ Medical info is sensitive: store encrypted at rest, only return it to the owner,
 | ✅ Navigation: End directions / SOS | → Plan / → SOS | — |
 | ✅ Plan: Day tabs, tick visited | Tick → +XP and **collect a stamp** | EXISTS PATCH stop; **NEW** `POST /api/stamps` (or do it inside the PATCH) |
 | ✅ Plan: Optimise | Calls optimise, shows “saves N min” from response | EXISTS `/itinerary/optimize` (EXTEND to return time saved) |
-| Plan: Share live trip toggle | Creates tracking session, shares link to contacts | RoadSoS `create-session` + **NEW** `POST /api/share-trip` (sends link by SMS/WhatsApp intent) |
+| ✅ Plan: Share live trip toggle | Creates tracking session, shares link to contacts | RoadSoS `create-session` + **NEW** `POST /api/share-trip` (sends link by SMS/WhatsApp intent) |
 | ✅ Place: Save | Toggle save, toast | EXISTS |
 | ✅ Place: Add to plan / Directions / nearest hospital | | EXISTS / OSRM / emergency-services |
 
 ### SOS (works logged-out and offline)
 | Control | Behaviour | Backend |
 |---|---|---|
-| SOS button / shake (15 g, if enabled) | 5-s countdown; haptics | port from RoadSoS frontend |
-| At 0 | `tel:112`; in parallel start tracking session, alert contacts with live link, share medical profile with session | RoadSoS `create-session` + **NEW** `POST /api/sos/alert` (SMS to contacts; offline fallback = `sms:` URI with prefilled text) |
-| 108 / 100 / 1091 / Call 112 now | `tel:` links | — |
-| I'm safe, cancel | Cancels countdown; if already sent, sends “I'm safe” to contacts | **NEW** `POST /api/sos/cancel` |
+| ✅ SOS button / shake (15 g, if enabled) | 5-s countdown; haptics | port from RoadSoS frontend |
+| ✅ At 0 | `tel:112`; in parallel start tracking session, alert contacts with live link, share medical profile with session | RoadSoS `create-session` + **NEW** `POST /api/sos/alert` (SMS to contacts; offline fallback = `sms:` URI with prefilled text) |
+| ✅ 108 / 100 / 1091 / Call 112 now | `tel:` links | — |
+| ✅ I'm safe, cancel | Cancels countdown; if already sent, sends “I'm safe” to contacts | **NEW** `POST /api/sos/cancel` |
 
 ### Settings
 | Control | Behaviour | Backend |
 |---|---|---|
 | Edit profile: photo sheet (camera / gallery / remove) | `<input type="file" accept="image/*" capture>`; upload | **NEW** `POST /api/users/me/avatar` (S3/Cloudinary) |
 | Edit profile: fields, interests, Save | | **NEW** `PATCH /api/users/me` |
-| Contacts: list, call, edit, add (max 5), primary | | **NEW** `GET/POST/PATCH/DELETE /api/contacts` |
-| Contacts: Send SMS when offline toggle | user setting | `PATCH /api/users/me` |
-| Contacts: Send test alert | SMS marked TEST | **NEW** `POST /api/contacts/test-alert` (rate-limited) |
+| ✅ Contacts: list, call, edit, add (max 5), primary | | **NEW** `GET/POST/PATCH/DELETE /api/contacts` |
+| ✅ Contacts: Send SMS when offline toggle | user setting | `PATCH /api/users/me` |
+| ✅ Contacts: Send test alert | SMS marked TEST | **NEW** `POST /api/contacts/test-alert` (rate-limited) |
 | Medical: blood group, fields, lock-screen toggle, Save | | **NEW** `GET/PUT /api/medical` |
 | Offline packs: download / delete / undo / auto-download | Service worker caches map tiles for a bbox + places + hospitals + numbers; store size in IndexedDB | **NEW** `GET /api/offline-pack/:areaId` (JSON bundle) |
 | Language | i18next (move existing translations.js to i18next; reuse RoadSoS 22 locales) | `PATCH /api/users/me {language}` |

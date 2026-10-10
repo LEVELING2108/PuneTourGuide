@@ -76,6 +76,7 @@ npm run dev                                         # web :5050 · tour-api :300
 | `npm run lint` · `npm run typecheck` · `npm test` | Checks for web + tour-api |
 | `npm run build` · `npm run build:api` | Production builds |
 | `npm run prisma:deploy` | Apply database migrations |
+| `npm run worker -w services/tour-api` | Dedicated SMS worker process (optional; the API runs one by default) |
 | `npm run refresh:help` | Import Pune's help points from OpenStreetMap and refresh each place's nearest hospital. Run nightly in production; a failed or partial download keeps the existing data |
 | `docker compose up` | PostGIS, Redis, Tour API and Safety service in containers |
 
@@ -84,7 +85,10 @@ npm run dev                                         # web :5050 · tour-api :300
 - **Map tiles:** set `VITE_MAP_TILE_URL` (and `VITE_MAP_TILE_ATTRIBUTION`) to a tile provider with your key. The default OSM tile server is for development only.
 - **Routing:** set `OSRM_URL` / `OSRM_FOOT_URL` to a provider or self-hosted OSRM. The defaults are public demo servers.
 - **Overpass:** set `OVERPASS_ENDPOINTS` for the safety service and the import, ideally a self-hosted instance.
-- **Redis** is required with more than one API instance (shared rate limits, cooldowns, caches).
+- **Redis** is required with more than one API instance (shared rate limits, cooldowns, caches, the SMS queue, live-location fan-out).
+- **SMS:** set `SMS_PROVIDER` + `SMS_API_KEY` (Twilio, or MSG91 with DLT templates). Without them SOS alerts are only printed to the log.
+- **Safety service:** set `ALLOWED_ORIGINS` to the app's origin(s).
+- **Workers:** at scale run `npm run worker -w services/tour-api` separately and set `RUN_WORKERS=false` on API instances.
 
 ---
 

@@ -1,5 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate, Outlet, useLocation } from 'react-router';
+import { useShakeToSos } from '../features/shake';
+import { useTripGuard } from '../features/trip';
 import { isOnboarded } from '../stores/onboarding';
 import HomeScreen from '../screens/home/HomeScreen';
 import SosScreen from '../screens/sos/SosScreen';
@@ -30,12 +32,15 @@ const OfflineScreen = lazy(() => import('../screens/settings/OfflineScreen'));
 const LanguageScreen = lazy(() => import('../screens/settings/LanguageScreen'));
 const ThemeScreen = lazy(() => import('../screens/settings/ThemeScreen'));
 const SignOutScreen = lazy(() => import('../screens/settings/SignOutScreen'));
+const TrackScreen = lazy(() => import('../screens/sos/TrackScreen'));
 
 let launched = false;
 
 /** App frame + first-launch redirect (Splash → Intro on first launch). */
 function RootLayout() {
   const location = useLocation();
+  useShakeToSos();
+  useTripGuard();
   const firstHit = !launched;
   launched = true;
   if (firstHit && location.pathname === '/' && !isOnboarded()) {
@@ -71,6 +76,7 @@ export const router = createBrowserRouter([
       { path: '/plan', element: <PlanScreen /> },
       { path: '/place/:id?', element: <PlaceScreen /> },
       { path: '/sos', element: <SosScreen /> },
+      { path: '/track/:sessionId', element: <TrackScreen /> },
       { path: '/profile', element: <ProfileTabScreen /> },
       { path: '/settings', element: <SettingsScreen /> },
       { path: '/settings/profile', element: <EditProfileScreen /> },

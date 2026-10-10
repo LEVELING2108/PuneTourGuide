@@ -65,7 +65,7 @@ export default function NavigationView({ v }: ViewProps) {
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "14px", background: "#F1F6F4", fontSize: "12.5px", color: "#1E3D37" }}>
-          <span style={{ width: "7px", height: "7px", borderRadius: "4px", background: "#C8321C", flexShrink: "0" }} />
+          <span style={{ width: "7px", height: "7px", borderRadius: "4px", background: v.infoDot, flexShrink: "0" }} />
           {v.infoText}
         </div>
         <div style={{ display: "flex", gap: "10px" }}>

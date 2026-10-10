@@ -4,7 +4,7 @@ export const sosRepo = {
   byKey: (idempotencyKey: string) => prisma.sosEvent.findUnique({ where: { idempotencyKey } }),
 
   /** Insert once per Idempotency-Key; a concurrent retry gets the existing row. */
-  async createOnce(data: { userId: number | null; sessionId: string; idempotencyKey: string; lat: number; lng: number }) {
+  async createOnce(data: { userId: number | null; sessionId: string; idempotencyKey: string; lat: number | null; lng: number | null }) {
     try {
       return { event: await prisma.sosEvent.create({ data }), created: true };
     } catch (err) {

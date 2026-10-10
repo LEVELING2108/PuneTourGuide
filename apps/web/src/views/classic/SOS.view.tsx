@@ -31,7 +31,7 @@ export default function SOSView({ v }: ViewProps) {
       <style href="scr-classic-SOS" precedence="screens">{css}</style>
       <div data-scroll="" data-flex="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden", padding: "68px 24px 32px", display: "flex", flexDirection: "column", gap: "28px" }}>
         <div className="rise d1" style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: "center", textAlign: "center" }}>
-          <div style={{ fontSize: "11.5px", fontWeight: "600", letterSpacing: "0.2em", color: "#F6B8A9" }}>SHAKE DETECTED</div>
+          <div style={{ fontSize: "11.5px", fontWeight: "600", letterSpacing: "0.2em", color: "#F6B8A9" }}>{v.kicker}</div>
           <h1 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "40px", fontWeight: "400", lineHeight: "1" }}>{v.headline}</h1>
         </div>
         <div className="rise d2" style={{ alignSelf: "center", width: "210px", height: "210px", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -60,28 +60,49 @@ export default function SOSView({ v }: ViewProps) {
               <path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z" />
               <circle cx="12" cy="9" r="2.5" />
             </svg>
-            <span>
-              Live location going to{" "}
-              <b style={{ color: "var(--surface)", fontWeight: "600" }}>Aai</b>
-              {" "}and{" "}
-              <b style={{ color: "var(--surface)", fontWeight: "600" }}>Aman</b>
-            </span>
+            {v.line1Href ? (
+
+              <a href={v.line1Href} style={{ color: "inherit" }}>
+
+                {v.line1Pre}
+
+                <b style={{ color: "var(--surface)", fontWeight: "600", textDecoration: "underline" }}>{v.line1Bold}</b>
+
+                {v.line1Post}
+
+              </a>
+
+            ) : (
+
+              <span>
+
+                {v.line1Pre}
+
+                <b style={{ color: "var(--surface)", fontWeight: "600" }}>{v.line1Bold}</b>
+
+                {v.line1Post}
+
+              </span>
+
+            )}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "14px", color: "#FCE3DD" }}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F6B8A9" strokeWidth="2.2" strokeLinecap="round">
               <path d="M12 5v14M5 12h14" />
             </svg>
             <span>
-              Nearest trauma care:{" "}
-              <b style={{ color: "var(--surface)", fontWeight: "600" }}>KEM Hospital, 1.2 km</b>
+              {v.hospitalPre}
+              <b style={{ color: "var(--surface)", fontWeight: "600" }}>{v.hospitalBold}</b>
             </span>
           </div>
+{v.medicalText && (
           <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "14px", color: "#FCE3DD" }}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F6B8A9" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 7h16M4 12h10M4 17h7" />
             </svg>
-            <span>Medical profile shared with responders</span>
+            <span>{v.medicalText}</span>
           </div>
+          )}
         </div>
         <div className="rise d4" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "8px" }}>
           <a className="tap dial" href="tel:108" style={{ height: "68px", borderRadius: "20px", border: "1px solid rgba(255,255,255,0.28)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2px", textDecoration: "none", color: "var(--surface)" }}>
@@ -98,13 +119,13 @@ export default function SOSView({ v }: ViewProps) {
           </a>
         </div>
         <div className="rise d5" style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "10px" }}>
-          <a className="tap" href="tel:112" style={{ height: "60px", borderRadius: "30px", background: "var(--surface)", color: "#8F1D12", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontSize: "16px", fontWeight: "700", textDecoration: "none" }}>
+          <a className="tap" href="tel:112" onClick={v.callNow} style={{ height: "60px", borderRadius: "30px", background: "var(--surface)", color: "#8F1D12", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontSize: "16px", fontWeight: "700", textDecoration: "none" }}>
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" />
             </svg>
             Call 112 now
           </a>
-          <Link to="/" className="tap ghost" style={{ height: "56px", borderRadius: "28px", border: "1px solid rgba(255,255,255,0.4)", color: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>I'm safe, cancel</Link>
+          <Link to="/" onClick={v.cancel} className="tap ghost" style={{ height: "56px", borderRadius: "28px", border: "1px solid rgba(255,255,255,0.4)", color: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>I'm safe, cancel</Link>
         </div>
       </div>
     </div>

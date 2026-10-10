@@ -6,6 +6,7 @@ import type { MapView } from '../../components/map/MapCanvas';
 import { destinationPin, mePin } from '../../components/map/pins';
 import { Themed } from '../../components/Themed';
 import { isMedical, useHelpNearby } from '../../features/help';
+import { namesText, useLiveStore } from '../../features/live';
 import { useCurrentPosition, useWatchPosition } from '../../features/location';
 import { kmText, usePlace, usePlan } from '../../features/places';
 import { alongMetres, clockIn, closestIndex, distText, durText, metres, offRouteMetres, type LatLng, type Pair } from '../../lib/geo';
@@ -64,6 +65,7 @@ export default function NavigationScreen() {
 
   const [mode, setMode] = useState<TravelMode>(params.get('mode') === 'auto' ? 'auto' : 'walk');
   const watch = useWatchPosition();
+  const liveTrip = useLiveStore((st) => st.trip);
   const last = useCurrentPosition();
   const me: LatLng | null = watch.pos ?? (last.known ? last : null);
 
@@ -214,7 +216,13 @@ export default function NavigationScreen() {
       setFollow(true);
       if (me) setView({ key: `re-${Date.now()}`, center: me, zoom: 17 });
     },
-    infoText: hospital ? `${hospital.name} ${kmText(hospital.km)} from here` : 'Hospitals and police are on the Map under Help nearby',
+    infoText: [
+      liveTrip ? `${namesText(liveTrip.sharedWith)} can see your trip` : null,
+      hospital ? `${hospital.name} ${kmText(hospital.km)} from here` : 'Hospitals and police are on the Map under Help nearby',
+    ]
+      .filter(Boolean)
+      .join(' · '),
+    infoDot: liveTrip ? '#2FA58A' : '#C8321C',
   };
   return <Themed classic={NavigationView} deccan={DeccanNavigationView} v={v} />;
 }

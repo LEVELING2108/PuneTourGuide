@@ -109,6 +109,15 @@ describe('SOS', () => {
     expect((await alert(randomUUID(), undefined, { sessionId: randomUUID(), lat: 200, lng: 0 })).status).toBe(400);
   });
 
+  it('still alerts contacts when the phone has no GPS fix yet', async () => {
+    const u = await signUp();
+    await addContact(u.token, { name: 'Aai', relation: 'Parent', phone: '9876543210' });
+    const r = await alert(randomUUID(), u.token, { sessionId: randomUUID() });
+    expect(r.status).toBe(201);
+    expect(texts()[0].body).toContain('Location pending');
+    expect((await alert(randomUUID(), u.token, { sessionId: randomUUID(), lat: 18.5 })).status).toBe(400);
+  });
+
   it('works logged out: records the event, texts nobody', async () => {
     const r = await alert(randomUUID());
     expect(r.status).toBe(201);

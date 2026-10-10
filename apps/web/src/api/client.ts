@@ -43,6 +43,8 @@ type Options = {
   /** Skip the refresh-and-retry dance (used by refresh itself) */
   noRetry?: boolean;
   form?: FormData;
+  /** Let the request finish even if the page navigates away (SOS while the dialer opens). */
+  keepalive?: boolean;
 };
 
 const buildUrl = (path: string, query?: Options['query']) => {
@@ -67,6 +69,7 @@ async function raw<T>(path: string, opts: Options = {}): Promise<{ data: T; meta
       body: opts.form ?? (opts.body !== undefined ? JSON.stringify(opts.body) : undefined),
       credentials: 'include',
       signal: opts.signal,
+      keepalive: opts.keepalive,
     });
   } catch (err) {
     if ((err as Error).name === 'AbortError') throw err;

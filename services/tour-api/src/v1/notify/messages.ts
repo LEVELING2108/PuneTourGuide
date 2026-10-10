@@ -17,7 +17,7 @@ const istTime = (d: Date) =>
 export function sosSms(
   to: Recipient,
   from: string,
-  at: { lat: number; lng: number; sessionId: string },
+  at: { lat?: number; lng?: number; sessionId: string },
   hospital: { name: string; km: number } | null,
   medical: string | null
 ): Sms {
@@ -25,7 +25,7 @@ export function sosSms(
   const parts = [
     `SOS from ${who}: needs help now.`,
     `Live location: ${trackUrl(at.sessionId)}`,
-    `Map: ${mapUrl(at.lat, at.lng)}`,
+    at.lat !== undefined && at.lng !== undefined ? `Map: ${mapUrl(at.lat, at.lng)}` : 'Location pending: the live link updates once their GPS fixes.',
     hospital ? `Nearest hospital: ${hospital.name} (${hospital.km} km).` : null,
     'Call them, or 112.',
   ].filter(Boolean) as string[];
@@ -35,7 +35,7 @@ export function sosSms(
     to: to.phone,
     body: medical ? `${logBody} Medical: ${medical}` : logBody,
     logBody: medical ? `${logBody} Medical: [redacted]` : logBody,
-    vars: { name: who, link: trackUrl(at.sessionId), map: mapUrl(at.lat, at.lng), hospital: hospital?.name ?? '', medical: medical ?? '' },
+    vars: { name: who, link: trackUrl(at.sessionId), map: at.lat !== undefined && at.lng !== undefined ? mapUrl(at.lat, at.lng) : '', hospital: hospital?.name ?? '', medical: medical ?? '' },
   };
 }
 

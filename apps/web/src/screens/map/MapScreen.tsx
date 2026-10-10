@@ -9,6 +9,7 @@ import { declutter, dotBox, labelBox } from '../../components/map/declutter';
 import { helpPin, legPin, mePin, placePin, stopPin, type StopPinKind } from '../../components/map/pins';
 import { Themed } from '../../components/Themed';
 import { driveMinutes, isMedical, useHelpNearby, type Help } from '../../features/help';
+import { useLiveStore } from '../../features/live';
 import { useCurrentPosition } from '../../features/location';
 import { PUNE_CENTRE } from '../../features/permissions';
 import { kmText, placeTone, usePlaceCount, usePlaces, usePlan } from '../../features/places';
@@ -55,6 +56,7 @@ export default function MapScreen() {
   const [params] = useSearchParams();
   const loggedIn = useIsLoggedIn();
   const pos = useCurrentPosition();
+  const liveTrip = useLiveStore((st) => st.trip);
 
   const initialLayer = params.get('layer');
   const [mode, setMode] = useState<Mode>(initialLayer === 'route' ? 'route' : 'places');
@@ -315,7 +317,7 @@ export default function MapScreen() {
           .join(' · ')
       : '',
     directionsHref: next?.place.id ? `/directions?to=${next.place.id}` : '/directions',
-    liveSharing: false,
+    liveSharing: !!liveTrip,
 
     // Help sheet
     helpRows,

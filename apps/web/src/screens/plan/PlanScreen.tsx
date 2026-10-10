@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router';
 import type { Stop } from '../../api/itinerary';
 import { Themed } from '../../components/Themed';
 import { kmText, placeTone, usePlan } from '../../features/places';
+import { namesText } from '../../features/live';
 import { puneTodayIso, useOptimiseDay, useTickStop } from '../../features/plan';
+import { isNoContacts, useTripShare } from '../../features/trip';
 import { usePalette } from '../../lib/palette';
 import { useFlash } from '../../lib/useFlash';
 import { useIsLoggedIn } from '../../stores/auth';
@@ -28,6 +30,7 @@ export default function PlanScreen() {
   const tick = useTickStop();
   const optimise = useOptimiseDay();
   const toast = useFlash(3100);
+  const share = useTripShare();
   const [picked, setPicked] = useState<number | null>(null);
 
   // A plan belongs to an account: guests log in and come straight back.
@@ -79,6 +82,7 @@ export default function PlanScreen() {
   });
 
   const tab = (i: number) => days[i]?.label ?? `Day ${i + 1}`;
+  const trackOn = deccan ? '#C59A3A' : '#2FA58A';
   const trackOff = deccan ? '#4A3F37' : '#3A423F';
 
   const v = {
@@ -102,14 +106,30 @@ export default function PlanScreen() {
     day2Pressed: idx === 1 ? 'true' : 'false',
     pickDay1: () => setPicked(0),
     pickDay2: () => setPicked(1),
-    // Live trip sharing needs emergency contacts and a tracking session (Phase 5).
-    sharing: 'false',
-    sharePressed: 'false',
-    trackBg: trackOff,
-    knobLeft: '4px',
-    knob: '4px',
-    shareText: 'Off · nobody can see your location',
-    toggleShare: () => toast.flash('Add an emergency contact to share your trip'),
+    // Live trip sharing (TECH_DESIGN §9.6): texted link + location while the toggle is on
+    sharing: share.on ? 'true' : 'false',
+    sharePressed: share.on ? 'true' : 'false',
+    trackBg: share.on ? trackOn : trackOff,
+    knobLeft: share.on ? '24px' : '4px',
+    knob: share.on ? '24px' : '4px',
+    shareText: share.busy
+      ? share.on
+        ? 'Stopping…'
+        : 'Starting…'
+      : share.on
+        ? share.status === 'reconnecting'
+          ? 'Reconnecting · your last location stays visible'
+          : `${namesText(share.sharedWith)} can follow your route`
+        : 'Off · nobody can see your location',
+    toggleShare: () => {
+      share
+        .toggle()
+        .then((r) => toast.flash(r.on ? `Live trip shared with ${namesText(r.sharedWith ?? [])}` : 'Stopped sharing your location'))
+        .catch((err) => {
+          if (isNoContacts(err)) navigate('/settings/contacts/new');
+          else toast.flash(err instanceof Error ? err.message : 'Could not start sharing');
+        });
+    },
     optLabel: optimise.isPending ? 'Optimising…' : 'Optimise',
     optBusy: optimise.isPending ? 'true' : 'false',
     showToast: toast.show,

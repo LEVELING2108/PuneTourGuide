@@ -21,6 +21,10 @@ def memory_transport(monkeypatch):
     yield
 
 
+def auth(ws, token):
+    ws.send_text(json.dumps({"type": "auth", "token": token}))
+
+
 def new_session(client):
     res = client.post("/api/create-session")
     assert res.status_code == 200
@@ -50,7 +54,8 @@ def test_publisher_location_reaches_watchers_cleaned():
     with TestClient(main.app) as client:
         sid, token = new_session(client)
         with client.websocket_connect(f"/ws/track/{sid}") as watcher:
-            with client.websocket_connect(f"/ws/track/{sid}?token={token}") as sender:
+            with client.websocket_connect(f"/ws/track/{sid}") as sender:
+                auth(sender, token)
                 sender.send_text(json.dumps({"lat": 18.5195123456, "lng": 73.8553, "acc": 12, "evil": "<script>"}))
                 msg = json.loads(watcher.receive_text())
                 assert msg["type"] == "loc"
@@ -62,9 +67,13 @@ def test_watchers_cannot_publish_and_bad_payloads_are_dropped():
     with TestClient(main.app) as client:
         sid, token = new_session(client)
         with client.websocket_connect(f"/ws/track/{sid}") as watcher:
-            with client.websocket_connect(f"/ws/track/{sid}?token=wrong") as faker:
+            with client.websocket_connect(f"/ws/track/{sid}") as faker:
+                auth(faker, "wrong")
                 faker.send_text(json.dumps({"lat": 1, "lng": 1}))
-            with client.websocket_connect(f"/ws/track/{sid}?token={token}") as sender:
+            with client.websocket_connect(f"/ws/track/{sid}?token={token}") as url_token:
+                url_token.send_text(json.dumps({"lat": 2, "lng": 2}))  # a token in the URL is ignored
+            with client.websocket_connect(f"/ws/track/{sid}") as sender:
+                auth(sender, token)
                 sender.send_text("not json")
                 sender.send_text(json.dumps({"lat": 999, "lng": 1}))
                 sender.send_text(json.dumps({"lat": 18.5, "lng": 73.8}))
@@ -75,9 +84,10 @@ def test_watchers_cannot_publish_and_bad_payloads_are_dropped():
 def test_unknown_or_malformed_sessions_are_refused():
     with TestClient(main.app) as client:
         for sid in [str(uuid.uuid4()), "abc"]:
-            with pytest.raises(WebSocketDisconnect):
+            with pytest.raises(WebSocketDisconnect) as closed:
                 with client.websocket_connect(f"/ws/track/{sid}") as ws:
                     ws.receive_text()
+            assert closed.value.code == 4404
 
 
 def test_close_session_tells_watchers_and_needs_the_token():
@@ -97,6 +107,7 @@ def test_tracking_works_without_redis(monkeypatch):
         monkeypatch.setattr(main, "REDIS_OK", False)
         sid, token = new_session(client)
         with client.websocket_connect(f"/ws/track/{sid}") as watcher:
-            with client.websocket_connect(f"/ws/track/{sid}?token={token}") as sender:
+            with client.websocket_connect(f"/ws/track/{sid}") as sender:
+                auth(sender, token)
                 sender.send_text(json.dumps({"lat": 18.5, "lng": 73.8}))
                 assert json.loads(watcher.receive_text())["lng"] == 73.8
