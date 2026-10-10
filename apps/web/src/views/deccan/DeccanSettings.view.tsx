@@ -41,15 +41,15 @@ export default function DeccanSettingsView({ v }: ViewProps) {
         </svg>
         <div style={{ padding: "60px 24px 0", display: "flex", flexDirection: "column", gap: "18px" }}>
           <div className="rise d1" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <div style={{ width: "64px", height: "64px", borderRadius: "32px", background: "var(--primary)", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontSize: "26px", flexShrink: "0" }}>SS</div>
+            <div style={{ width: "64px", height: "64px", borderRadius: "32px", background: "var(--primary)", position: "relative", overflow: "hidden", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontSize: "26px", flexShrink: "0" }}>{v.avatarUrl ? <img src={v.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : v.initials}</div>
             <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "2px" }}>
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <div style={{ fontFamily: "var(--font-accent)", fontSize: "19px", lineHeight: "1.25", color: "#A4462B" }}>माझं खातं</div>
-                <h1 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "32px", fontWeight: "400", lineHeight: "1" }}>Sourav Suman</h1>
+                <h1 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "32px", fontWeight: "400", lineHeight: "1" }}>{v.name}</h1>
               </div>
-              <div style={{ fontSize: "13px", color: "var(--muted)" }}>Exploring Pune since 2026</div>
+              <div style={{ fontSize: "13px", color: "var(--muted)" }}>{v.since}</div>
             </div>
-            <Link to="/settings/profile" className="tap" aria-label="Edit profile" style={{ width: "44px", height: "44px", borderRadius: "22px", border: "1px solid #DCCDB6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box" }}>
+            <Link to={v.editHref} className="tap" aria-label={v.editLabel} style={{ width: "44px", height: "44px", borderRadius: "22px", border: "1px solid #DCCDB6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box" }}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 20h4L19 9l-4-4L4 16z" />
                 <path d="M13 7l4 4" />
@@ -68,25 +68,25 @@ export default function DeccanSettingsView({ v }: ViewProps) {
             </svg>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.16em", color: "#F2C9DC" }}>LEVEL 4</div>
-                <div style={{ fontFamily: "var(--font-display)", fontSize: "26px", lineHeight: "1" }}>Trailblazer</div>
+                <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.16em", color: "#F2C9DC" }}>{v.levelKicker}</div>
+                <div style={{ fontFamily: "var(--font-display)", fontSize: "26px", lineHeight: "1" }}>{v.levelName}</div>
               </div>
-              <div style={{ fontSize: "13px", color: "#E2B95B", fontWeight: "600" }}>1,240 XP</div>
+              <div style={{ fontSize: "13px", color: "#E2B95B", fontWeight: "600" }}>{v.xpText}</div>
             </div>
             <div style={{ height: "6px", borderRadius: "3px", background: "rgba(255,251,243,0.2)", overflow: "hidden" }}>
-              <div className="fill" style={{ width: "68%", height: "6px", borderRadius: "3px", background: "#E2B95B" }} />
+              <div className="fill" style={{ width: v.levelPct, height: "6px", borderRadius: "3px", background: "#E2B95B" }} />
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#F2C9DC" }}>
-              <span>12 places · 3 forts · 2 trips</span>
-              <span>260 XP to Pathfinder</span>
+              <span>{v.statsText}</span>
+              <span>{v.toNextText}</span>
             </div>
           </div>
           <div className="rise d3" style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingBottom: "4px" }}>
               <h2 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "24px", fontWeight: "400" }}>Safety profile</h2>
               <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: "600", color: "var(--primary)" }}>
-                <span style={{ width: "7px", height: "7px", borderRadius: "4px", background: "#2FA58A" }} />
-                Complete
+                <span style={{ width: "7px", height: "7px", borderRadius: "4px", background: v.safetyDot }} />
+                {v.safetyStatus}
               </div>
             </div>
             <Link to="/settings/contacts" className="row" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "11px 8px", margin: "0 -8px", borderRadius: "14px", borderBottom: "1px solid var(--line)", textDecoration: "none", color: "var(--ink)" }}>
@@ -97,7 +97,7 @@ export default function DeccanSettingsView({ v }: ViewProps) {
               </svg>
               <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "1px" }}>
                 <div style={{ fontSize: "14.5px", fontWeight: "600" }}>Emergency contacts</div>
-                <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>Aai, Aman</div>
+                <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>{v.contactsText}</div>
               </div>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 6l6 6-6 6" />
@@ -110,7 +110,7 @@ export default function DeccanSettingsView({ v }: ViewProps) {
               </svg>
               <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "1px" }}>
                 <div style={{ fontSize: "14.5px", fontWeight: "600" }}>Medical info</div>
-                <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>Shared only during an SOS</div>
+                <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>{v.medicalText}</div>
               </div>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 6l6 6-6 6" />
@@ -136,7 +136,7 @@ export default function DeccanSettingsView({ v }: ViewProps) {
               </svg>
               <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "1px" }}>
                 <div style={{ fontSize: "14.5px", fontWeight: "600" }}>Offline packs</div>
-                <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>2 saved · Old Pune, Sinhagad</div>
+                <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>{v.offlineText}</div>
               </div>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 6l6 6-6 6" />
@@ -148,7 +148,7 @@ export default function DeccanSettingsView({ v }: ViewProps) {
             <Link to="/settings/language" className="row" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "11px 8px", margin: "0 -8px", borderRadius: "14px", borderBottom: "1px solid var(--line)", textDecoration: "none", color: "var(--ink)" }}>
               <span style={{ width: "19px", textAlign: "center", fontFamily: "var(--font-body)", fontSize: "17px", color: "var(--primary)" }}>अ</span>
               <div style={{ flex: "1", fontSize: "14.5px", fontWeight: "600" }}>Language</div>
-              <div style={{ fontSize: "13px", color: "var(--muted)" }}>English</div>
+              <div style={{ fontSize: "13px", color: "var(--muted)" }}>{v.languageText}</div>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 6l6 6-6 6" />
               </svg>
@@ -159,7 +159,7 @@ export default function DeccanSettingsView({ v }: ViewProps) {
                 <path d="M12 3a9 9 0 0 0 0 18z" fill="var(--primary)" />
               </svg>
               <div style={{ flex: "1", fontSize: "14.5px", fontWeight: "600" }}>App theme</div>
-              <div style={{ fontSize: "13px", color: "var(--muted)" }}>Classic</div>
+              <div style={{ fontSize: "13px", color: "var(--muted)" }}>{v.themeText}</div>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 6l6 6-6 6" />
               </svg>
@@ -175,11 +175,11 @@ export default function DeccanSettingsView({ v }: ViewProps) {
                 <span className="knob" style={{ position: "absolute", top: "4px", left: v.notifyKnob, width: "24px", height: "24px", borderRadius: "12px", background: "var(--surface)", boxShadow: "0 2px 6px rgba(0,0,0,0.25)" }} />
               </button>
             </div>
-            <Link to="/settings/sign-out" className="row" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "11px 8px", margin: "0 -8px", borderRadius: "14px", textDecoration: "none", color: "#A3281A" }}>
+            <Link to={v.signHref} className="row" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "11px 8px", margin: "0 -8px", borderRadius: "14px", textDecoration: "none", color: "#A3281A" }}>
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 16l-4-4 4-4M6 12h10" />
               </svg>
-              <div style={{ flex: "1", fontSize: "14.5px", fontWeight: "600" }}>Sign out</div>
+              <div style={{ flex: "1", fontSize: "14.5px", fontWeight: "600" }}>{v.signLabel}</div>
             </Link>
           </div>
         </div>

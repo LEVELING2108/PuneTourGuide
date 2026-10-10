@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { usersApi } from '../api/auth';
 import { itineraryApi, type PlanDay } from '../api/itinerary';
 import { useAuthStore } from '../stores/auth';
 
@@ -23,7 +24,12 @@ export function useTickStop() {
     onSuccess: (r) => {
       const { user, setUser } = useAuthStore.getState();
       if (user && r.totalXp !== undefined) setUser({ ...user, xp: r.totalXp });
-      if (r.stampCollected) qc.invalidateQueries({ queryKey: ['me'] });
+      if (r.stampCollected) {
+        // Level, progress and the passport change with XP: take the server's numbers
+        usersApi.me().then(setUser, () => undefined);
+        qc.invalidateQueries({ queryKey: ['stamps'] });
+        qc.invalidateQueries({ queryKey: ['stats'] });
+      }
     },
   });
 }

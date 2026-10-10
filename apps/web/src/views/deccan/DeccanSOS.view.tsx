@@ -108,15 +108,15 @@ export default function DeccanSOSView({ v }: ViewProps) {
         <div className="rise d4" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "8px" }}>
           <a className="tap dial" href="tel:108" style={{ height: "68px", borderRadius: "20px", border: "1px solid rgba(255,255,255,0.28)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2px", textDecoration: "none", color: "var(--surface)" }}>
             <span style={{ fontFamily: "var(--font-display)", fontSize: "26px", lineHeight: "1" }}>108</span>
-            <span style={{ fontSize: "11.5px", color: "#F6B8A9" }}>Ambulance</span>
+            <span style={{ fontSize: "11.5px", color: "#F6B8A9" }}>{v.ambulanceLabel}</span>
           </a>
           <a className="tap dial" href="tel:100" style={{ height: "68px", borderRadius: "20px", border: "1px solid rgba(255,255,255,0.28)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2px", textDecoration: "none", color: "var(--surface)" }}>
             <span style={{ fontFamily: "var(--font-display)", fontSize: "26px", lineHeight: "1" }}>100</span>
-            <span style={{ fontSize: "11.5px", color: "#F6B8A9" }}>Police</span>
+            <span style={{ fontSize: "11.5px", color: "#F6B8A9" }}>{v.policeLabel}</span>
           </a>
           <a className="tap dial" href="tel:1091" style={{ height: "68px", borderRadius: "20px", border: "1px solid rgba(255,255,255,0.28)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2px", textDecoration: "none", color: "var(--surface)" }}>
             <span style={{ fontFamily: "var(--font-display)", fontSize: "26px", lineHeight: "1" }}>1091</span>
-            <span style={{ fontSize: "11.5px", color: "#F6B8A9" }}>Women</span>
+            <span style={{ fontSize: "11.5px", color: "#F6B8A9" }}>{v.womenLabel}</span>
           </a>
         </div>
         <div className="rise d5" style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -124,9 +124,9 @@ export default function DeccanSOSView({ v }: ViewProps) {
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" />
             </svg>
-            Call 112 now
+            {v.callNowLabel}
           </a>
-          <Link to="/" onClick={v.cancel} className="tap ghost" style={{ height: "56px", borderRadius: "28px", border: "1px solid rgba(255,255,255,0.4)", color: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>I'm safe, cancel</Link>
+          <Link to="/" onClick={v.cancel} className="tap ghost" style={{ height: "56px", borderRadius: "28px", border: "1px solid rgba(255,255,255,0.4)", color: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>{v.cancelLabel}</Link>
         </div>
       </div>
     </div>

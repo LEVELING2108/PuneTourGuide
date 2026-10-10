@@ -26,12 +26,23 @@ const field = (name: string) => (req: Request) => `${ipKey(req)}:${String(req.bo
 
 /** Login: 5/min per IP + email (TECH_DESIGN §8). */
 export const loginLimit = make('login', 60_000, 5, field('email'));
-export const registerLimit = make('register', 15 * 60_000, 10);
+/** Sign-ups per IP: generous because many phones share a carrier IP (CGNAT). */
+export const registerLimit = make('register', 15 * 60_000, 30);
 /** OTP: max 5 sends/hour per phone (30-s cooldown is enforced in the service). */
 export const otpSendLimit = make('otp-send', 60 * 60_000, 5, field('phone'));
 export const otpVerifyLimit = make('otp-verify', 15 * 60_000, 20);
 export const passwordResetLimit = make('pw-reset', 60 * 60_000, 5, field('email'));
-export const refreshLimit = make('refresh', 60_000, 30);
+/**
+ * Session refresh runs on every app open. Limited per session (the refresh token, hashed by the
+ * store), so thousands of people behind one carrier IP are never logged out by each other;
+ * a high per-IP ceiling still stops floods of refreshes with made-up tokens.
+ */
+const refreshPerSession = make('refresh', 60_000, 30, (req) => {
+  const token = (req.cookies?.pe_rt as string | undefined) ?? (typeof req.body?.refreshToken === 'string' ? req.body.refreshToken : '');
+  return token ? `rt:${token}` : `ip:${ipKey(req)}`;
+});
+const refreshPerIp = make('refresh-ip', 60_000, 1000);
+export const refreshLimit = [refreshPerIp, refreshPerSession];
 /**
  * SOS must never be refused because of someone else: logged-in users are limited per account,
  * guests per IP (generous, since many phones share a carrier IP). Bounds SMS abuse, not safety.

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { api, onSession, refreshSession, setAccessToken } from '../api/client';
+import { queryClient } from '../lib/queryClient';
 import type { SessionResponse, User } from '../api/types';
 import { useSettingsStore } from './settings';
 import { useThemeStore } from './theme';
@@ -30,6 +31,8 @@ export const useAuthStore = create<AuthState>()((set) => ({
   user: null,
   ready: false,
   setSession: (s) => {
+    const prev = useAuthStore.getState().user;
+    if (prev && prev.id !== s.user.id) queryClient.clear();
     setAccessToken(s.accessToken);
     adoptServerPrefs(s.user);
     set({ user: s.user, ready: true });
@@ -43,6 +46,9 @@ export const useAuthStore = create<AuthState>()((set) => ({
     }
     setAccessToken(null);
     set({ user: null });
+    // Plans, contacts and medical info of this account must not stay in memory for the next person.
+    // (The SOS contact copy and offline packs stay on the device on purpose: FEATURES, Sign out.)
+    queryClient.clear();
   },
   bootstrap: async () => {
     await refreshSession();
@@ -52,10 +58,13 @@ export const useAuthStore = create<AuthState>()((set) => ({
 
 onSession((token, user) => {
   if (!token) {
+    if (useAuthStore.getState().user) queryClient.clear();
     useAuthStore.setState({ user: null });
     return;
   }
   const u = user as User;
+  const prev = useAuthStore.getState().user;
+  if (prev && prev.id !== u.id) queryClient.clear();
   adoptServerPrefs(u);
   useAuthStore.setState({ user: u });
 });

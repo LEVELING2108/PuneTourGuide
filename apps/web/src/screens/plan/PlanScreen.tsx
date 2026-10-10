@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import type { Stop } from '../../api/itinerary';
 import { Themed } from '../../components/Themed';
+import { useAccountRequired } from '../../features/account';
 import { kmText, placeTone, usePlan } from '../../features/places';
 import { namesText } from '../../features/live';
 import { puneTodayIso, useOptimiseDay, useTickStop } from '../../features/plan';
@@ -33,10 +34,7 @@ export default function PlanScreen() {
   const share = useTripShare();
   const [picked, setPicked] = useState<number | null>(null);
 
-  // A plan belongs to an account: guests log in and come straight back.
-  useEffect(() => {
-    if (!loggedIn) navigate('/login?next=%2Fplan', { replace: true });
-  }, [loggedIn, navigate]);
+  useAccountRequired();
 
   const days = plan.data ?? [];
   const todayIdx = Math.max(0, days.findIndex((d) => d.date === puneTodayIso()));

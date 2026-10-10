@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Themed } from '../../components/Themed';
+import { lastPosition } from '../../features/permissions';
+import { savePrefs } from '../../features/preferences';
 import { chipColors, toggleColors, usePalette } from '../../lib/palette';
 import { useSettingsStore } from '../../stores/settings';
 import LanguageView from '../../views/classic/Language.view';
@@ -19,6 +21,18 @@ const MORE_LANGUAGES: [string, string][] = [
   ['pa', 'Punjabi'], ['sa', 'Sanskrit'], ['sat', 'Santali'], ['sd', 'Sindhi'], ['ta', 'Tamil'], ['te', 'Telugu'], ['ur', 'Urdu'],
 ];
 
+/**
+ * The state you are in, from your last known position (rough state boxes; Gujarat is checked
+ * first because its box overlaps Maharashtra's north-west corner).
+ */
+function stateLanguage(): string | null {
+  const p = lastPosition();
+  if (!p.known) return null;
+  if (p.lat >= 20.1 && p.lat <= 24.7 && p.lng >= 68.1 && p.lng <= 74.5) return 'gu';
+  if (p.lat >= 15.6 && p.lat <= 22.1 && p.lng >= 72.6 && p.lng <= 80.9) return 'mr';
+  return null;
+}
+
 export default function LanguageScreen() {
   const p = usePalette();
   const { language, matchState, set } = useSettingsStore();
@@ -37,7 +51,7 @@ export default function LanguageScreen() {
   const v = {
     langs: PRIMARY.map((l) => {
       const on = l.id === language;
-      return { ...l, key: l.id, checked: on ? 'true' : 'false', ring: on ? `7px solid ${p.primary}` : p.ringOff, pick: () => set({ language: l.id }) };
+      return { ...l, key: l.id, checked: on ? 'true' : 'false', ring: on ? `7px solid ${p.primary}` : p.ringOff, pick: () => void savePrefs({ language: l.id }).catch(() => undefined) };
     }),
     allLangs: all.map(([id, label]) => ({ label, key: id, ...chipColors(p, id === language), pick: () => set({ language: id }) })),
     collapsed: !expanded,
@@ -53,7 +67,12 @@ export default function LanguageScreen() {
     autoPressed: auto.pressed,
     autoTrack: auto.track,
     autoKnob: auto.knob,
-    toggleAuto: () => set({ matchState: !matchState }),
+    toggleAuto: () => {
+      const on = !matchState;
+      set({ matchState: on });
+      const lang = on ? stateLanguage() : null;
+      if (lang && lang !== language) void savePrefs({ language: lang }).catch(() => undefined);
+    },
   };
   return <Themed classic={LanguageView} deccan={DeccanLanguageView} v={v} />;
 }

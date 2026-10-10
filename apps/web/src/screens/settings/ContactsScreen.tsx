@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from 'react-router';
 import { usersApi } from '../../api/auth';
 import { contactsApi } from '../../api/contacts';
 import { Themed } from '../../components/Themed';
+import { useAccountRequired } from '../../features/account';
 import { useContacts } from '../../features/contacts';
 import { namesText } from '../../features/live';
 import { toggleColors, usePalette } from '../../lib/palette';
@@ -26,7 +26,6 @@ const masked = (e164: string) => (e164.startsWith('+91') ? `+91 ••••• 
 export default function ContactsScreen() {
   const p = usePalette();
   const theme = useTheme();
-  const navigate = useNavigate();
   const loggedIn = useIsLoggedIn();
   const { smsWhenOffline, set } = useSettingsStore();
   const contactsQ = useContacts();
@@ -34,9 +33,7 @@ export default function ContactsScreen() {
   const toast = useFlash(2900);
   const sms = toggleColors(p, smsWhenOffline);
 
-  useEffect(() => {
-    if (!loggedIn) navigate('/login?next=%2Fsettings%2Fcontacts', { replace: true });
-  }, [loggedIn, navigate]);
+  useAccountRequired();
 
   const test = useMutation({
     mutationFn: contactsApi.testAlert,

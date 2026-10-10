@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Themed } from '../../components/Themed';
+import { useAccountRequired } from '../../features/account';
 import { canPickContacts, pickPhoneContact, useContacts, useRemoveContact, useSaveContact } from '../../features/contacts';
 import { chipColors, toggleColors, usePalette } from '../../lib/palette';
-import { useIsLoggedIn } from '../../stores/auth';
 import ContactEditView from '../../views/classic/ContactEdit.view';
 import DeccanContactEditView from '../../views/deccan/DeccanContactEdit.view';
 import { RELATIONS } from '../account/shared';
@@ -23,7 +23,6 @@ export default function ContactEditScreen({ mode }: Props) {
   const p = usePalette();
   const navigate = useNavigate();
   const { id } = useParams();
-  const loggedIn = useIsLoggedIn();
   const add = mode === 'add';
   const contactsQ = useContacts();
   const existing = add ? null : contactsQ.data?.find((c) => c.id === Number(id)) ?? null;
@@ -34,9 +33,7 @@ export default function ContactEditScreen({ mode }: Props) {
   const [error, setError] = useState('');
   const [loaded, setLoaded] = useState(add);
 
-  useEffect(() => {
-    if (!loggedIn) navigate(`/login?next=${encodeURIComponent(location.pathname)}`, { replace: true });
-  }, [loggedIn, navigate]);
+  useAccountRequired();
 
   useEffect(() => {
     if (!add && existing && !loaded) {

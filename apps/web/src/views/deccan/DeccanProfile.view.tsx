@@ -30,7 +30,7 @@ const css = `
 @media (prefers-reduced-motion:reduce){.scr-deccan-DeccanProfile *,.scr-deccan-DeccanProfile *::after{animation:none!important;transition:none!important}}
 `;
 
-export default function DeccanProfileView(_props: ViewProps) {
+export default function DeccanProfileView({ v }: ViewProps) {
   return (
     <div className="scr scr-deccan-DeccanProfile" style={{ width: "100%", height: "100%", boxSizing: "border-box", position: "relative", overflow: "hidden", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--ink)" }}>
       <style href="scr-deccan-DeccanProfile" precedence="screens">{css}</style>
@@ -43,7 +43,7 @@ export default function DeccanProfileView(_props: ViewProps) {
               <span style={{ fontStyle: "italic", color: "var(--primary)" }}>passport</span>
             </h1>
           </div>
-          <Link to="/settings/profile" className="rise d2 tap" style={{ position: "relative", display: "block", borderRadius: "16px", overflow: "hidden", background: "var(--primary)", color: "var(--surface)", padding: "22px 18px 16px", textDecoration: "none", boxShadow: "0 20px 34px -22px rgba(92,18,57,0.8)" }}>
+          <Link to={v.editHref} className="rise d2 tap" style={{ position: "relative", display: "block", borderRadius: "16px", overflow: "hidden", background: "var(--primary)", color: "var(--surface)", padding: "22px 18px 16px", textDecoration: "none", boxShadow: "0 20px 34px -22px rgba(92,18,57,0.8)" }}>
             <svg width="390" height="10" viewBox="0 0 390 10" aria-hidden="true" style={{ position: "absolute", top: "0", left: "0" }}>
               <defs>
                 <pattern id="zq" width="10" height="10" patternUnits="userSpaceOnUse">
@@ -54,67 +54,45 @@ export default function DeccanProfileView(_props: ViewProps) {
               <rect width="390" height="10" fill="url(#zq)" />
             </svg>
             <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
-              <div style={{ width: "58px", height: "58px", borderRadius: "29px", border: "1.5px solid #E2B95B", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0" }}>
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#E2B95B" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M15.5 8.5l-2 5-5 2 2-5z" />
-                </svg>
+              <div style={{ width: "58px", height: "58px", borderRadius: "29px", border: "1.5px solid #E2B95B", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0", overflow: "hidden", fontFamily: "var(--font-display)", fontSize: "22px" }}>
+                {v.avatarUrl ? <img src={v.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : v.initials}
               </div>
               <div style={{ flex: "1" }}>
                 <div style={{ fontSize: "10.5px", letterSpacing: "0.2em", color: "#F2C9DC" }}>PUNE EXPLORER · PASSPORT</div>
-                <div style={{ fontFamily: "var(--font-display)", fontSize: "26px", lineHeight: "1.05" }}>Sourav Suman</div>
-                <div style={{ fontSize: "13px", color: "#F2D5E3" }}>Level 4 · Trailblazer</div>
+                <div style={{ fontFamily: "var(--font-display)", fontSize: "26px", lineHeight: "1.05" }}>{v.name}</div>
+                <div style={{ fontSize: "13px", color: "#F2D5E3" }}>{v.levelLine}</div>
               </div>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", color: "#E2B95B" }}>1,240</div>
+                <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", color: "#E2B95B" }}>{v.xp}</div>
                 <div style={{ fontSize: "10.5px", letterSpacing: "0.14em", color: "#F2C9DC" }}>XP</div>
               </div>
             </div>
             <div style={{ marginTop: "14px", height: "5px", borderRadius: "3px", background: "rgba(255,251,243,0.18)", overflow: "hidden" }}>
-              <div className="fill" style={{ width: "68%", height: "5px", background: "#E2B95B" }} />
+              <div className="fill" style={{ width: v.levelPct, height: "5px", background: "#E2B95B" }} />
             </div>
             <div style={{ marginTop: "6px", display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#F2C9DC" }}>
-              <span>260 XP to Pathfinder</span>
-              <span>Edit</span>
+              <span>{v.toNextText}</span>
+              <span>{v.editText}</span>
             </div>
           </Link>
           <div className="rise d3" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
               <h2 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "22px", fontWeight: "400" }}>Stamps collected</h2>
-              <div style={{ fontSize: "13px", color: "var(--muted)" }}>5 of 24</div>
+              <div style={{ fontSize: "13px", color: "var(--muted)" }}>{v.stampCount}</div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "10px", padding: "12px", borderRadius: "14px", background: "var(--surface)", border: "1px solid var(--line)" }}>
-              <div className="pm s1" style={{ "--r": "-10deg", height: "80px", borderRadius: "40px", border: "2px solid var(--primary)", color: "var(--primary)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", lineHeight: "1.1" }}>
-                <span style={{ fontSize: "9px", letterSpacing: "0.14em", fontWeight: "700" }}>PUNE</span>
-                <span style={{ fontFamily: "var(--font-display)", fontSize: "13.5px" }}>
-                  Shaniwar
-                  <br />
-                  Wada
-                </span>
-              </div>
-              <div className="pm s2" style={{ "--r": "6deg", height: "80px", borderRadius: "8px", border: "2px solid #0E5B5E", outline: "1px solid #0E5B5E", outlineOffset: "-6px", color: "#0E5B5E", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", lineHeight: "1.1" }}>
-                <span style={{ fontFamily: "var(--font-accent)", fontSize: "15px" }}>सिंहगड</span>
-                <span style={{ fontSize: "9px", letterSpacing: "0.14em", fontWeight: "700" }}>SINHAGAD</span>
-              </div>
-              <div className="pm s3" style={{ "--r": "-4deg", height: "80px", borderRadius: "40px", border: "2px dashed #A4462B", color: "#A4462B", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", lineHeight: "1.1" }}>
-                <span style={{ fontFamily: "var(--font-display)", fontSize: "13.5px" }}>
-                  Aga Khan
-                  <br />
-                  Palace
-                </span>
-                <span style={{ fontSize: "9px", letterSpacing: "0.14em", fontWeight: "700" }}>1892</span>
-              </div>
-              <div className="pm s4" style={{ "--r": "8deg", height: "80px", borderRadius: "40px", border: "2px solid #A4462B", color: "#A4462B", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", lineHeight: "1.1" }}>
-                <span style={{ fontFamily: "var(--font-accent)", fontSize: "14px" }}>दगडूशेठ</span>
-                <span style={{ fontSize: "9px", letterSpacing: "0.12em", fontWeight: "700" }}>GANPATI</span>
-              </div>
-              <div className="pm s5" style={{ "--r": "-7deg", height: "80px", borderRadius: "8px", border: "2px solid var(--primary)", color: "var(--primary)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", lineHeight: "1.1" }}>
-                <span style={{ fontFamily: "var(--font-display)", fontSize: "13.5px" }}>Pataleshwar</span>
-                <span style={{ fontSize: "9px", letterSpacing: "0.14em", fontWeight: "700" }}>CAVES</span>
-              </div>
+              {((v.stamps ?? []) as any[]).map((st: any) => (
+                <div key={st.key} className={`pm ${st.cls}`} title={st.title} style={st.style}>
+                  {((st.lines ?? []) as any[]).map((l: any, i: number) => (
+                    <span key={i} style={l.style}>
+                      {l.text}
+                    </span>
+                  ))}
+                </div>
+              ))}
               <Link to="/explore" style={{ height: "80px", borderRadius: "8px", border: "1.5px dashed #CDB894", color: "var(--muted)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", fontSize: "12px", lineHeight: "1.2", textDecoration: "none" }}>
                 <span style={{ fontFamily: "var(--font-display)", fontSize: "22px", color: "#B5A795" }}>+</span>
-                Next stamp
+                {v.nextText}
               </Link>
             </div>
           </div>

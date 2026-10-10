@@ -25,9 +25,13 @@ export const offlineRepo = {
       },
     }),
 
-  help: (b: BBox) =>
+  /** Help points in the box grown by `padDeg` on every side (a fort has none on it; help is below). */
+  help: (b: BBox, padDeg: number) =>
     prisma.helpPlace.findMany({
-      where: { category: { in: ['hospital', 'police', 'fire_station'] }, ...inBox(b) },
+      where: {
+        category: { in: ['hospital', 'police', 'fire_station'] },
+        ...inBox({ south: b.south - padDeg, west: b.west - padDeg, north: b.north + padDeg, east: b.east + padDeg }),
+      },
       orderBy: [{ emergency: 'desc' }, { name: 'asc' }],
       select: { name: true, category: true, emergency: true, phone: true, address: true, latitude: true, longitude: true },
     }),

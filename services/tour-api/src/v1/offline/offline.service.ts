@@ -29,6 +29,9 @@ export const EMERGENCY_NUMBERS = [
   { number: '1033', label: 'Highway emergency (NHAI)' },
 ];
 
+/** How far around a pack's box its help points reach (~14 km). */
+const HELP_PAD_DEG = 0.13;
+
 /** Average raster tile weight used to estimate download size. */
 const TILE_BYTES = 18_000;
 
@@ -56,7 +59,12 @@ async function bundleFor(def: PackDef) {
   const key = `tour:offline:${def.id}`;
   const cached = await getCachedData<ReturnType<typeof build>>(key);
   if (cached) return cached;
-  const [places, help] = await Promise.all([offlineRepo.places(def.bbox), offlineRepo.help(def.bbox)]);
+  // Help up to ~15 km around the area, nearest first, so a fort pack has the hospitals below it
+  const [places, around] = await Promise.all([offlineRepo.places(def.bbox), offlineRepo.help(def.bbox, HELP_PAD_DEG)]);
+  const c = { lat: (def.bbox.south + def.bbox.north) / 2, lng: (def.bbox.west + def.bbox.east) / 2 };
+  const dist = (h: { latitude: number; longitude: number }) => (h.latitude - c.lat) ** 2 + ((h.longitude - c.lng) * Math.cos((c.lat * Math.PI) / 180)) ** 2;
+  const byKind = (k: string, n: number) => around.filter((h) => h.category === k).sort((a, b) => dist(a) - dist(b)).slice(0, n);
+  const help = [...byKind('hospital', 40), ...byKind('police', 15), ...byKind('fire_station', 5)];
   function build() {
     const body = {
       id: def.id,

@@ -115,18 +115,18 @@ Medical info is sensitive: store encrypted at rest, only return it to the owner,
 ### Settings
 | Control | Behaviour | Backend |
 |---|---|---|
-| Edit profile: photo sheet (camera / gallery / remove) | `<input type="file" accept="image/*" capture>`; upload | **NEW** `POST /api/users/me/avatar` (S3/Cloudinary) |
-| Edit profile: fields, interests, Save | | **NEW** `PATCH /api/users/me` |
+| ✅ Edit profile: photo sheet (camera / gallery / remove) | `<input type="file" accept="image/*" capture>`; upload | **NEW** `POST /api/users/me/avatar` (S3/Cloudinary) |
+| ✅ Edit profile: fields, interests, Save | | **NEW** `PATCH /api/users/me` |
 | ✅ Contacts: list, call, edit, add (max 5), primary | | **NEW** `GET/POST/PATCH/DELETE /api/contacts` |
 | ✅ Contacts: Send SMS when offline toggle | user setting | `PATCH /api/users/me` |
 | ✅ Contacts: Send test alert | SMS marked TEST | **NEW** `POST /api/contacts/test-alert` (rate-limited) |
-| Medical: blood group, fields, lock-screen toggle, Save | | **NEW** `GET/PUT /api/medical` |
-| Offline packs: download / delete / undo / auto-download | Service worker caches map tiles for a bbox + places + hospitals + numbers; store size in IndexedDB | **NEW** `GET /api/offline-pack/:areaId` (JSON bundle) |
-| Language | i18next (move existing translations.js to i18next; reuse RoadSoS 22 locales) | `PATCH /api/users/me {language}` |
-| App theme | `setTheme()`, persist locally + to profile | `PATCH /api/users/me {theme}` |
-| Shake to SOS / Trip reminders toggles | | `PATCH /api/users/me` (reminders → web push later) |
-| Sign out | Clear JWT; keep contacts/medical/offline packs cached on device | — |
-| Passport (Deccan): stamps grid, XP bar | | EXISTS `/users/stats` (EXTEND with stamps) |
+| ✅ Medical: blood group, fields, lock-screen toggle, Save | | **NEW** `GET/PUT /api/medical` |
+| ✅ Offline packs: download / delete / undo / auto-download | Service worker caches map tiles for a bbox + places + hospitals + numbers; store size in IndexedDB | **NEW** `GET /api/offline-pack/:areaId` (JSON bundle) |
+| ✅ Language | i18next (move existing translations.js to i18next; reuse RoadSoS 22 locales) | `PATCH /api/users/me {language}` |
+| ✅ App theme | `setTheme()`, persist locally + to profile | `PATCH /api/users/me {theme}` |
+| ✅ Shake to SOS / Trip reminders toggles | | `PATCH /api/users/me` (reminders → web push later) |
+| ✅ Sign out | Clear JWT; keep contacts/medical/offline packs cached on device | — |
+| ✅ Passport (Deccan): stamps grid, XP bar | | EXISTS `/users/stats` (EXTEND with stamps) |
 
 ## 4. Non-functional
 

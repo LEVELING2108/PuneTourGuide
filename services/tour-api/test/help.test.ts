@@ -37,6 +37,8 @@ describe('OSM → help rows', () => {
     expect(t('Kamaladevi Maternity Hospital')).toBe('clinic');
     expect(t('Pune Eye Hospital')).toBe('clinic');
     expect(t('Smile Dental Hospital')).toBe('clinic');
+    expect(t('Metro Chemist')).toBe('clinic');
+    expect(t('Sai Diagnostic Centre')).toBe('clinic');
     expect(t('Morya Multispeciality Hospital')).toBe('hospital');
     expect(t('City Maternity Hospital', { emergency: 'yes' })).toBe('hospital');
   });

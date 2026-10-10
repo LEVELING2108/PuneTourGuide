@@ -10,7 +10,6 @@ type ThemeState = {
 
 export const applyThemeToDocument = (theme: ThemeName) => {
   document.documentElement.setAttribute('data-theme', theme);
-  document.documentElement.lang = theme === 'deccan' ? 'mr' : 'en';
   const meta = document.querySelector('meta[name="theme-color"]');
   meta?.setAttribute('content', theme === 'deccan' ? '#7A1F4E' : '#0F4C42');
 };

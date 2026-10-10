@@ -45,6 +45,7 @@ export default function EditProfileView({ v }: ViewProps) {
         </div>
         <div className="rise d2" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
           <div style={{ position: "relative", width: "96px", height: "96px", borderRadius: "48px", background: v.avatarBg, color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontSize: v.avatarSize, letterSpacing: v.avatarTrack }}>
+            {v.avatarUrl && <img src={v.avatarUrl} alt="Your profile photo" style={{ position: "absolute", inset: "0", width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />}
             {v.avatarText}{" "}
             <button className="tap" onClick={v.openPhoto} aria-label="Change photo" style={{ position: "absolute", right: "-2px", bottom: "-2px", width: "36px", height: "36px", borderRadius: "18px", border: "3px solid var(--bg)", background: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -58,20 +59,20 @@ export default function EditProfileView({ v }: ViewProps) {
           <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <span style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>FULL NAME</span>
             <span className="field" style={{ height: "50px", borderRadius: "14px", border: "1px solid #DDE1DD", background: "var(--surface)", display: "flex", alignItems: "center", padding: "0 16px" }}>
-              <input defaultValue="Sourav Suman" style={{ border: "none", outline: "none", flex: "1", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
+              <input value={v.name} onChange={v.onName} autoComplete="name" maxLength={60} aria-label="Full name" style={{ border: "none", outline: "none", flex: "1", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
             </span>
           </label>
           <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <span style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>EMAIL</span>
             <span className="field" style={{ height: "50px", borderRadius: "14px", border: "1px solid #DDE1DD", background: "var(--surface)", display: "flex", alignItems: "center", padding: "0 16px" }}>
-              <input defaultValue="sourav@example.com" style={{ border: "none", outline: "none", flex: "1", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
+              <input type="email" value={v.email} onChange={v.onEmail} autoComplete="email" maxLength={254} aria-label="Email" placeholder="you@example.com" style={{ border: "none", outline: "none", flex: "1", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
             </span>
           </label>
           <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <span style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>PHONE</span>
             <span className="field" style={{ height: "50px", borderRadius: "14px", border: "1px solid #DDE1DD", background: "var(--surface)", display: "flex", alignItems: "center", gap: "10px", padding: "0 16px" }}>
               <span style={{ fontSize: "15px", color: "var(--muted)" }}>+91</span>
-              <input placeholder="98XXX XXXXX" style={{ border: "none", outline: "none", flex: "1", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
+              <input value={v.phone} readOnly aria-label="Phone (verified by SMS)" placeholder="Add with mobile sign-in" style={{ border: "none", outline: "none", flex: "1", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
             </span>
           </label>
         </div>
@@ -85,7 +86,11 @@ export default function EditProfileView({ v }: ViewProps) {
             ))}
           </div>
         </div>
-        <Link to="/profile" className="rise d5 cta" style={{ marginTop: "auto", height: "56px", borderRadius: "28px", background: "var(--primary)", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>Save changes</Link>
+        {v.status && (
+          <div role="status" style={{ fontSize: "13px", color: v.statusColor }}>{v.status}</div>
+        )}
+        <button className="rise d5 cta" onClick={v.save} disabled={v.saving} style={{ marginTop: "auto", height: "56px", borderRadius: "28px", background: "var(--primary)", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" , border: "none", fontFamily: "var(--font-body)", cursor: "pointer" }}>{v.saveLabel}</button>
+        {v.fileInputs}
       </div>
       {v.photoOpen && (
         <>

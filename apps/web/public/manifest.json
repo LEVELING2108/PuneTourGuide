@@ -1,7 +1,7 @@
 {
   "short_name": "Pune Explorer",
-  "name": "Pune Explorer - Tour Guide & Itineraries",
-  "description": "Explore the cultural heritage, temples, nature, and food of Pune with smart itineraries and offline maps.",
+  "name": "Pune Explorer",
+  "description": "Places, day plans and one-tap SOS for Pune. Works offline for hospitals and emergency numbers.",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -17,8 +17,13 @@
     }
   ],
   "start_url": "/",
-  "background_color": "#FBF8F3",
-  "theme_color": "#8B3A2A",
+  "background_color": "#F6F6F3",
+  "theme_color": "#0F4C42",
   "display": "standalone",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "lang": "en-IN",
+  "categories": [
+    "travel",
+    "navigation"
+  ]
 }

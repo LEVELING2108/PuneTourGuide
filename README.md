@@ -88,6 +88,8 @@ npm run dev                                         # web :5050 · tour-api :300
 - **Redis** is required with more than one API instance (shared rate limits, cooldowns, caches, the SMS queue, live-location fan-out).
 - **SMS:** set `SMS_PROVIDER` + `SMS_API_KEY` (Twilio, or MSG91 with DLT templates). Without them SOS alerts are only printed to the log.
 - **Safety service:** set `ALLOWED_ORIGINS` to the app's origin(s).
+- **Offline map tiles:** offline packs always save places, hospitals, police and emergency numbers. They save map tiles only with `VITE_MAP_TILES_OFFLINE=true` and a tile provider whose terms allow offline caching.
+- **Translations:** the SOS screen is translated into Marathi, Hindi and Gujarati (`apps/web/src/i18n/locales`). Have a native speaker review them before launch; the rest of the UI is English for now.
 - **Workers:** at scale run `npm run worker -w services/tour-api` separately and set `RUN_WORKERS=false` on API instances.
 
 ---

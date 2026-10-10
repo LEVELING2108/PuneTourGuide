@@ -86,6 +86,21 @@ describe('auth (email)', () => {
     expect(again.status).toBe(401);
   });
 
+  it('people sharing one IP (carrier CGNAT) never use up each other’s session refreshes', async () => {
+    const people = await Promise.all(Array.from({ length: 4 }, () => signUp()));
+    const cookies = people.map((u) => refreshCookie(u.cookie));
+    const statuses: number[] = [];
+    for (let round = 0; round < 10; round++) {
+      for (let i = 0; i < cookies.length; i++) {
+        const r = await api().post('/api/v1/auth/refresh').set('X-Test-Rate-Limit', 'on').set('Cookie', cookies[i]);
+        statuses.push(r.status);
+        cookies[i] = refreshCookie(r.headers['set-cookie'] as unknown as string[]);
+      }
+    }
+    // 40 refreshes from one address, 10 per session: all fine
+    expect(statuses.every((s) => s === 200)).toBe(true);
+  });
+
   it('rate-limits repeated login attempts', async () => {
     const statuses: number[] = [];
     for (let i = 0; i < 7; i++) {

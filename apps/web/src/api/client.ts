@@ -45,6 +45,8 @@ type Options = {
   form?: FormData;
   /** Let the request finish even if the page navigates away (SOS while the dialer opens). */
   keepalive?: boolean;
+  /** Send a file as the raw request body (its type becomes the Content-Type). */
+  blob?: Blob;
 };
 
 const buildUrl = (path: string, query?: Options['query']) => {
@@ -59,14 +61,15 @@ const buildUrl = (path: string, query?: Options['query']) => {
 async function raw<T>(path: string, opts: Options = {}): Promise<{ data: T; meta?: Record<string, unknown> }> {
   const headers: Record<string, string> = { Accept: 'application/json', ...opts.headers };
   if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
+  if (opts.blob) headers['Content-Type'] = opts.blob.type || 'application/octet-stream';
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
   let res: Response;
   try {
     res = await fetch(buildUrl(path, opts.query), {
-      method: opts.method ?? (opts.body !== undefined || opts.form ? 'POST' : 'GET'),
+      method: opts.method ?? (opts.body !== undefined || opts.form || opts.blob ? 'POST' : 'GET'),
       headers,
-      body: opts.form ?? (opts.body !== undefined ? JSON.stringify(opts.body) : undefined),
+      body: opts.blob ?? opts.form ?? (opts.body !== undefined ? JSON.stringify(opts.body) : undefined),
       credentials: 'include',
       signal: opts.signal,
       keepalive: opts.keepalive,

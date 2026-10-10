@@ -79,33 +79,36 @@ export default function DeccanMedicalView({ v }: ViewProps) {
           <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <span style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>ALLERGIES</span>
             <span className="field" style={{ height: "48px", borderRadius: "14px", border: "1px solid #DCCDB6", background: "var(--surface)", display: "flex", alignItems: "center", padding: "0 16px" }}>
-              <input placeholder="e.g. penicillin, peanuts" style={{ border: "none", outline: "none", flex: "1", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
+              <input value={v.allergies} onChange={v.onAllergies} maxLength={300} aria-label="Allergies" placeholder="e.g. penicillin, peanuts" style={{ border: "none", outline: "none", flex: "1", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
             </span>
           </label>
           <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <span style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>REGULAR MEDICINES</span>
             <span className="field" style={{ height: "48px", borderRadius: "14px", border: "1px solid #DCCDB6", background: "var(--surface)", display: "flex", alignItems: "center", padding: "0 16px" }}>
-              <input placeholder="Optional" style={{ border: "none", outline: "none", flex: "1", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
+              <input value={v.medicines} onChange={v.onMedicines} maxLength={300} aria-label="Regular medicines" placeholder="Optional" style={{ border: "none", outline: "none", flex: "1", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
             </span>
           </label>
           <label style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <span style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>NOTES FOR RESPONDERS</span>
             <span className="field" style={{ height: "48px", borderRadius: "14px", border: "1px solid #DCCDB6", background: "var(--surface)", display: "flex", alignItems: "center", padding: "0 16px" }}>
-              <input placeholder="Optional" style={{ border: "none", outline: "none", flex: "1", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
+              <input value={v.notes} onChange={v.onNotes} maxLength={500} aria-label="Notes for responders" placeholder="Optional" style={{ border: "none", outline: "none", flex: "1", fontFamily: "var(--font-body)", fontSize: "15px", background: "transparent", color: "var(--ink)" }} />
             </span>
           </label>
         </div>
         <div className="rise d5" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "4px 0" }}>
           <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "2px" }}>
-            <div style={{ fontSize: "14.5px", fontWeight: "600" }}>Show on lock screen</div>
-            <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>Blood group and contacts, during SOS only</div>
+            <div style={{ fontSize: "14.5px", fontWeight: "600" }}>Share details in an SOS</div>
+            <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>{v.lockText}</div>
           </div>
-          <button onClick={v.toggleLock} aria-label="Show on lock screen" aria-pressed={v.lockPressed} style={{ position: "relative", width: "52px", height: "32px", border: "none", padding: "0", background: "transparent", cursor: "pointer", flexShrink: "0" }}>
+          <button onClick={v.toggleLock} aria-label="Share details in an SOS" aria-pressed={v.lockPressed} style={{ position: "relative", width: "52px", height: "32px", border: "none", padding: "0", background: "transparent", cursor: "pointer", flexShrink: "0" }}>
             <span className="track" style={{ position: "absolute", inset: "0", borderRadius: "16px", background: v.lockTrack }} />
             <span className="knob" style={{ position: "absolute", top: "4px", left: v.lockKnob, width: "24px", height: "24px", borderRadius: "12px", background: "var(--surface)", boxShadow: "0 2px 6px rgba(0,0,0,0.25)" }} />
           </button>
         </div>
-        <Link to="/settings" className="rise d6 cta" style={{ marginTop: "auto", height: "56px", borderRadius: "28px", background: "var(--primary)", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>Save</Link>
+        {v.status && (
+          <div role="status" style={{ fontSize: "13px", color: v.statusColor }}>{v.status}</div>
+        )}
+        <button className="rise d6 cta" onClick={v.save} disabled={v.saving} style={{ marginTop: "auto", height: "56px", borderRadius: "28px", background: "var(--primary)", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" , border: "none", fontFamily: "var(--font-body)", cursor: "pointer" }}>{v.saveLabel}</button>
       </div>
     </div>
   );

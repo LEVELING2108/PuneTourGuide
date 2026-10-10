@@ -5,6 +5,8 @@ import { sosApi } from '../api/sos';
 import { useIsLoggedIn } from '../stores/auth';
 import { getTripPublisher, LivePublisher, setTripPublisher, useLiveStore } from './live';
 import { lastPosition } from './permissions';
+import { autoDownloadPacks } from './offline';
+import { useSettingsStore } from '../stores/settings';
 
 /** Stop the live share (toggle off, sign-out, or the page closing). */
 export async function stopTripShare() {
@@ -79,6 +81,11 @@ export function useTripGuard() {
       })
       .catch(() => undefined);
   }, [loggedIn]);
+
+  const autoPacks = useSettingsStore((s) => s.autoDownloadPacks);
+  useEffect(() => {
+    void autoDownloadPacks(autoPacks, loggedIn);
+  }, [autoPacks, loggedIn]);
 
   useEffect(() => {
     const onHide = (e: PageTransitionEvent) => {

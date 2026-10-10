@@ -1,1 +1,35 @@
-{}
+{
+  "sos": {
+    "kicker": {
+      "sos": "SOS",
+      "shake": "SHAKE DETECTED",
+      "live": "LIVE LOCATION ON",
+      "active": "SOS ACTIVE"
+    },
+    "countingHeadline": "Calling 112 in",
+    "callingHeadline": "Calling 112",
+    "liveTo": "Live location going to ",
+    "alerted": " alerted with your live location",
+    "noContacts": "No emergency contacts saved · ",
+    "willBeCalled": " will be called",
+    "isBeingCalled": " is being called",
+    "loginToAlert": "Contacts are alerted only when you are logged in · ",
+    "serverDown": "Couldn't reach the server · ",
+    "textPrimary": "Text {{name}} your location",
+    "alertFailed": "Couldn't alert contacts online · ",
+    "callThemAfter": "call them after 112",
+    "nearest": "Nearest trauma care: ",
+    "finding": "Finding the nearest hospital… ",
+    "ambulance": "Ambulance: ",
+    "call108": "call 108",
+    "medical": "Blood group {{group}} goes to your contacts",
+    "medicalNoGroup": "Medical notes go to your contacts",
+    "ambulanceLabel": "Ambulance",
+    "policeLabel": "Police",
+    "womenLabel": "Women",
+    "callNow": "Call 112 now",
+    "cancel": "I'm safe, cancel"
+  },
+  "and": " and ",
+  "more": " and {{count}} more"
+}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Themed } from '../../components/Themed';
+import { savePrefs } from '../../features/preferences';
 import { usePalette } from '../../lib/palette';
 import { useThemeStore, type ThemeName } from '../../stores/theme';
 import ThemeView from '../../views/classic/Theme.view';
@@ -12,7 +13,7 @@ const DECCAN_PRIMARY = '#7A1F4E';
 /** App theme picker. "Apply" switches <html data-theme> and returns Home. */
 export default function ThemeScreen() {
   const p = usePalette();
-  const { theme, setTheme } = useThemeStore();
+  const theme = useThemeStore((st) => st.theme);
   const navigate = useNavigate();
   const [choice, setChoice] = useState<ThemeName>(theme);
   const c = choice === 'classic';
@@ -37,7 +38,8 @@ export default function ThemeScreen() {
     applyBg: deccanUi ? DECCAN_PRIMARY : c ? CLASSIC_PRIMARY : DECCAN_PRIMARY,
     apply: (e: React.MouseEvent) => {
       e.preventDefault();
-      setTheme(choice);
+      // Applied at once on this phone; saved to the profile when logged in (TECH_DESIGN §9.10)
+      void savePrefs({ theme: choice }).catch(() => undefined);
       navigate('/');
     },
   };

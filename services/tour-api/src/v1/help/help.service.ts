@@ -80,7 +80,7 @@ export function dedupe(rows: HelpRow[]): HelpRow[] {
 }
 
 const SPECIALIST =
-  /matern|gyna?ec|obstet|\beye\b|ophthalm|netra|dental|dentist|skin|derma|ivf|fertility|ayurved|homo?eo|physio|psychiatr|de-?addiction|cosmetic|hair|\bent\b|urolog|diabet|cancer|onco|dialysis|veterin/i;
+  /matern|gyna?ec|obstet|\beye\b|ophthalm|netra|dental|dentist|skin|derma|ivf|fertility|ayurved|homo?eo|physio|psychiatr|de-?addiction|cosmetic|hair|\bent\b|urolog|diabet|cancer|onco|dialysis|veterin|chemist|pharma|medical store|medicals\b|diagnostic|patholog|\blab\b|laborator|x-ray|scan centre|imaging/i;
 
 /** Trauma care first: 24x7 emergency hospitals, hospitals, police and fire, then clinics; nearest-first within each. */
 const rank = (h: HelpNear) =>

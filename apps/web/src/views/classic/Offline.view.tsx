@@ -1,5 +1,6 @@
 // Generated from design-reference/classic/Offline.dc.html by scripts/convert-designs.py, then wired up by hand.
 import { Link } from 'react-router';
+import { Fragment } from 'react';
 import type { ViewProps } from '../types';
 
 const css = `
@@ -49,7 +50,7 @@ export default function OfflineView({ v }: ViewProps) {
         <div className="rise d3" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12.5px", color: "var(--muted)" }}>
             <span>{v.usedText}</span>
-            <span>of 2 GB</span>
+            <span>{v.quotaText}</span>
           </div>
           <div style={{ height: "6px", borderRadius: "3px", background: "var(--line)", overflow: "hidden" }}>
             <div className="fill" style={{ height: "6px", width: v.usedPct, borderRadius: "3px", background: "var(--primary)", transition: "width .6s" }} />
@@ -57,79 +58,70 @@ export default function OfflineView({ v }: ViewProps) {
         </div>
         <div className="rise d4" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>ON THIS PHONE</div>
-          {v.keepOld && (
-            <>
-              <div className="swap" style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "20px", padding: "14px 16px", display: "flex", alignItems: "center", gap: "14px" }}>
-                <div style={{ width: "48px", height: "48px", borderRadius: "14px", background: "#1B2220", flexShrink: "0" }} />
-                <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "2px" }}>
-                  <div style={{ fontFamily: "var(--font-display)", fontSize: "20px", lineHeight: "1.05" }}>Old Pune peths</div>
-                  <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>18 MB · 12 hospitals · updated today</div>
+          {((v.saved ?? []) as any[]).map((x: any) => (
+            <Fragment key={x.key}>
+              {x.kept && (
+<div className="swap" style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "20px", padding: "14px 16px", display: "flex", alignItems: "center", gap: "14px" }}>
+                <div style={{ width: "48px", height: "48px", borderRadius: "14px", background: x.tone, flexShrink: "0" }} />
+                <div style={{ flex: "1", minWidth: "0", display: "flex", flexDirection: "column", gap: "2px" }}>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: "20px", lineHeight: "1.05" }}>{x.name}</div>
+                  <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>{x.meta}</div>
                 </div>
-                <button className="tap" onClick={v.removeOld} aria-label="Delete Old Pune peths pack" style={{ width: "40px", height: "40px", borderRadius: "20px", border: "1px solid #D5DAD6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <button className="tap" onClick={x.remove} aria-label={x.removeLabel} style={{ width: "40px", height: "40px", borderRadius: "20px", border: "1px solid #D5DAD6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
                   </svg>
                 </button>
               </div>
-            </>
-          )}
-          {v.oldGone && (
-            <>
-              <div className="swap" style={{ height: "52px", borderRadius: "16px", background: "#F0F1EE", padding: "0 8px 0 16px", display: "flex", alignItems: "center", gap: "10px", fontSize: "13.5px", color: "#4A5451" }}>
-                <span style={{ flex: "1" }}>Old Pune peths removed · 18 MB freed</span>
-                <button className="tap" onClick={v.undoOld} style={{ height: "40px", padding: "0 14px", border: "none", borderRadius: "20px", background: "transparent", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "700", color: "var(--primary)", cursor: "pointer" }}>Undo</button>
+              )}
+              {x.gone && !x.warn && (
+<div className="swap" style={{ height: "52px", borderRadius: "16px", background: "#F0F1EE", padding: "0 8px 0 16px", display: "flex", alignItems: "center", gap: "10px", fontSize: "13.5px", color: "#4A5451" }}>
+                <span style={{ flex: "1" }}>{x.goneText}</span>
+                <button className="tap" onClick={x.undo} style={{ height: "40px", padding: "0 14px", border: "none", borderRadius: "20px", background: "transparent", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "700", color: "var(--primary)", cursor: "pointer" }}>Undo</button>
               </div>
-            </>
-          )}
-          {v.keepSin && (
-            <>
-              <div className="swap" style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "20px", padding: "14px 16px", display: "flex", alignItems: "center", gap: "14px" }}>
-                <div style={{ width: "48px", height: "48px", borderRadius: "14px", background: "#4A3426", flexShrink: "0" }} />
-                <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "2px" }}>
-                  <div style={{ fontFamily: "var(--font-display)", fontSize: "20px", lineHeight: "1.05" }}>Sinhagad Fort</div>
-                  <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>30 MB · ghat road + fort · 2 days ago</div>
-                </div>
-                <button className="tap" onClick={v.removeSin} aria-label="Delete Sinhagad Fort pack" style={{ width: "40px", height: "40px", borderRadius: "20px", border: "1px solid #D5DAD6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
-                  </svg>
-                </button>
+              )}
+              {x.gone && x.warn && (
+<div className="swap" style={{ height: "52px", borderRadius: "16px", background: "#FDF0E1", padding: "0 8px 0 16px", display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "#6E3A0E" }}>
+                <span style={{ flex: "1" }}>{x.goneText}</span>
+                <button className="tap" onClick={x.undo} style={{ height: "40px", padding: "0 14px", border: "none", borderRadius: "20px", background: "transparent", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "700", color: "#8A4A12", cursor: "pointer" }}>Undo</button>
               </div>
-            </>
-          )}
-          {v.sinGone && (
-            <>
-              <div className="swap" style={{ height: "52px", borderRadius: "16px", background: "#FDF0E1", padding: "0 8px 0 16px", display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "#6E3A0E" }}>
-                <span style={{ flex: "1" }}>Sinhagad removed · it's in your plan and has weak signal</span>
-                <button className="tap" onClick={v.undoSin} style={{ height: "40px", padding: "0 14px", border: "none", borderRadius: "20px", background: "transparent", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "700", color: "#8A4A12", cursor: "pointer" }}>Undo</button>
-              </div>
-            </>
+              )}
+            </Fragment>
+          ))}
+          {v.noneSaved && (
+            <div style={{ fontSize: "13px", color: "var(--muted)" }}>Nothing saved yet. Save an area before you head somewhere with weak signal.</div>
           )}
         </div>
-        <div className="rise d5" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>SUGGESTED FOR YOUR TRIPS</div>
-          <div style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "20px", padding: "14px 16px", display: "flex", flexDirection: "column", gap: "12px" }}>
+        {((v.groups ?? []) as any[]).map((g: any) => (
+          <div key={g.key} className="rise d5" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>{g.title}</div>
+            {((g.items ?? []) as any[]).map((x: any) => (
+              <Fragment key={x.key}>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "20px", padding: "14px 16px", display: "flex", flexDirection: "column", gap: "12px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-              <div style={{ width: "48px", height: "48px", borderRadius: "14px", background: "#4A3426", flexShrink: "0" }} />
-              <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "2px" }}>
-                <div style={{ fontFamily: "var(--font-display)", fontSize: "20px", lineHeight: "1.05" }}>Rajgad Fort</div>
-                <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>{v.rajStatus}</div>
+              <div style={{ width: "48px", height: "48px", borderRadius: "14px", background: x.tone, flexShrink: "0" }} />
+              <div style={{ flex: "1", minWidth: "0", display: "flex", flexDirection: "column", gap: "2px" }}>
+                <div style={{ fontFamily: "var(--font-display)", fontSize: "20px", lineHeight: "1.05" }}>{x.name}</div>
+                <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>{x.status}</div>
               </div>
-              <button className="tap" onClick={v.download} style={{ height: "40px", padding: "0 16px", borderRadius: "20px", border: "none", background: v.btnBg, color: v.btnFg, fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>{v.btnLabel}</button>
+              <button className="tap" onClick={x.download} disabled={x.busy} aria-label={x.downloadLabel} style={{ height: "40px", padding: "0 16px", borderRadius: "20px", border: "none", background: x.btnBg, color: x.btnFg, fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>{x.btnLabel}</button>
             </div>
-            {v.showBar && (
+            {x.showBar && (
               <>
                 <div style={{ height: "4px", borderRadius: "2px", background: "var(--line)", overflow: "hidden" }}>
-                  <div className="prog" style={{ height: "4px", width: v.prog, background: "var(--primary)" }} />
+                  <div className="prog" style={{ height: "4px", width: x.prog, background: "var(--primary)" }} />
                 </div>
               </>
             )}
+            </div>
+              </Fragment>
+            ))}
           </div>
-        </div>
+        ))}
         <div className="rise d6" style={{ display: "flex", alignItems: "center", gap: "14px", marginTop: "auto", borderTop: "1px solid var(--line)", paddingTop: "16px" }}>
           <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "2px" }}>
             <div style={{ fontSize: "14.5px", fontWeight: "600" }}>Auto-download for planned trips</div>
-            <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>On Wi-Fi only</div>
+            <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>{v.autoText}</div>
           </div>
           <button onClick={v.toggleAuto} aria-label="Auto-download" aria-pressed={v.autoPressed} style={{ position: "relative", width: "52px", height: "32px", border: "none", padding: "0", background: "transparent", cursor: "pointer", flexShrink: "0" }}>
             <span className="track" style={{ position: "absolute", inset: "0", borderRadius: "16px", background: v.autoTrack }} />

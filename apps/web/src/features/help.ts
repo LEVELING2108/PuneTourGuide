@@ -2,6 +2,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
 import { safetyApi } from '../api/safety';
 import { metres, type LatLng } from '../lib/geo';
+import { offlineHelpNear } from './offline';
 
 export type HelpCategory = 'hospital' | 'clinic' | 'police' | 'fire_station';
 
@@ -28,6 +29,21 @@ const rank = (h: Help) => (h.category === 'hospital' ? (h.emergency ? 0 : 1) : h
  * outside its area, or before the first import, the live safety service answers instead.
  */
 async function fetchHelp(at: LatLng, signal?: AbortSignal): Promise<Help[]> {
+  try {
+    return await fetchOnline(at, signal);
+  } catch (err) {
+    if ((err as Error).name === 'AbortError') throw err;
+    // No network: hospitals and police from offline packs saved on this phone
+    const saved = await offlineHelpNear(at);
+    if (!saved.length) throw err;
+    return saved
+      .filter((h): h is typeof h & { category: HelpCategory } => CATS.includes(h.category as HelpCategory))
+      .map((h, i) => ({ ...h, key: `o${i}` }))
+      .sort((a, b) => rank(a) - rank(b) || a.km - b.km);
+  }
+}
+
+async function fetchOnline(at: LatLng, signal?: AbortSignal): Promise<Help[]> {
   const near = `${at.lat.toFixed(3)},${at.lng.toFixed(3)}`;
   const r = await api<{ covered: boolean; items: ApiHelp[] }>('/help', { query: { near, limit: 30 }, signal });
   if (r.covered) return r.items.map((h) => ({ ...h, key: `h${h.id}` }));

@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router';
+import { medicalApi } from '../../api/medical';
 import { trackingApi, type TrackingSession } from '../../api/safety';
 import { sosApi } from '../../api/sos';
 import { Themed } from '../../components/Themed';
 import { cachedContacts, useContacts } from '../../features/contacts';
 import { isMedical, useHelpNearby } from '../../features/help';
-import { LivePublisher, namesText } from '../../features/live';
+import { LivePublisher } from '../../features/live';
 import { useCurrentPosition } from '../../features/location';
 import { getPosition, lastPosition, rememberPosition } from '../../features/permissions';
 import { kmText } from '../../features/places';
@@ -71,6 +74,7 @@ function smsFallback(primary: { phone: string } | undefined, fix: { lat: number;
 
 export default function SosScreen() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [params] = useSearchParams();
   const loggedIn = useIsLoggedIn();
   const smsWhenOffline = useSettingsStore((s) => s.smsWhenOffline);
@@ -79,6 +83,7 @@ export default function SosScreen() {
   const primary = contacts.find((c) => c.isPrimary) ?? contacts[0];
   const pos = useCurrentPosition();
   const helpQ = useHelpNearby(pos.known ? pos : null);
+  const medicalQ = useQuery({ queryKey: ['medical'], queryFn: medicalApi.get, enabled: loggedIn, staleTime: 10 * 60_000 });
 
   const [active, setActiveState] = useState<Active | null>(loadActive);
   const [count, setCount] = useState(active ? 0 : COUNTDOWN);
@@ -180,17 +185,22 @@ export default function SosScreen() {
     navigate('/', { replace: true });
   };
 
-  // ── Lines under the countdown ─────────────────────────────────
+  // ── Lines under the countdown (translated: this screen must be understood in a crisis) ──
   const names = contacts.map((c) => c.name);
+  const namesText =
+    names.length <= 2 ? names.join(t('and')) : `${names.slice(0, 2).join(', ')}${t('more', { count: names.length - 2 })}`;
   let line1: { pre: string; bold: string; post: string; href?: string | null };
-  if (!contacts.length) line1 = { pre: 'No emergency contacts saved · ', bold: '112', post: active ? ' is being called' : ' will be called' };
+  if (!contacts.length) line1 = { pre: t('sos.noContacts'), bold: '112', post: active ? t('sos.isBeingCalled') : t('sos.willBeCalled') };
   else if (active?.alert === 'failed')
     line1 = smsHref
-      ? { pre: "Couldn't reach the server · ", bold: `Text ${primary!.name} your location`, post: '', href: smsHref }
-      : { pre: "Couldn't alert contacts online · ", bold: 'call them after 112', post: '' };
-  else if (active?.alert === 'sent' && active.alerted > 0) line1 = { pre: '', bold: namesText(names), post: ' alerted with your live location' };
-  else if (active?.alert === 'sent') line1 = { pre: 'Contacts are alerted only when you are logged in · ', bold: '112', post: ' is being called' };
-  else line1 = { pre: 'Live location going to ', bold: namesText(names), post: '' };
+      ? { pre: t('sos.serverDown'), bold: t('sos.textPrimary', { name: primary!.name }), post: '', href: smsHref }
+      : { pre: t('sos.alertFailed'), bold: t('sos.callThemAfter'), post: '' };
+  else if (active?.alert === 'sent' && active.alerted > 0) line1 = { pre: '', bold: namesText, post: t('sos.alerted') };
+  else if (active?.alert === 'sent') line1 = { pre: t('sos.loginToAlert'), bold: '112', post: t('sos.isBeingCalled') };
+  else line1 = { pre: t('sos.liveTo'), bold: namesText, post: '' };
+
+  const med = medicalQ.data;
+  const medicalText = med?.saved ? (med.bloodGroup ? t('sos.medical', { group: med.bloodGroup }) : med.showOnLockScreen ? t('sos.medicalNoGroup') : '') : '';
 
   const here = fix ?? (pos.known ? pos : null);
   const hospital = (helpQ.data ?? [])
@@ -202,16 +212,21 @@ export default function SosScreen() {
     count,
     counting: !active && count > 0,
     calling: !!active,
-    kicker: active ? (active.session ? 'LIVE LOCATION ON' : 'SOS ACTIVE') : params.get('via') === 'shake' ? 'SHAKE DETECTED' : 'SOS',
-    headline: active ? 'Calling 112' : 'Calling 112 in',
+    kicker: active ? (active.session ? t('sos.kicker.live') : t('sos.kicker.active')) : params.get('via') === 'shake' ? t('sos.kicker.shake') : t('sos.kicker.sos'),
+    headline: active ? t('sos.callingHeadline') : t('sos.countingHeadline'),
     offset: String(Math.round(603 * (1 - Math.max(0, count) / COUNTDOWN))),
     line1Pre: line1.pre,
     line1Bold: line1.bold,
     line1Post: line1.post,
     line1Href: line1.href ?? null,
-    hospitalPre: hospital ? 'Nearest trauma care: ' : here ? 'Finding the nearest hospital… ' : 'Ambulance: ',
-    hospitalBold: hospital ? `${hospital.name}, ${kmText(hospital.km)}` : here ? '' : 'call 108',
-    medicalText: '',
+    hospitalPre: hospital ? t('sos.nearest') : here ? t('sos.finding') : t('sos.ambulance'),
+    hospitalBold: hospital ? `${hospital.name}, ${kmText(hospital.km)}` : here ? '' : t('sos.call108'),
+    medicalText,
+    ambulanceLabel: t('sos.ambulanceLabel'),
+    policeLabel: t('sos.policeLabel'),
+    womenLabel: t('sos.womenLabel'),
+    callNowLabel: t('sos.callNow'),
+    cancelLabel: t('sos.cancel'),
     callNow: (e: React.MouseEvent) => {
       if (active) return; // already fired: let the link dial again
       e.preventDefault();
