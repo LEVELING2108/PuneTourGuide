@@ -69,6 +69,10 @@ app.use(
           },
         }
       : false,
+    // Map tile keys (MapTiler) are locked to our domain and checked against the Referer, so send
+    // the origin (never the path or query) on cross-site requests. Helmet's default sends nothing,
+    // which would blank the map.
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   })
 );
 
