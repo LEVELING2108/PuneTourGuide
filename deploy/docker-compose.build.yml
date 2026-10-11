@@ -1,0 +1,18 @@
+# Build the images on this machine instead of pulling them (adds to docker-compose.prod.yml):
+#   docker compose -f deploy/docker-compose.prod.yml -f deploy/docker-compose.build.yml \
+#     --env-file deploy/.env.production up -d --build
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        VITE_MAP_TILE_URL: ${VITE_MAP_TILE_URL:-}
+        VITE_MAP_TILE_ATTRIBUTION: ${VITE_MAP_TILE_ATTRIBUTION:-}
+        VITE_MAP_TILES_OFFLINE: ${VITE_MAP_TILES_OFFLINE:-false}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+        VITE_CONTACT_EMAIL: ${VITE_CONTACT_EMAIL:-}
+        VITE_RELEASE: ${RELEASE:-}
+  safety:
+    build: ../services/safety

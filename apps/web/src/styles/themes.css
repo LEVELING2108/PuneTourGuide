@@ -1,0 +1,49 @@
+/* Theme tokens (design-reference/README.md). Switch with <html data-theme="classic|deccan">. */
+:root,
+[data-theme='classic'] {
+  --bg: #f6f6f3;
+  --surface: #ffffff;
+  --ink: #111614;
+  --muted: #5e6763;
+  --line: #e4e6e2;
+  --primary: #0f4c42;
+  --primary-strong: #0a3730;
+  --gold: #c59a3a;
+  --tile-1: #4a3426;
+  --tile-2: #26303b;
+  --tile-3: #1b2220;
+  --font-display: 'Instrument Serif', serif;
+  --font-body: 'Hanken Grotesk', sans-serif;
+  --font-accent: 'Mukta', sans-serif;
+  --backdrop: #e9ebe7;
+  /* Map: background while tiles load, and the tint applied to OSM tiles */
+  --map-bg: #ecede8;
+  --map-tiles-filter: saturate(0.85);
+  color-scheme: light;
+}
+
+[data-theme='deccan'] {
+  --bg: #f3eadb;
+  --surface: #fffbf3;
+  --ink: #231c17;
+  --muted: #6b5d50;
+  --line: #e2d4be;
+  --primary: #7a1f4e;
+  --primary-strong: #5c1239;
+  --gold: #c59a3a;
+  --tile-1: #7a1f4e;
+  --tile-2: #a4462b;
+  --tile-3: #0e5b5e;
+  --font-display: 'DM Serif Display', serif;
+  --font-body: 'Mukta', sans-serif;
+  --font-accent: 'Yatra One', 'Mukta', sans-serif;
+  --backdrop: #e7dac4;
+  --map-bg: #ede3d0;
+  --map-tiles-filter: sepia(0.38) saturate(0.85) hue-rotate(-6deg) brightness(0.98);
+}
+
+/* SOS red is never themed */
+:root {
+  --sos: #c8321c;
+  --sos-strong: #a3281a;
+}

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer — Splash</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Hanken+Grotesk:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F6F6F3}a:hover{color:#FFFFFF}
+@keyframes draw{from{stroke-dashoffset:70}to{stroke-dashoffset:0}}
+@keyframes needle{0%{transform:rotate(-120deg);opacity:0}60%{transform:rotate(14deg);opacity:1}80%{transform:rotate(-6deg)}100%{transform:rotate(0)}}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes ring{from{transform:scale(.6);opacity:0}40%{opacity:.25}to{transform:scale(1.6);opacity:0}}
+@keyframes breathe{50%{opacity:.45}}
+.circle{stroke-dasharray:70;animation:draw 1.2s cubic-bezier(.4,.1,.2,1) .2s both}
+.needle{transform-origin:12px 12px;animation:needle 1.3s cubic-bezier(.3,.8,.2,1) .7s both}
+.rise{animation:rise .8s cubic-bezier(.2,.7,.2,1) both}
+.r1{animation-delay:1.2s}.r2{animation-delay:1.45s}.r3{animation-delay:2.2s}
+.wave{position:absolute;left:50%;top:50%;width:240px;height:240px;margin:-120px 0 0 -120px;border-radius:50%;border:1px solid #F6F6F3;animation:ring 3.2s ease-out 1s infinite}
+.w2{animation-delay:2.6s}
+.hint{animation:rise .8s ease 2.2s both,breathe 2.4s ease-in-out 3s infinite}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<a href="Intro.dc.html" aria-label="Start" style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #0F4C42; font-family: 'Hanken Grotesk', sans-serif; color: #F6F6F3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-decoration: none">
+  <div style="position: absolute; left: 0; right: 0; top: 0; bottom: 0" aria-hidden="true">
+    <span class="wave"></span><span class="wave w2"></span>
+  </div>
+  <svg width="88" height="88" viewBox="0 0 24 24" fill="none" stroke="#F6F6F3" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" style="position: relative">
+    <circle class="circle" cx="12" cy="12" r="10"></circle>
+    <g class="needle"><path d="M15.5 8.5l-2 5-5 2 2-5z" fill="#F6F6F3" fill-opacity="0.15"></path></g>
+  </svg>
+  <div class="rise r1" style="font-family: 'Instrument Serif', serif; font-size: 44px; line-height: 1; position: relative">Pune <span style="font-style: italic; color: #A9CFC6">Explorer</span></div>
+  <div class="rise r2" style="font-size: 14px; letter-spacing: 0.04em; color: #CFE3DE; position: relative">Explore boldly. Help is always near.</div>
+  <div class="hint" style="position: absolute; bottom: 56px; font-size: 12px; letter-spacing: 0.16em; color: #A9CFC6">TAP TO BEGIN</div>
+</a>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

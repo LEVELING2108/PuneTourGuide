@@ -1,0 +1,58 @@
+{
+  "short_name": "Pune Explorer",
+  "name": "Pune Explorer",
+  "description": "Places, day plans and one-tap SOS for Pune. Works offline for hospitals and emergency numbers.",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#F6F6F3",
+  "theme_color": "#0F4C42",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "en-IN",
+  "categories": [
+    "travel",
+    "navigation"
+  ],
+  "id": "/",
+  "scope": "/",
+  "shortcuts": [
+    {
+      "name": "SOS",
+      "short_name": "SOS",
+      "description": "Call 112 and alert your contacts",
+      "url": "/sos",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

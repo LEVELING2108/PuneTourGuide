@@ -1,17 +1,18 @@
-version: '3.8'
-
+# Local stack: PostGIS, Redis, Tour API (Express) and Safety service (FastAPI).
+# `npm run setup` starts only postgres + redis; `npm run dev` runs the apps outside Docker.
+# Host ports are unusual on purpose (5440, 6390, 8010) so they never clash with other
+# projects or a PostgreSQL installed on the machine.
 services:
-  # PostgreSQL with PostGIS Extension
   postgres:
     image: postgis/postgis:16-3.4
-    container_name: pune_tour_guide_postgres
+    container_name: pune_explorer_postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: Pune_Tour_Guide
     ports:
-      - "5432:5432"
+      - "5440:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -20,13 +21,12 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis Cache Store
   redis:
     image: redis:7-alpine
-    container_name: pune_tour_guide_redis
+    container_name: pune_explorer_redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "6390:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -35,7 +35,36 @@ services:
       timeout: 5s
       retries: 5
 
+  tour-api:
+    build:
+      context: .
+      dockerfile: services/tour-api/Dockerfile
+    container_name: pune_explorer_tour_api
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/Pune_Tour_Guide?schema=public
+      REDIS_URL: redis://redis:6379
+      SAFETY_SERVICE_URL: http://safety:8000
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  safety:
+    build: ./services/safety
+    container_name: pune_explorer_safety
+    environment:
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "8010:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   redis_data:
-

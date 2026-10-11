@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer — Safety permissions</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0F4C42}a:hover{color:#0A3730}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.7)}60%{transform:scale(1.1)}100%{transform:none}}
+.rise{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.05s}.d2{animation-delay:.12s}.d3{animation-delay:.2s}.d4{animation-delay:.28s}.d5{animation-delay:.36s}.d6{animation-delay:.44s}
+.card{transition:border-color .35s,background-color .35s}
+.tap{transition:transform .2s cubic-bezier(.2,.7,.2,1),background-color .3s,color .3s,border-color .3s}
+.tap:active{transform:scale(.96)}
+.ok{animation:pop .4s cubic-bezier(.2,.7,.2,1)}
+.cta{transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
+.cta:hover{transform:translateY(-2px);box-shadow:0 16px 30px -14px rgba(15,76,66,.7)}
+.cta:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F6F6F3; font-family: 'Hanken Grotesk', sans-serif; color: #111614; padding: 64px 24px 32px; display: flex; flex-direction: column; gap: 22px">
+
+  <div class="rise d1" style="display: flex; flex-direction: column; gap: 10px">
+    <div style="font-size: 11.5px; font-weight: 600; letter-spacing: 0.16em; color: #5E6763">BEFORE YOU START</div>
+    <h1 style="margin: 0; font-family: 'Instrument Serif', serif; font-size: 44px; font-weight: 400; line-height: 0.98">Turn on <span style="font-style: italic; color: #0F4C42">safety</span></h1>
+    <p style="margin: 0; font-size: 14.5px; line-height: 1.5; color: #4A5451">Two permissions make SOS work instantly, even before you have an account. Your phone will ask you to confirm each.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <sc-for list="{{perms}}" as="p" hint-placeholder-count="3">
+      <div class="card rise {{p.delay}}" style="border-radius: 20px; border: 1px solid {{p.bd}}; background: {{p.bg}}; padding: 16px; display: flex; gap: 14px; align-items: flex-start">
+        <div style="width: 42px; height: 42px; border-radius: 21px; background: #E8F0ED; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+          <sc-if value="{{p.isLoc}}" hint-placeholder-val="{{ false }}">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0F4C42" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>
+          </sc-if>
+          <sc-if value="{{p.isMotion}}" hint-placeholder-val="{{ false }}">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0F4C42" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="18" rx="2"></rect><path d="M3 8l1.5 1.5L3 11M21 8l-1.5 1.5L21 11"></path></svg>
+          </sc-if>
+          <sc-if value="{{p.isNotify}}" hint-placeholder-val="{{ false }}">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0F4C42" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"></path><path d="M10 21h4"></path></svg>
+          </sc-if>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 3px">
+          <div style="font-size: 15px; font-weight: 600">{{p.title}}</div>
+          <div style="font-size: 12.5px; line-height: 1.45; color: #5E6763">{{p.why}}</div>
+        </div>
+        <sc-if value="{{p.pending}}" hint-placeholder-val="{{ true }}">
+          <button class="tap" onClick="{{p.allow}}" style="height: 36px; padding: 0 14px; border-radius: 18px; border: none; background: #111614; color: #F6F6F3; font-family: 'Hanken Grotesk', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0">Allow</button>
+        </sc-if>
+        <sc-if value="{{p.granted}}" hint-placeholder-val="{{ false }}">
+          <span class="ok" aria-label="Allowed" style="width: 36px; height: 36px; border-radius: 18px; background: #0F4C42; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F6F6F3" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></span>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+
+  <div class="rise d5" style="display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.45; color: #5E6763">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5E6763" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+    <span>Your location is only shared when you start an SOS or turn on trip sharing. You can change these any time in Profile.</span>
+  </div>
+
+  <div class="rise d6" style="margin-top: auto; display: flex; flex-direction: column; gap: 12px; align-items: center">
+    <a class="cta" href="SignUp.dc.html" style="width: 100%; height: 56px; border-radius: 28px; background: #0F4C42; color: #F6F6F3; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; text-decoration: none">{{ctaLabel}}</a>
+    <div style="display: flex; gap: 18px; font-size: 13.5px">
+      <a href="SignUp.dc.html" style="color: #5E6763; text-decoration: none">Not now</a>
+      <span style="color: #C3CAC6">·</span>
+      <span style="color: #5E6763">Have an account? <a href="Login.dc.html" style="font-weight: 600; text-decoration: none">Log in</a></span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { loc: false, motion: false, notify: false };
+  }
+  renderVals() {
+    const s = this.state;
+    const defs = [
+      { key: 'loc', title: 'Location', why: 'Finds the nearest hospital and police, and sends your exact spot during an SOS.', delay: 'd2' },
+      { key: 'motion', title: 'Motion', why: 'Lets a hard shake start the SOS countdown when you can’t reach the screen.', delay: 'd3' }
+    ];
+    const perms = defs.map((d) => {
+      const on = !!s[d.key];
+      return {
+        ...d,
+        isLoc: d.key === 'loc',
+        isMotion: d.key === 'motion',
+        isNotify: d.key === 'notify',
+        pending: !on,
+        granted: on,
+        bd: on ? '#B9D3CC' : '#E4E6E2',
+        bg: on ? '#F1F6F4' : '#FFFFFF',
+        allow: () => this.setState({ [d.key]: true })
+      };
+    });
+    const count = ['loc', 'motion'].filter((k) => s[k]).length;
+    return {
+      perms,
+      ctaLabel: count === 2 ? 'All set · continue' : 'Continue'
+    };
+  }
+}
+</script>
+</body>
+</html>

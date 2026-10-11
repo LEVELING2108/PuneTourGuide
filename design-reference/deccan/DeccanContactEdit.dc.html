@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer (Deccan) — Edit contact</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&amp;family=Yatra+One&amp;family=Mukta:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#7A1F4E}a:hover{color:#5C1239}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes swap{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.rise{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.swap{animation:swap .4s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.05s}.d2{animation-delay:.12s}.d3{animation-delay:.19s}.d4{animation-delay:.26s}.d5{animation-delay:.33s}.d6{animation-delay:.4s}
+.tap{transition:transform .2s cubic-bezier(.2,.7,.2,1),background-color .3s,color .3s,border-color .3s}
+.tap:active{transform:scale(.97)}
+.pick:hover{border-color:#7A1F4E}
+.field{transition:border-color .3s,box-shadow .3s}
+.field:focus-within{border-color:#7A1F4E;box-shadow:0 0 0 3px rgba(122,31,78,.12)}
+.knob{transition:left .35s cubic-bezier(.3,.8,.2,1)}
+.track{transition:background-color .35s}
+.cta{transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
+.cta:hover{transform:translateY(-2px);box-shadow:0 16px 30px -14px rgba(122,31,78,.7)}
+.cta:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F3EADB; font-family: 'Mukta', sans-serif; color: #231C17; padding: 56px 24px 32px; display: flex; flex-direction: column; gap: 18px">
+  <svg width="390" height="10" viewBox="0 0 390 10" aria-hidden="true" style="position: absolute; top: 0; left: 0; z-index: 6; pointer-events: none"><defs><pattern id="zz" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#C59A3A"></rect><path d="M0 10 L5 2 L10 10 Z" fill="#5C1239"></path></pattern></defs><rect width="390" height="10" fill="url(#zz)"></rect></svg>
+
+  <div class="rise d1" style="display: flex; align-items: center; justify-content: space-between">
+    <a class="tap" href="DeccanContacts.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #DCCDB6; background: #FFFBF3; display: flex; align-items: center; justify-content: center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#231C17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a>
+    <div style="display: flex; flex-direction: column"><div style="font-family: 'Yatra One', sans-serif; font-size: 19px; line-height: 1.25; color: #A4462B">संपर्क</div><h1 style="margin: 0; font-family: 'DM Serif Display', serif; font-size: 26px; font-weight: 400">{{title}}</h1></div>
+    <div style="width: 44px"></div>
+  </div>
+
+  <sc-if value="{{isAdd}}" hint-placeholder-val="{{ false }}">
+    <button class="rise d2 tap pick" onClick="{{pickContact}}" style="height: 54px; flex-shrink: 0; border-radius: 27px; border: 1px solid #D8C6A6; background: #FFFBF3; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Mukta', sans-serif; font-size: 15px; font-weight: 600; color: #231C17; cursor: pointer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7A1F4E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><circle cx="12" cy="10" r="3"></circle><path d="M7.5 17c.8-2 2.4-3 4.5-3s3.7 1 4.5 3"></path></svg>
+      {{pickLabel}}</button>
+  </sc-if>
+
+  <sc-if value="{{showAvatar}}" hint-placeholder-val="{{ true }}">
+    <div class="rise d2 swap" style="display: flex; flex-direction: column; align-items: center; gap: 8px">
+      <div style="width: 80px; height: 80px; border-radius: 40px; background: #A4462B; color: #F3EADB; display: flex; align-items: center; justify-content: center; font-family: 'DM Serif Display', serif; font-size: 32px">{{initial}}</div>
+    </div>
+  </sc-if>
+
+  <label class="rise d3" style="display: flex; flex-direction: column; gap: 6px">
+    <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #6B5D50">NAME</span>
+    <span class="field" style="height: 50px; border-radius: 14px; border: 1px solid #DCCDB6; background: #FFFBF3; display: flex; align-items: center; padding: 0 16px"><input value="{{name}}" onInput="{{onName}}" placeholder="Name" style="border: none; outline: none; flex: 1; min-width: 0; font-family: 'Mukta', sans-serif; font-size: 15px; background: transparent; color: #231C17"></span>
+  </label>
+
+  <div class="rise d3" style="display: flex; flex-direction: column; gap: 8px">
+    <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #6B5D50">RELATION</span>
+    <div style="display: flex; flex-wrap: wrap; gap: 6px" role="radiogroup" aria-label="Relation">
+      <sc-for list="{{rels}}" as="r" hint-placeholder-count="5">
+        <button class="tap" role="radio" aria-checked="{{r.checked}}" onClick="{{r.pick}}" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid {{r.bd}}; background: {{r.bg}}; color: {{r.fg}}; font-family: 'Mukta', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer">{{r.label}}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <label class="rise d4" style="display: flex; flex-direction: column; gap: 6px">
+    <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #6B5D50">MOBILE NUMBER</span>
+    <span class="field" style="height: 50px; border-radius: 14px; border: 1px solid #DCCDB6; background: #FFFBF3; display: flex; align-items: center; gap: 12px; padding: 0 16px 0 5px">
+      <span style="height: 40px; padding: 0 10px; border-radius: 10px; background: #EFE4D2; display: flex; align-items: center; font-size: 14.5px; font-weight: 600">+91</span>
+      <input type="tel" inputmode="numeric" value="{{phone}}" placeholder="98XXX XXXXX" style="border: none; outline: none; flex: 1; min-width: 0; font-family: 'Mukta', sans-serif; font-size: 16px; letter-spacing: 0.04em; background: transparent; color: #231C17">
+    </span>
+  </label>
+
+  <div class="rise d5" style="display: flex; align-items: center; gap: 14px">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+      <div style="font-size: 14.5px; font-weight: 600">Primary contact</div>
+      <div style="font-size: 12.5px; color: #6B5D50">Alerted first, and gets a call if they don't open the SMS</div>
+    </div>
+    <button onClick="{{togglePrimary}}" aria-label="Primary contact" aria-pressed="{{primaryPressed}}" style="position: relative; width: 52px; height: 32px; border: none; padding: 0; background: transparent; cursor: pointer; flex-shrink: 0">
+      <span class="track" style="position: absolute; inset: 0; border-radius: 16px; background: {{primaryTrack}}"></span>
+      <span class="knob" style="position: absolute; top: 4px; left: {{primaryKnob}}; width: 24px; height: 24px; border-radius: 12px; background: #FFFBF3; box-shadow: 0 2px 6px rgba(0,0,0,0.25)"></span></button>
+  </div>
+
+  <div class="rise d6" style="margin-top: auto; display: flex; flex-direction: column; gap: 12px">
+    <a class="cta" href="DeccanContacts.dc.html" style="height: 56px; border-radius: 28px; background: #7A1F4E; color: #F3EADB; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; text-decoration: none">{{ctaLabel}}</a>
+    <sc-if value="{{canRemove}}" hint-placeholder-val="{{ true }}">
+      <sc-if value="{{notConfirming}}" hint-placeholder-val="{{ true }}">
+        <button class="tap" onClick="{{askRemove}}" style="height: 48px; border-radius: 24px; border: none; background: transparent; font-family: 'Mukta', sans-serif; font-size: 14.5px; font-weight: 600; color: #A3281A; cursor: pointer">Remove contact</button>
+      </sc-if>
+      <sc-if value="{{confirming}}" hint-placeholder-val="{{ false }}">
+        <div class="swap" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 16px; background: #FBE9E5">
+          <div style="flex: 1; font-size: 13px; color: #7A1E12">Remove {{name}}? They won't get SOS alerts.</div>
+          <button class="tap" onClick="{{cancelRemove}}" style="height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid #E5B3AA; background: #FFFBF3; font-family: 'Mukta', sans-serif; font-size: 13px; font-weight: 600; color: #231C17; cursor: pointer">Keep</button>
+          <a class="tap" href="DeccanContacts.dc.html" style="height: 36px; padding: 0 12px; border-radius: 18px; background: #A3281A; color: #FFFBF3; display: flex; align-items: center; font-size: 13px; font-weight: 600; text-decoration: none">Remove</a>
+        </div>
+      </sc-if>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["edit","add"],"default":"edit"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const add = (props.mode ?? 'edit') === 'add';
+    this.state = add
+      ? { name: '', rel: 'Friend', phone: '', primary: false, confirm: false, picked: false }
+      : { name: 'Aai', rel: 'Parent', phone: '98XXX X4521', primary: true, confirm: false, picked: false };
+  }
+  renderVals() {
+    const add = (this.props.mode ?? 'edit') === 'add';
+    const s = this.state;
+    const rels = ['Parent', 'Partner', 'Sibling', 'Friend', 'Other'].map((label) => {
+      const on = label === s.rel;
+      return { label, checked: on ? 'true' : 'false', bg: on ? '#231C17' : '#FFFBF3', fg: on ? '#F3EADB' : '#231C17', bd: on ? '#231C17' : '#DCCDB6', pick: () => this.setState({ rel: label }) };
+    });
+    return {
+      rels,
+      isAdd: add,
+      title: add ? 'Add contact' : 'Edit contact',
+      ctaLabel: add ? 'Add contact' : 'Save changes',
+      showAvatar: !add || s.picked,
+      initial: (s.name || '?').charAt(0).toUpperCase(),
+      pickLabel: s.picked ? 'Picked from contacts · change' : 'Pick from phone contacts',
+      pickContact: () => this.setState({ picked: true, name: 'Didi', rel: 'Sibling', phone: '97XXX X3306' }),
+      name: s.name,
+      phone: s.phone,
+      onName: (e) => this.setState({ name: e.target.value }),
+      primaryPressed: s.primary ? 'true' : 'false',
+      primaryTrack: s.primary ? '#7A1F4E' : '#D3C3A8',
+      primaryKnob: s.primary ? '24px' : '4px',
+      togglePrimary: () => this.setState({ primary: !s.primary }),
+      canRemove: !add,
+      confirming: s.confirm,
+      notConfirming: !s.confirm,
+      askRemove: () => this.setState({ confirm: true }),
+      cancelRemove: () => this.setState({ confirm: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer (Deccan) — Language</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&amp;family=Yatra+One&amp;family=Mukta:wght@400;500;600;700&amp;family=Mukta+Vaani:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#7A1F4E}a:hover{color:#5C1239}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.rise{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.05s}.d2{animation-delay:.12s}.d3{animation-delay:.19s}.d4{animation-delay:.26s}.d5{animation-delay:.33s}.d6{animation-delay:.4s}
+.tap{transition:transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .3s,background-color .3s,color .3s,border-color .3s}
+.tap:active{transform:scale(.98)}
+.radio{transition:border-color .3s,border-width .3s}
+@keyframes swap{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.swap{animation:swap .4s cubic-bezier(.2,.7,.2,1) both}
+.knob{transition:left .35s cubic-bezier(.3,.8,.2,1)}
+.track{transition:background-color .35s}
+.cta{transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
+.cta:hover{transform:translateY(-2px);box-shadow:0 16px 30px -14px rgba(122,31,78,.7)}
+.cta:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F3EADB; font-family: 'Mukta', sans-serif; color: #231C17; padding: 56px 24px 32px; display: flex; flex-direction: column; gap: 20px">
+  <svg width="390" height="10" viewBox="0 0 390 10" aria-hidden="true" style="position: absolute; top: 0; left: 0; z-index: 6; pointer-events: none"><defs><pattern id="zz" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#C59A3A"></rect><path d="M0 10 L5 2 L10 10 Z" fill="#5C1239"></path></pattern></defs><rect width="390" height="10" fill="url(#zz)"></rect></svg>
+
+  <div class="rise d1" style="display: flex; align-items: center">
+    <a class="tap" href="DeccanSettings.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #DCCDB6; background: #FFFBF3; display: flex; align-items: center; justify-content: center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#231C17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a>
+  </div>
+
+  <div style="display: flex; flex-direction: column"><div style="font-family: 'Yatra One', sans-serif; font-size: 19px; line-height: 1.25; color: #A4462B">भाषा निवडा</div><h1 class="rise d2" style="margin: 0; font-family: 'DM Serif Display', serif; font-size: 40px; font-weight: 400; line-height: 1">Language</h1></div>
+
+  <div class="rise d3" style="position: relative; overflow: hidden; height: 112px; border-radius: 16px; background: #7A1F4E; color: #F3EADB; padding: 18px 20px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between"><svg width="390" height="10" viewBox="0 0 390 10" aria-hidden="true" style="position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none"><defs><pattern id="zi" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#C59A3A"></rect><path d="M0 10 L5 2 L10 10 Z" fill="#5C1239"></path></pattern></defs><rect width="390" height="10" fill="url(#zi)"></rect></svg>
+    <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.16em; color: #F2C9DC">PREVIEW</div>
+    <div style="font-family: {{previewFont}}; font-size: {{previewSize}}; line-height: 1.1">{{preview}}</div>
+  </div>
+
+  <div class="rise d4" style="display: flex; flex-direction: column" role="radiogroup" aria-label="App language">
+    <sc-if value="{{collapsed}}" hint-placeholder-val="{{ true }}">
+    <sc-for list="{{langs}}" as="l" hint-placeholder-count="4">
+      <button class="tap" onClick="{{l.pick}}" role="radio" aria-checked="{{l.checked}}" style="display: flex; align-items: center; gap: 14px; padding: 14px 4px; border: none; border-bottom: 1px solid #E2D4BE; background: transparent; text-align: left; cursor: pointer; font-family: 'Mukta', sans-serif; color: #231C17">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 1px">
+          <div style="font-family: 'Mukta', 'Mukta Vaani', 'Mukta', sans-serif; font-size: 18px; font-weight: 600">{{l.native}}</div>
+          <div style="font-size: 12.5px; color: #6B5D50">{{l.english}}</div>
+        </div>
+        <span class="radio" style="width: 22px; height: 22px; border-radius: 11px; box-sizing: border-box; border: {{l.ring}}; background: #FFFBF3"></span>
+      </button>
+    </sc-for>
+    </sc-if>
+    <sc-if value="{{expanded}}" hint-placeholder-val="{{ false }}">
+      <div class="swap" style="display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 8px">
+        <sc-for list="{{allLangs}}" as="a" hint-placeholder-count="22">
+          <button class="tap" onClick="{{a.pick}}" aria-pressed="{{a.pressed}}" style="height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid {{a.bd}}; background: {{a.bg}}; color: {{a.fg}}; font-family: 'Mukta', sans-serif; font-size: 12.5px; font-weight: 600; cursor: pointer">{{a.label}}</button>
+        </sc-for>
+      </div>
+    </sc-if>
+    <button class="tap" onClick="{{toggleMore}}" aria-expanded="{{expandedAttr}}" style="display: flex; align-items: center; gap: 14px; padding: 14px 4px; border: none; background: transparent; text-align: left; cursor: pointer; font-family: 'Mukta', sans-serif; color: #7A1F4E">
+      <div style="flex: 1; font-size: 14.5px; font-weight: 600">{{moreLabel}}</div>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate({{chevron}}); transition: transform .35s"><path d="M9 6l6 6-6 6"></path></svg></button>
+  </div>
+
+  <div class="rise d5" style="display: flex; align-items: center; gap: 14px">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+      <div style="font-size: 14.5px; font-weight: 600">Match the state I'm in</div>
+      <div style="font-size: 12.5px; color: #6B5D50">Suggests the local language when you travel</div>
+    </div>
+    <button onClick="{{toggleAuto}}" aria-label="Match the state I'm in" aria-pressed="{{autoPressed}}" style="position: relative; width: 52px; height: 32px; border: none; padding: 0; background: transparent; cursor: pointer; flex-shrink: 0">
+      <span class="track" style="position: absolute; inset: 0; border-radius: 16px; background: {{autoTrack}}"></span>
+      <span class="knob" style="position: absolute; top: 4px; left: {{autoKnob}}; width: 24px; height: 24px; border-radius: 12px; background: #FFFBF3; box-shadow: 0 2px 6px rgba(0,0,0,0.25)"></span></button>
+  </div>
+
+  <a class="rise d6 cta" href="DeccanSettings.dc.html" style="margin-top: auto; height: 56px; border-radius: 28px; background: #7A1F4E; color: #F3EADB; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; text-decoration: none">Use {{chosen}}</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { lang: 'en', auto: true, expanded: false };
+  }
+  renderVals() {
+    const { lang, auto } = this.state;
+    const list = [
+      { id: 'en', native: 'English', english: 'Default', preview: 'Where to, today?' },
+      { id: 'mr', native: 'मराठी', english: 'Marathi', preview: 'आज कुठे जायचं?' },
+      { id: 'hi', native: 'हिन्दी', english: 'Hindi', preview: 'आज कहाँ चलें?' },
+      { id: 'gu', native: 'ગુજરાતી', english: 'Gujarati', preview: 'આજે ક્યાં જવું છે?' }
+    ];
+    const more = ['Assamese', 'Bengali', 'Bodo', 'Dogri', 'Kannada', 'Kashmiri', 'Konkani', 'Maithili', 'Malayalam', 'Manipuri', 'Nepali', 'Odia', 'Punjabi', 'Sanskrit', 'Santali', 'Sindhi', 'Tamil', 'Telugu', 'Urdu'];
+    const cur = list.find((l) => l.id === lang) || { id: lang, native: lang, english: lang, preview: lang + ' pack downloads when you tap Use' };
+    const allNames = ['English', 'Marathi', 'Hindi', 'Gujarati'].concat(more);
+    const idFor = { English: 'en', Marathi: 'mr', Hindi: 'hi', Gujarati: 'gu' };
+    const allLangs = allNames.map((n) => {
+      const id = idFor[n] || n;
+      const on = id === lang;
+      return { label: n, pressed: on ? 'true' : 'false', bg: on ? '#231C17' : '#FFFBF3', fg: on ? '#F3EADB' : '#231C17', bd: on ? '#231C17' : '#DCCDB6', pick: () => this.setState({ lang: id }) };
+    });
+    const ex = this.state.expanded;
+    const langs = list.map((l) => {
+      const on = l.id === lang;
+      return {
+        ...l,
+        checked: on ? 'true' : 'false',
+        ring: on ? '7px solid #7A1F4E' : '1.5px solid #C9B79C',
+        pick: () => this.setState({ lang: l.id })
+      };
+    });
+    return {
+      langs,
+      allLangs,
+      collapsed: !ex,
+      expanded: ex,
+      expandedAttr: ex ? 'true' : 'false',
+      moreLabel: ex ? 'Show fewer' : 'All 22 Indian languages',
+      chevron: ex ? '-90deg' : '90deg',
+      toggleMore: () => this.setState({ expanded: !ex }),
+      preview: cur.preview,
+      chosen: cur.native,
+      previewFont: lang === 'en' ? "'DM Serif Display', serif" : "'Mukta', 'Mukta Vaani', sans-serif",
+      previewSize: lang === 'en' ? '34px' : '30px',
+      autoPressed: auto ? 'true' : 'false',
+      autoTrack: auto ? '#7A1F4E' : '#D3C3A8',
+      autoKnob: auto ? '24px' : '4px',
+      toggleAuto: () => this.setState({ auto: !auto })
+    };
+  }
+}
+</script>
+</body>
+</html>

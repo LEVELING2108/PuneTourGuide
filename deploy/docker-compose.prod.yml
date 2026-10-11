@@ -1,0 +1,137 @@
+# Production on one server with Docker. See docs/LAUNCH_SETUP.md, "Deploy".
+#
+# Ready-made images (built by GitHub Actions, .github/workflows/release.yml):
+#   docker compose --env-file .env.production pull && docker compose --env-file .env.production up -d
+# Or build on the server itself (needs 2 GB+ RAM and the whole repository):
+#   docker compose -f deploy/docker-compose.prod.yml -f deploy/docker-compose.build.yml --env-file deploy/.env.production up -d --build
+#
+# Optional parts, switched on with COMPOSE_PROFILES in .env.production (comma-separated):
+#   db      Postgres + PostGIS on this server (leave off with a managed database)
+#   worker  a separate SMS worker process (then set RUN_WORKERS=false)
+#   jobs    the nightly help-point import (run by cron, see LAUNCH_SETUP step 6)
+name: pune-explorer
+
+x-app: &app
+  image: ${APP_IMAGE:-pune-explorer-app}
+  env_file: .env.production
+  restart: unless-stopped
+  logging: &logging
+    driver: json-file
+    options: { max-size: "10m", max-file: "5" }
+
+services:
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    logging: *logging
+    depends_on:
+      - app
+      - safety
+
+  app:
+    <<: *app
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      # The app sends queued SMS itself unless the separate worker (profile "worker") does
+      RUN_WORKERS: ${RUN_WORKERS:-true}
+      SAFETY_SERVICE_URL: http://safety:8000
+      SENTRY_RELEASE: ${RELEASE:-}
+      # Small servers: cap the JavaScript heap (e.g. --max-old-space-size=256 on 1 GB)
+      NODE_OPTIONS: ${NODE_OPTIONS:-}
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+        required: false
+
+  worker:
+    <<: *app
+    profiles: ["worker"]
+    environment:
+      NODE_ENV: production
+      RUN_MODE: worker
+      SENTRY_RELEASE: ${RELEASE:-}
+      NODE_OPTIONS: ${NODE_OPTIONS:-}
+    depends_on:
+      - app
+      - redis
+
+  safety:
+    image: ${SAFETY_IMAGE:-pune-explorer-safety}
+    restart: unless-stopped
+    environment:
+      REDIS_URL: ${REDIS_URL}
+      ALLOWED_ORIGINS: https://${DOMAIN},https://localhost
+      OVERPASS_ENDPOINTS: ${OVERPASS_ENDPOINTS:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_RELEASE: ${RELEASE:-}
+      # gunicorn processes; 1 is enough on a 1 GB server
+      WEB_CONCURRENCY: ${SAFETY_WORKERS:-2}
+    logging: *logging
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Password-protected; persisted so queued SOS texts survive a restart; never evicts queued jobs
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes", "--maxmemory", "${REDIS_MAXMEMORY:-256mb}", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    logging: *logging
+
+  # Self-hosted Postgres + PostGIS (profile "db"). With a managed database (backups, failover),
+  # leave the profile off and point DATABASE_URL at the provider.
+  postgres:
+    image: postgis/postgis:16-3.4
+    profiles: ["db"]
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pune}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-pune_explorer}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-pune}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging: *logging
+
+  # Nightly hospital / police / fire import from OpenStreetMap (step 6)
+  refresh-help:
+    <<: *app
+    profiles: ["jobs"]
+    restart: "no"
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: ${NODE_OPTIONS:-}
+    command: ["node", "dist/scripts/refresh-help.js"]
+
+volumes:
+  caddy_data:
+  caddy_config:
+  redis_data:
+  postgres_data:

@@ -1,10 +1,10 @@
 # 🏰 Pune Explorer
 
-A modern, high-performance tour guide web application for Pune, featuring interactive maps, dynamic itinerary planning, OpenStreetMap auto-discovery, weather-adaptive routing, and gamification.
+A travel guide for Pune where help is always one tap or one shake away, even offline. Pune Explorer merges PuneTourGuide (places, day plans, XP) with RoadSoS (SOS, live location, nearby hospitals), with two themes: Classic and Deccan.
 
 ---
 
-### **[Backend Architecture](./BACKEND.md)** · **[Contribution Guidelines](./CONTRIBUTING.md)** · **[Changelog](./CHANGELOG.md)**
+### **[Technical Design](./design-reference/TECH_DESIGN.md)** · **[Feature Spec](./design-reference/FEATURES.md)** · **[Backend Architecture](./BACKEND.md)** · **[Contribution Guidelines](./CONTRIBUTING.md)** · **[Changelog](./CHANGELOG.md)**
 
 ---
 
@@ -35,140 +35,102 @@ A modern, high-performance tour guide web application for Pune, featuring intera
 
 ## 🛠️ Local Setup Guide
 
-Follow these steps to run Pune Explorer locally on your development machine.
+Pune Explorer is an npm-workspaces monorepo:
 
-### 📋 Prerequisites
+```
+apps/web/            React PWA (Vite)
+services/tour-api/   Express + Prisma + PostGIS API (places, plans, accounts)
+services/safety/     FastAPI safety service from RoadSoS (emergency services, live tracking)
+design-reference/    Approved UI mockups + TECH_DESIGN.md / FEATURES.md (source of truth)
+```
 
-Ensure you have the following installed on your system:
-- **Node.js** (v18.0 or higher) & **npm**
-- **Git**
-- **Docker & Docker Compose** (Recommended for instant Postgres + Redis setup), OR:
-  - **PostgreSQL** database (v14+ with PostGIS extension enabled)
-  - **Redis** server (optional, used for Overpass API rate-limit caching)
+### Prerequisites
+Install these once:
+- **Node.js 20+** (with npm): https://nodejs.org
+- **Python 3.12+**: https://www.python.org/downloads/ (on Windows, tick "Add python.exe to PATH")
+- **Docker Desktop**, running: https://www.docker.com/products/docker-desktop/
 
----
-
-### 1️⃣ Clone the Repository
+### First run (one command)
 
 ```bash
-git clone https://github.com/LEVELING2108/PuneTourGuide.git
-cd PuneTourGuide
+npm run setup
 ```
 
----
+It checks the tools, then:
+- **Settings:** creates the `.env` files, with random development secrets.
+- **Database:** starts this project's own **PostgreSQL + PostGIS (port 5440)** and **Redis (port 6390)** in Docker, applies the migrations and loads the 26 curated places.
+- **Safety service:** builds its Python environment.
+- **Help points:** imports Pune's real hospitals, clinics, police and fire stations from OpenStreetMap, which takes a few minutes.
 
-### 2️⃣ Environment Variables Setup
+It's safe to run again. Add `--skip-help` to skip the OpenStreetMap import, or `--no-docker` to use your own PostgreSQL and Redis from `services/tour-api/.env`.
 
-#### **Frontend (`.env`)**
-Create a `.env` file in the root project directory (or copy `.env.example`):
+### Every day
 
 ```bash
-cp .env.example .env
+npm run dev          # starts the web app, Tour API and safety service together
 ```
 
-```env
-# API URL pointing to the local Node/Express server
-VITE_API_BASE_URL=http://localhost:3001/api
-```
+Open **http://localhost:5050**. On a phone on the same Wi-Fi, open `http://<your computer's IP>:5050`. Location, the camera and installing the app need HTTPS on a phone, so test those on `localhost` or a deployed site.
 
-#### **Backend (`backend/.env`)**
-Create a `.env` file inside the `backend/` directory (or copy `backend/.env.example`):
+- **Stop:** press `Ctrl+C` to stop the apps. `npm run db:down` stops the database and Redis; `npm run db:up` starts them again (no setup needed).
+- **No SMS is sent locally:** login codes, SOS alerts and reset links are printed in the terminal (phone numbers masked). On Log in → Mobile, the code also shows on screen.
 
-```bash
-cp backend/.env.example backend/.env
-```
+### Something not working?
 
-```env
-# Database connection string (PostgreSQL with PostGIS)
-DATABASE_URL="postgresql://postgres:password@localhost:5432/Pune_Tour_Guide?schema=public"
-
-# Server Port
-PORT=3001
-
-# Secret key for JWT signing
-JWT_SECRET="pune_explorer_super_secret_key"
-
-# Redis connection URL (optional for caching)
-REDIS_URL="redis://127.0.0.1:6379"
-```
-
----
-
-### 3️⃣ Start Database Services (Optional via Docker)
-
-If you use Docker, start PostgreSQL (with PostGIS) and Redis with one command:
-
-```bash
-docker compose up -d
-```
-
----
-
-### 4️⃣ Backend Setup & Database Migration
-
-Navigate to the backend directory, install dependencies, run Prisma migrations, and seed initial data:
-
-```bash
-# Navigate to backend
-cd backend
-
-# Install node dependencies
-npm install
-
-# Generate Prisma Client & Apply Database Migrations
-npx prisma generate
-npx prisma migrate deploy
-
-# Seed database with initial tourist places, events, and default itineraries
-npx ts-node src/seed.ts
-
-# Start backend server in development mode (with nodemon)
-npm run dev
-```
-
-*The backend server will run on `http://localhost:3001`.*
-
----
-
-### 5️⃣ Frontend Setup & Execution
-
-Open a new terminal window in the project root directory and start the Vite dev server:
-
-```bash
-# From project root directory
-npm install
-
-# Start Vite dev server
-npm run dev
-```
-
-*The frontend application will open on `http://localhost:5173`.*
-
----
-
-### 6️⃣ Quick Verification & Scripts
-
-You can also run all-in-one scripts from the root directory:
-
-| Command | Description |
+| Problem | Fix |
 | :--- | :--- |
-| `npm run dev` | Starts Vite frontend dev server |
-| `npm run build` | Builds production frontend bundle (`dist/`) |
-| `npm run build:backend` | Compiles backend TypeScript to JavaScript (`backend/dist/`) |
-| `npm run build:all` | Installs, generates Prisma client, and builds both backend & frontend |
-| `npm run prisma:generate` | Generates Prisma client inside `backend/` |
-| `npm run prisma:deploy` | Deploys Prisma migrations to database |
+| `Docker is not running` | Start Docker Desktop, wait for it to say "running", run `npm run setup` again |
+| `Port 5050 / 3001 / 8010 is already in use` | Another copy is still running: close the other terminal, or restart the computer |
+| Explore is empty | `npm run seed -w services/tour-api` |
+| Help nearby is empty | `npm run refresh:help` (needs internet; the public servers are sometimes busy, so try again later) |
+| Map has no streets | Your internet connection: map tiles come from OpenStreetMap |
+| After pulling new code | `npm install` then `npm run prisma:deploy` |
+
+### Scripts
+
+| Command | What it does |
+| :--- | :--- |
+| `npm run setup` | One-time local setup (see above); safe to re-run |
+| `npm run dev` | Web, Tour API and Safety service together |
+| `npm run db:up` / `db:down` | Start / stop this project's PostgreSQL and Redis containers |
+| `npm run dev:web` / `dev:api` / `dev:safety` | One of them |
+| `npm run lint` · `npm run typecheck` · `npm test` | Checks for web + tour-api |
+| `npm run build` · `npm run build:api` | Production builds |
+| `npm run prisma:deploy` | Apply database migrations |
+| `npm run worker -w services/tour-api` | Dedicated SMS worker process (optional; the API runs one by default) |
+| `npm run refresh:help` | Import Pune's help points from OpenStreetMap and refresh each place's nearest hospital. Run nightly in production; a failed or partial download keeps the existing data |
+| `npm run load-test` | Load test the read paths (Explore, place, help, health) |
+| `npm run icons` | Regenerate app icons from `apps/web/art/icon-source.png` |
+| `npm run android:apk -w apps/web` | Android test APK (see docs/LAUNCH_SETUP.md step 23) |
+| `docker compose up` | PostGIS, Redis, Tour API and Safety service all in containers |
+
+### Before going to production
+
+The full step-by-step list, with a real-world check for each service, is in **[docs/LAUNCH_SETUP.md](./docs/LAUNCH_SETUP.md)**. In short:
+
+- **Map tiles:** set `VITE_MAP_TILE_URL` (and `VITE_MAP_TILE_ATTRIBUTION`) to a tile provider with your key. The default OSM tile server is for development only.
+- **Routing:** set `OSRM_URL` / `OSRM_FOOT_URL` to a provider or self-hosted OSRM. The defaults are public demo servers.
+- **Overpass:** set `OVERPASS_ENDPOINTS` for the safety service and the import, ideally a self-hosted instance.
+- **Redis** is required with more than one API instance (shared rate limits, cooldowns, caches, the SMS queue, live-location fan-out).
+- **SMS:** set `SMS_PROVIDER` + `SMS_API_KEY` (Twilio, or MSG91 with DLT templates). Without them SOS alerts are only printed to the log.
+- **Safety service:** set `ALLOWED_ORIGINS` to the app's origin(s).
+- **Offline map tiles:** offline packs always save places, hospitals, police and emergency numbers. They save map tiles only with `VITE_MAP_TILES_OFFLINE=true` and a tile provider whose terms allow offline caching.
+- **Translations:** the SOS screen is translated into Marathi, Hindi and Gujarati (`apps/web/src/i18n/locales`). Have a native speaker review them before launch; the rest of the UI is English for now.
+- **Workers:** at scale run `npm run worker -w services/tour-api` separately and set `RUN_WORKERS=false` on API instances.
 
 ---
 
-## 🌐 API Ports & Services Summary
+## 🌐 Ports
 
-| Component | URL / Address | Description |
-| :--- | :--- | :--- |
-| **Frontend Web App** | `http://localhost:5173` | React 18 + Vite local UI |
-| **Backend Express API** | `http://localhost:3001/api` | REST API Endpoints |
-| **PostgreSQL Database** | `localhost:5432` | Main database (`pune_tour_guide`) |
-| **Redis Cache** | `localhost:6379` | Key-value store (prefix `places:v5:`) |
+| Component | URL |
+| :--- | :--- |
+| Web app | `http://localhost:5050` |
+| Tour API | `http://localhost:3001/api` |
+| Safety service | `http://localhost:8010` (`/health`, `/api/emergency-services`, `/ws/track/{id}`); the web app reaches it at `/safety` |
+| PostgreSQL + PostGIS | `localhost:5440` (user `postgres`, password `password`, database `Pune_Tour_Guide`; development only) |
+| Redis | `localhost:6390` |
+
+These ports avoid the usual ones (5432, 6379, 8000), so a PostgreSQL installed on your computer or other projects' containers never clash with this one.
 
 ---
 

@@ -1,0 +1,105 @@
+@import './themes.css';
+
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--backdrop);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+
+/* Phone-width app frame; full screen on phones, centred column on larger screens */
+.app-frame {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  height: 100dvh;
+  margin: 0 auto;
+  overflow: hidden;
+  background: var(--bg);
+  /* Makes position:fixed children (sheets, toasts) relative to the frame */
+  transform: translateZ(0);
+}
+
+@media (min-width: 600px) {
+  .app-frame {
+    box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.35);
+  }
+}
+
+.scr {
+  isolation: isolate;
+}
+
+.scr [data-scroll] {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.scr [data-scroll]::-webkit-scrollbar {
+  display: none;
+}
+
+.scr button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.scr :focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Text fields hide their own outline (mockup styling), so the field's box shows the focus instead.
+   An outline, so it adds to (never replaces) each screen's own focus border and glow. Keyboard only:
+   text fields count as focus-visible on a tap too, and touch users already see the screen's own border. */
+[data-input='keyboard'] .scr :has(> input:not([type='checkbox'], [type='radio'], [aria-hidden='true']):focus-visible, > textarea:focus-visible, > select:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Mockups were laid out in a fixed 844px frame; on shorter screens scroll instead of squashing */
+.scr [data-scroll][data-flex] > * {
+  flex-shrink: 0;
+}
+
+/* Leaflet map (components/map/MapCanvas.tsx) */
+.pe-map .leaflet-container { font-family: var(--font-body); }
+.pe-map .leaflet-tile-pane { filter: var(--map-tiles-filter); }
+.pe-map .pe-pin { background: none; border: none; }
+.pe-map .leaflet-top.leaflet-right { top: var(--pe-attr-top, 0px); }
+.pe-map .leaflet-control-attribution { font-size: 9.5px; background: rgba(255, 255, 255, 0.72); border-radius: 8px 0 0 8px; padding: 1px 6px; }
+.pe-map .leaflet-control-attribution a { color: inherit; }

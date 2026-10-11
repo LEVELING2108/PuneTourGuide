@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer — First emergency contact</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0F4C42}a:hover{color:#0A3730}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes up{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes grow{from{width:50%}to{width:100%}}
+.rise{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.up{animation:up .8s cubic-bezier(.2,.7,.2,1) .1s both}
+.d1{animation-delay:.05s}.d2{animation-delay:.12s}.d3{animation-delay:.25s}.d4{animation-delay:.32s}.d5{animation-delay:.39s}.d6{animation-delay:.46s}
+.rings{animation:spin 90s linear infinite;transform-origin:50% 50%}
+.grow{animation:grow 1s cubic-bezier(.3,.8,.2,1) .3s both}
+.tap{transition:transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .3s,background-color .3s,color .3s,border-color .3s}
+.tap:active{transform:scale(.97)}
+.pick:hover{border-color:#0F4C42;box-shadow:0 12px 24px -16px rgba(15,76,66,.5)}
+.field{transition:border-color .3s,box-shadow .3s}
+.field:focus-within{border-color:#0F4C42;box-shadow:0 0 0 3px rgba(15,76,66,.12)}
+.cta{transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
+.cta:hover{transform:translateY(-2px);box-shadow:0 16px 30px -14px rgba(15,76,66,.7)}
+.cta:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #0F4C42; font-family: 'Hanken Grotesk', sans-serif; color: #111614">
+
+  <svg class="rings" width="440" height="440" viewBox="0 0 440 440" aria-hidden="true" style="position: absolute; right: -170px; top: -160px; opacity: 0.16"><circle cx="220" cy="220" r="80" fill="none" stroke="#F6F6F3"></circle><circle cx="220" cy="220" r="130" fill="none" stroke="#F6F6F3" stroke-dasharray="2 6"></circle><circle cx="220" cy="220" r="180" fill="none" stroke="#F6F6F3"></circle><circle cx="220" cy="220" r="215" fill="none" stroke="#F6F6F3" stroke-dasharray="1 9"></circle></svg>
+
+  <div style="position: absolute; top: 56px; left: 24px; right: 24px; display: flex; flex-direction: column; gap: 18px; color: #F6F6F3">
+    <div class="rise d1" style="display: flex; align-items: center; gap: 12px">
+      <div style="flex: 1; height: 3px; border-radius: 2px; background: rgba(246,246,243,0.2); overflow: hidden"><div class="grow" style="height: 3px; background: #F6F6F3; border-radius: 2px"></div></div>
+      <span style="font-size: 12px; color: #CFE3DE">Step 2 of 2</span>
+    </div>
+    <div class="rise d2" style="display: flex; flex-direction: column; gap: 8px">
+      <h1 style="margin: 0; font-family: 'Instrument Serif', serif; font-size: 42px; font-weight: 400; line-height: 0.95">Who should we <span style="font-style: italic; color: #A9CFC6">alert?</span></h1>
+      <div style="font-size: 13.5px; line-height: 1.45; color: #CFE3DE">If you start an SOS, this person gets your live location right away.</div>
+    </div>
+  </div>
+
+  <div class="up" style="position: absolute; left: 0; right: 0; top: 214px; bottom: 0; background: #F6F6F3; border-radius: 30px 30px 0 0; padding: 24px 24px 22px; box-sizing: border-box; display: flex; flex-direction: column; gap: 13px">
+
+    <button class="rise d3 tap pick" onClick="{{pickContact}}" style="height: 54px; flex-shrink: 0; border-radius: 27px; border: 1px solid #D5DAD6; background: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Hanken Grotesk', sans-serif; font-size: 15px; font-weight: 600; color: #111614; cursor: pointer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F4C42" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><circle cx="12" cy="10" r="3"></circle><path d="M7.5 17c.8-2 2.4-3 4.5-3s3.7 1 4.5 3"></path></svg>
+      {{pickLabel}}</button>
+
+    <div class="rise d3" style="display: flex; align-items: center; gap: 12px; font-size: 12px; color: #5E6763">
+      <span style="flex: 1; height: 1px; background: #DDE1DD"></span>or add manually<span style="flex: 1; height: 1px; background: #DDE1DD"></span>
+    </div>
+
+    <label class="rise d4" style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #5E6763">NAME</span>
+      <span class="field" style="height: 48px; border-radius: 14px; border: 1px solid #DDE1DD; background: #FFFFFF; display: flex; align-items: center; padding: 0 16px"><input placeholder="e.g. Aai" value="{{name}}" onInput="{{onName}}" style="border: none; outline: none; flex: 1; min-width: 0; font-family: 'Hanken Grotesk', sans-serif; font-size: 15px; background: transparent; color: #111614"></span>
+    </label>
+
+    <div class="rise d4" style="display: flex; flex-wrap: wrap; gap: 6px" role="radiogroup" aria-label="Relation">
+      <sc-for list="{{rels}}" as="r" hint-placeholder-count="5">
+        <button class="tap" role="radio" aria-checked="{{r.checked}}" onClick="{{r.pick}}" style="height: 34px; padding: 0 14px; border-radius: 17px; border: 1px solid {{r.bd}}; background: {{r.bg}}; color: {{r.fg}}; font-family: 'Hanken Grotesk', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer">{{r.label}}</button>
+      </sc-for>
+    </div>
+
+    <label class="rise d5" style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #5E6763">MOBILE NUMBER</span>
+      <span class="field" style="height: 48px; border-radius: 14px; border: 1px solid #DDE1DD; background: #FFFFFF; display: flex; align-items: center; gap: 12px; padding: 0 16px 0 5px">
+        <span style="height: 38px; padding: 0 10px; border-radius: 10px; background: #F0F1EE; display: flex; align-items: center; font-size: 14.5px; font-weight: 600; color: #111614">+91</span>
+        <input type="tel" inputmode="numeric" placeholder="98XXX XXXXX" value="{{phone}}" style="border: none; outline: none; flex: 1; min-width: 0; font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; letter-spacing: 0.04em; background: transparent; color: #111614">
+      </span>
+    </label>
+
+    <div class="rise d5" style="border-radius: 16px; background: #FFFFFF; border: 1px solid #E4E6E2; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
+      <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; color: #5E6763">WHAT {{whoUpper}} WILL GET</div>
+      <div style="align-self: flex-start; max-width: 92%; padding: 9px 12px; border-radius: 14px 14px 14px 4px; background: #F0F1EE; font-size: 12.5px; line-height: 1.45; color: #111614">Sourav started an SOS on Pune Explorer. Live location: [link]. Nearest hospital: KEM, 1.2 km.</div>
+    </div>
+
+    <a class="rise d6 cta" href="Main.dc.html" style="height: 56px; flex-shrink: 0; border-radius: 28px; background: #0F4C42; color: #F6F6F3; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; text-decoration: none; margin-top: auto">Save &amp; start exploring</a>
+    <a class="rise d6" href="Main.dc.html" style="text-align: center; font-size: 13px; color: #5E6763; text-decoration: none">Skip for now · SOS will still call 112</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { rel: 'Parent', name: '', phone: '', picked: false };
+  }
+  renderVals() {
+    const { rel, name } = this.state;
+    const rels = ['Parent', 'Partner', 'Sibling', 'Friend', 'Other'].map((label) => {
+      const on = label === rel;
+      return {
+        label,
+        checked: on ? 'true' : 'false',
+        bg: on ? '#111614' : '#FFFFFF',
+        fg: on ? '#F6F6F3' : '#111614',
+        bd: on ? '#111614' : '#E1E4E0',
+        pick: () => this.setState({ rel: label })
+      };
+    });
+    const who = name.trim() ? name.trim() : 'THEY';
+    return {
+      rels,
+      whoUpper: who.toUpperCase(),
+      name,
+      phone: this.state.phone,
+      pickLabel: this.state.picked ? 'Picked from contacts · change' : 'Pick from my contacts',
+      pickContact: () => this.setState({ picked: true, name: 'Aai', rel: 'Parent', phone: '98XXX X4521' }),
+      onName: (e) => this.setState({ name: e.target.value })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer (Deccan) — Sign up</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&amp;family=Yatra+One&amp;family=Mukta:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#7A1F4E}a:hover{color:#5C1239}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes up{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+@keyframes swap{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.rise{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.up{animation:up .8s cubic-bezier(.2,.7,.2,1) .1s both}
+.swap{animation:swap .4s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.05s}.d2{animation-delay:.12s}.d3{animation-delay:.25s}.d4{animation-delay:.32s}.d5{animation-delay:.39s}.d6{animation-delay:.46s}
+.rings{animation:spin 90s linear infinite;transform-origin:50% 50%}
+.tap{transition:transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .3s,background-color .3s,color .3s,border-color .3s}
+.tap:active{transform:scale(.97)}
+.gbtn:hover{border-color:#231C17;box-shadow:0 12px 24px -16px rgba(35,28,23,.45)}
+.field{transition:border-color .3s,box-shadow .3s}
+.field:focus-within{border-color:#7A1F4E;box-shadow:0 0 0 3px rgba(122,31,78,.12)}
+.seg{transition:transform .45s cubic-bezier(.3,.8,.2,1)}
+.segtxt{transition:color .35s}
+.bar{transition:background-color .35s}
+.box{transition:background-color .25s,border-color .25s}
+.cta{transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .35s,background-color .35s}
+.cta:hover{transform:translateY(-2px);box-shadow:0 16px 30px -14px rgba(122,31,78,.7)}
+.cta:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #7A1F4E; font-family: 'Mukta', sans-serif; color: #231C17">
+
+  <svg width="390" height="10" viewBox="0 0 390 10" aria-hidden="true" style="position: absolute; top: 0; left: 0; z-index: 5"><defs><pattern id="zz" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#C59A3A"></rect><path d="M0 10 L5 2 L10 10 Z" fill="#5C1239"></path></pattern></defs><rect width="390" height="10" fill="url(#zz)"></rect></svg>
+  <div aria-hidden="true" style="position: absolute; right: 54px; top: 56px; width: 58px; height: 58px; border-radius: 29px; background: #E2B95B; opacity: 0.85"></div>
+  <svg width="390" height="80" viewBox="0 0 390 96" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; left: 0; top: 134px; opacity: 0.9"><path d="M0 74 Q60 34 120 58 T240 44 T390 54 V96 H0 Z" fill="#6A1A44"></path><path d="M0 96 V66 H30 V54 a14 14 0 0 1 28 0 V66 H110 V58 H118 V52 H126 V58 H134 V52 H142 V58 H150 V66 H170 V44 a22 22 0 0 1 44 0 V66 H260 V56 a12 12 0 0 1 24 0 V66 H330 V50 a16 16 0 0 1 32 0 V66 H390 V96 Z" fill="#4E0F30"></path></svg>
+
+  <div style="position: absolute; top: 56px; left: 24px; right: 24px; display: flex; flex-direction: column; gap: 20px; color: #F3EADB">
+    <div class="rise d1" style="display: flex; align-items: center; justify-content: space-between">
+      <a class="tap" href="DeccanLogin.dc.html" aria-label="Back to log in" style="width: 40px; height: 40px; border-radius: 20px; border: 1px solid rgba(255,251,243,0.3); display: flex; align-items: center; justify-content: center">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F3EADB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a>
+      <span style="font-family: 'DM Serif Display', serif; font-size: 19px">Pune Explorer</span>
+      <span style="width: 40px"></span>
+    </div>
+    <div style="display: flex; flex-direction: column"><div style="font-family: 'Yatra One', sans-serif; font-size: 19px; line-height: 1.25; color: #E2B95B">नवीन खाते</div><h1 class="rise d2" style="margin: 0; font-family: 'DM Serif Display', serif; font-size: 42px; font-weight: 400; line-height: 0.95">Create your <span style="font-style: italic; color: #F2C9DC">account</span></h1></div>
+  </div>
+
+  <div class="up" style="position: absolute; left: 0; right: 0; top: 206px; bottom: 0; background: #F3EADB; border-radius: 30px 30px 0 0; padding: 24px 24px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 13px">
+
+    <a class="rise d3 tap gbtn" href="DeccanOnboard.dc.html" style="height: 54px; box-sizing: border-box; flex-shrink: 0; border-radius: 27px; border: 1px solid #D8C6A6; background: #FFFBF3; display: flex; align-items: center; justify-content: center; gap: 12px; font-family: 'Mukta', sans-serif; font-size: 15px; font-weight: 600; color: #231C17; text-decoration: none">
+      <span aria-hidden="true" style="width: 22px; height: 22px; border-radius: 6px; border: 1px dashed #B3A28A; box-sizing: border-box; font-size: 7px; color: #6B5D50; display: flex; align-items: center; justify-content: center">LOGO</span>
+      Sign up with Google</a>
+
+    <div class="rise d4" role="tablist" aria-label="Sign up with" style="position: relative; height: 44px; flex-shrink: 0; border-radius: 22px; background: #E7DAC4; padding: 4px; box-sizing: border-box; display: flex">
+      <div class="seg" style="position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: 36px; border-radius: 18px; background: #FFFBF3; box-shadow: 0 2px 8px -2px rgba(35,28,23,0.2); transform: translateX({{segX}})"></div>
+      <button class="segtxt" role="tab" aria-selected="{{emailSel}}" onClick="{{pickEmail}}" style="position: relative; flex: 1; border: none; background: transparent; font-family: 'Mukta', sans-serif; font-size: 13.5px; font-weight: 600; color: {{emailColor}}; cursor: pointer">Email</button>
+      <button class="segtxt" role="tab" aria-selected="{{phoneSel}}" onClick="{{pickPhone}}" style="position: relative; flex: 1; border: none; background: transparent; font-family: 'Mukta', sans-serif; font-size: 13.5px; font-weight: 600; color: {{phoneColor}}; cursor: pointer">Mobile number</button>
+    </div>
+
+    <label class="rise d4" style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #6B5D50">NAME</span>
+      <span class="field" style="height: 48px; border-radius: 14px; border: 1px solid #DCCDB6; background: #FFFBF3; display: flex; align-items: center; padding: 0 16px"><input placeholder="Your name" autocomplete="name" style="border: none; outline: none; flex: 1; min-width: 0; font-family: 'Mukta', sans-serif; font-size: 15px; background: transparent; color: #231C17"></span>
+    </label>
+
+    <sc-if value="{{isEmail}}" hint-placeholder-val="{{ true }}">
+      <div class="swap" style="display: flex; flex-direction: column; gap: 11px">
+        <label style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #6B5D50">EMAIL</span>
+          <span class="field" style="height: 48px; border-radius: 14px; border: 1px solid #DCCDB6; background: #FFFBF3; display: flex; align-items: center; padding: 0 16px"><input type="email" placeholder="you@example.com" autocomplete="email" style="border: none; outline: none; flex: 1; min-width: 0; font-family: 'Mukta', sans-serif; font-size: 15px; background: transparent; color: #231C17"></span>
+        </label>
+        <label style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #6B5D50">PASSWORD</span>
+          <span class="field" style="height: 48px; border-radius: 14px; border: 1px solid #DCCDB6; background: #FFFBF3; display: flex; align-items: center; padding: 0 16px"><input type="password" placeholder="At least 8 characters" autocomplete="new-password" onInput="{{onPw}}" style="border: none; outline: none; flex: 1; min-width: 0; font-family: 'Mukta', sans-serif; font-size: 15px; background: transparent; color: #231C17"></span>
+        </label>
+        <div style="display: flex; align-items: center; gap: 10px">
+          <div style="flex: 1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px">
+            <sc-for list="{{segs}}" as="s" hint-placeholder-count="4">
+              <span class="bar" style="height: 4px; border-radius: 2px; background: {{s.bg}}"></span>
+            </sc-for>
+          </div>
+          <span style="font-size: 12px; font-weight: 600; color: {{strengthColor}}; min-width: 64px; text-align: right">{{strengthLabel}}</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isPhone}}" hint-placeholder-val="{{ false }}">
+      <div class="swap" style="display: flex; flex-direction: column; gap: 8px">
+        <label style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #6B5D50">MOBILE NUMBER</span>
+          <span class="field" style="height: 48px; border-radius: 14px; border: 1px solid #DCCDB6; background: #FFFBF3; display: flex; align-items: center; gap: 12px; padding: 0 16px 0 5px">
+            <span style="height: 38px; padding: 0 10px; border-radius: 10px; background: #EFE4D2; display: flex; align-items: center; gap: 6px; font-size: 14.5px; font-weight: 600; color: #231C17">IN +91
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B5D50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></span>
+            <input type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="98XXX XXXXX" style="border: none; outline: none; flex: 1; min-width: 0; font-family: 'Mukta', sans-serif; font-size: 16px; letter-spacing: 0.04em; background: transparent; color: #231C17">
+          </span>
+        </label>
+        <div style="font-size: 12.5px; line-height: 1.45; color: #6B5D50">No password needed. We'll text you a 6-digit code to confirm it's you.</div>
+      </div>
+    </sc-if>
+
+    <button class="rise d5" onClick="{{toggleAgree}}" role="checkbox" aria-checked="{{agreeChecked}}" style="display: flex; align-items: flex-start; gap: 10px; border: none; background: transparent; padding: 0; text-align: left; cursor: pointer; font-family: 'Mukta', sans-serif">
+      <span class="box" style="width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid {{boxBd}}; background: {{boxBg}}; box-sizing: border-box; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F3EADB" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></span>
+      <span style="font-size: 13px; line-height: 1.45; color: #6B5D50">I agree to the <span style="color: #7A1F4E; font-weight: 600">Terms</span> and <span style="color: #7A1F4E; font-weight: 600">Privacy Policy</span></span>
+    </button>
+
+    <a class="rise d5 cta" href="{{ctaHref}}" aria-disabled="{{ctaDisabled}}" style="height: 56px; flex-shrink: 0; border-radius: 28px; background: {{ctaBg}}; color: #F3EADB; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; text-decoration: none">{{ctaLabel}}</a>
+
+    <div class="rise d6" style="margin-top: auto; text-align: center; font-size: 13.5px; color: #6B5D50">Already have an account? <a href="DeccanLogin.dc.html" style="font-weight: 600; text-decoration: none">Log in</a></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { pw: '', agree: false, mode: 'email' };
+  }
+  renderVals() {
+    const { pw, agree, mode } = this.state;
+    const email = mode === 'email';
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    if (pw.length > 0 && pw.length < 8) score = Math.min(score, 1);
+    if (pw.length > 0 && score === 0) score = 1;
+    const colors = ['#DCCDB6', '#C8321C', '#C27A1E', '#2FA58A', '#7A1F4E'];
+    const labels = ['', 'Too weak', 'Okay', 'Strong', 'Excellent'];
+    const segs = [0, 1, 2, 3].map((i) => ({ bg: i < score ? colors[score] : '#DCCDB6' }));
+    return {
+      isEmail: email,
+      isPhone: !email,
+      segX: email ? '0%' : '100%',
+      emailSel: email ? 'true' : 'false',
+      phoneSel: email ? 'false' : 'true',
+      emailColor: email ? '#231C17' : '#6B5D50',
+      phoneColor: email ? '#6B5D50' : '#231C17',
+      pickEmail: () => this.setState({ mode: 'email' }),
+      pickPhone: () => this.setState({ mode: 'phone' }),
+      segs,
+      strengthLabel: pw.length === 0 ? '' : labels[score],
+      strengthColor: score <= 1 ? '#A3281A' : score === 2 ? '#8A4A12' : '#7A1F4E',
+      onPw: (e) => this.setState({ pw: e.target.value }),
+      agreeChecked: agree ? 'true' : 'false',
+      boxBg: agree ? '#7A1F4E' : '#FFFBF3',
+      boxBd: agree ? '#7A1F4E' : '#C9B79C',
+      toggleAgree: () => this.setState({ agree: !agree }),
+      ctaBg: agree ? '#7A1F4E' : '#B98DA3',
+      ctaDisabled: agree ? 'false' : 'true',
+      ctaLabel: email ? 'Create account' : 'Send code',
+      ctaHref: email ? 'DeccanOnboard.dc.html' : 'DeccanOtp.dc.html'
+    };
+  }
+}
+</script>
+</body>
+</html>
