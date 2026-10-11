@@ -3,6 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { AttributionControl, MapContainer, Marker, Polyline, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import type { LatLng, Pair } from '../../lib/geo';
+import { tileCredit } from '../../lib/tiles';
 
 export type MapMarker = {
   key: string;
@@ -46,9 +47,7 @@ type Props = {
 // Tiles (TECH_DESIGN §3). Production MUST set VITE_MAP_TILE_URL to a provider with a key
 // (MapTiler, Stadia, Carto); the OSM public server is for development only under its usage policy.
 const TILE_URL = (import.meta.env.VITE_MAP_TILE_URL as string | undefined) || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const TILE_ATTRIBUTION =
-  (import.meta.env.VITE_MAP_TILE_ATTRIBUTION as string | undefined) ||
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+const TILE_ATTRIBUTION = tileCredit(TILE_URL, import.meta.env.VITE_MAP_TILE_ATTRIBUTION as string | undefined);
 
 const icon = (html: string) => L.divIcon({ html, className: 'pe-pin', iconSize: [0, 0], iconAnchor: [0, 0] });
 
