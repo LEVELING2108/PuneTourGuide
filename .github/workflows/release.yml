@@ -41,7 +41,9 @@ jobs:
           echo "SAFETY_IMAGE=${SAFETY_IMAGE,,}" >> "$GITHUB_ENV"
           if [ "${GITHUB_REF_NAME}" = "main" ]; then echo "CHANNEL=latest" >> "$GITHUB_ENV"; else echo "CHANNEL=research" >> "$GITHUB_ENV"; fi
 
-      # VITE_* values are public (they end up in the browser); they come from repository Variables
+      # VITE_* values are public (they end up in the browser); they come from repository Variables.
+      # build-args is parsed like CSV: a value containing a double quote swallows the lines after it,
+      # so HTML values (the map credit) are not passed here; the app derives the credit itself.
       - name: App (web + Tour API)
         uses: docker/build-push-action@v6
         with:
@@ -53,7 +55,6 @@ jobs:
           cache-to: type=gha,mode=max,scope=app
           build-args: |
             VITE_MAP_TILE_URL=${{ vars.VITE_MAP_TILE_URL }}
-            VITE_MAP_TILE_ATTRIBUTION=${{ vars.VITE_MAP_TILE_ATTRIBUTION }}
             VITE_MAP_TILES_OFFLINE=${{ vars.VITE_MAP_TILES_OFFLINE }}
             VITE_GOOGLE_CLIENT_ID=${{ vars.VITE_GOOGLE_CLIENT_ID }}
             VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN }}

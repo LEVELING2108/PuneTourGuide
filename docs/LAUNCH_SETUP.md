@@ -88,7 +88,7 @@ The ₹0 route for a student without a credit card. Do the parts in order; each 
 
 | Service | What to do | Server file (.env.production) | GitHub Variable |
 | --- | --- | --- | --- |
-| Map tiles (MapTiler) | Sign up at <https://cloud.maptiler.com> → *API keys* → *New key*. Under allowed HTTP origins, use bare names without `https://` or a port: `puneexplorer.dev` and `localhost` | `MAP_TILE_ORIGINS=https://api.maptiler.com` | `VITE_MAP_TILE_URL=https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}{r}.png?key=YOUR_KEY` (`{r}` gives sharp tiles on phone screens) and `VITE_MAP_TILE_ATTRIBUTION=<a href="https://www.maptiler.com/copyright/">© MapTiler</a> <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>` |
+| Map tiles (MapTiler) | Sign up at <https://cloud.maptiler.com> → *API keys* → *New key*. Under allowed HTTP origins, use bare names without `https://` or a port: `puneexplorer.dev` and `localhost` | `MAP_TILE_ORIGINS=https://api.maptiler.com` | `VITE_MAP_TILE_URL=https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}{r}.png?key=YOUR_KEY` (`{r}` gives sharp tiles on phone screens). The map credit is filled in automatically, so don't add a `VITE_MAP_TILE_ATTRIBUTION` variable (its quote marks break the build settings). |
 | Crash reports (Sentry) | the DSNs from Part 2 | `SENTRY_DSN=` (the Node one) | `VITE_SENTRY_DSN=` (the Browser one) |
 | SMS (Twilio) | Console → *Account info* | `SMS_PROVIDER=twilio`, `SMS_API_KEY=ACxxxx:your_auth_token`, `SMS_SENDER_ID=+1your_twilio_number` | — |
 | Email (Resend) | Sign up at <https://resend.com> → *Domains → Add* your domain → add the DNS records it shows at Name.com → *API Keys → Create* | `EMAIL_API_KEY=re_...`, `EMAIL_FROM=Pune Explorer <no-reply@your-domain>` | — |
