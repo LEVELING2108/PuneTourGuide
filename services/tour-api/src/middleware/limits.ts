@@ -61,6 +61,9 @@ export const tripShareLimit = make('trip-share', 60 * 60_000, 10);
 /** Avatar uploads are CPU work (image re-encode). */
 export const avatarLimit = make('avatar', 60 * 60_000, 20);
 
+/** Account deletion: rare by nature; stops a stolen token being used to probe it. */
+export const deleteAccountLimit = make('delete-account', 60 * 60_000, 5);
+
 /** Directions and Optimise spend the routing provider's quota. Live navigation re-routes occasionally. */
 export const routingLimit = make('routing', 60_000, 30);
 export const optimiseLimit = make('optimise', 10 * 60_000, 20);

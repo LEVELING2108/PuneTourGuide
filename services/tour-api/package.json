@@ -15,7 +15,8 @@
     "prisma:migrate": "prisma migrate dev",
     "refresh:help": "tsx src/scripts/refresh-help.ts",
     "worker": "tsx src/worker.ts",
-    "worker:prod": "node dist/worker.js"
+    "worker:prod": "node dist/worker.js",
+    "check:places": "tsx src/scripts/check-places.ts"
   },
   "author": "",
   "license": "ISC",

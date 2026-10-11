@@ -23,6 +23,10 @@ export const agreeBox = (p: Palette, agree: boolean, toggle: () => void) => ({
   boxBg: agree ? p.primary : p.surface,
   boxBd: agree ? p.primary : p.boxBd,
   toggleAgree: toggle,
+  /** Tapping the sentence ticks the box too, except on the Terms / Privacy links inside it. */
+  agreeTextClick: (e: { target: EventTarget }) => {
+    if (!(e.target as HTMLElement).closest('a')) toggle();
+  },
   ctaBg: agree ? p.primary : p.ctaOff,
   ctaDisabled: agree ? 'false' : 'true',
 });

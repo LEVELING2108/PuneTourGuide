@@ -49,7 +49,9 @@ const EnvSchema = z.object({
     .default('https://tile.openstreetmap.org,https://*.tile.openstreetmap.org,https://*.basemaps.cartocdn.com,https://api.maptiler.com'),
 });
 
-const parsed = EnvSchema.safeParse(process.env);
+// A blank line in an env file (KEY=) means "not set": use the default instead of failing validation
+const definedEnv = Object.fromEntries(Object.entries(process.env).filter(([, v]) => v !== undefined && v.trim() !== ''));
+const parsed = EnvSchema.safeParse(definedEnv);
 if (!parsed.success) {
   const issues = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
   // Refuse to start with a broken config (TECH_DESIGN §8)

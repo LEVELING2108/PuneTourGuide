@@ -85,19 +85,21 @@ export default function DeccanPhoneNameView({ v }: ViewProps) {
             <input type="email" placeholder="For trip summaries and account recovery" autoComplete="email" aria-label="Email (optional)" value={v.email} onChange={v.onEmail} style={{ border: "none", outline: "none", flex: "1", minWidth: "0", fontFamily: "var(--font-body)", fontSize: "14.5px", background: "transparent", color: "var(--ink)" }} />
           </span>
         </label>
-        <button className="rise d5" onClick={v.toggleAgree} role="checkbox" aria-checked={v.agreeChecked} style={{ display: "flex", alignItems: "flex-start", gap: "10px", border: "none", background: "transparent", padding: "0", textAlign: "left", cursor: "pointer", fontFamily: "var(--font-body)" }}>
+        <div className="rise d5" style={{ display: "flex", alignItems: "flex-start", gap: "10px", textAlign: "left", fontFamily: "var(--font-body)" }}>
+          <button onClick={v.toggleAgree} role="checkbox" aria-checked={v.agreeChecked} aria-labelledby="agree-text" style={{ border: "none", background: "transparent", padding: "0", cursor: "pointer", flexShrink: "0", display: "flex" }}>
           <span className="box" style={{ width: "20px", height: "20px", borderRadius: "6px", border: `1.5px solid ${v.boxBd}`, background: v.boxBg, boxSizing: "border-box", flexShrink: "0", display: "flex", alignItems: "center", justifyContent: "center", marginTop: "1px" }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12l5 5 9-10" />
             </svg>
           </span>
-          <span style={{ fontSize: "13px", lineHeight: "1.45", color: "var(--muted)" }}>
+          </button>
+          <span id="agree-text" onClick={v.agreeTextClick} style={{ fontSize: "13px", lineHeight: "1.45", color: "var(--muted)", cursor: "pointer" }}>
             I agree to the{" "}
-            <span style={{ color: "var(--primary)", fontWeight: "600" }}>Terms</span>
+            <Link to="/terms" style={{ color: "var(--primary)", fontWeight: "600", textDecoration: "none" }}>Terms</Link>
             {" "}and{" "}
-            <span style={{ color: "var(--primary)", fontWeight: "600" }}>Privacy Policy</span>
+            <Link to="/privacy" style={{ color: "var(--primary)", fontWeight: "600", textDecoration: "none" }}>Privacy Policy</Link>
           </span>
-        </button>
+        </div>
         {v.error && <div role="alert" style={{ fontSize: "13px", color: "#A3281A", lineHeight: "1.4" }}>{v.error}</div>}
         <Link to="/first-contact" onClick={v.submit} className="rise d5 cta" aria-disabled={v.ctaDisabled} style={{ height: "56px", borderRadius: "28px", background: v.ctaBg, color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "15px", fontWeight: "600", textDecoration: "none", marginTop: "4px" }}>
           Continue{" "}

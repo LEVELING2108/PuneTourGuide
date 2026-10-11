@@ -35,6 +35,8 @@ const LanguageScreen = lazy(() => import('../screens/settings/LanguageScreen'));
 const ThemeScreen = lazy(() => import('../screens/settings/ThemeScreen'));
 const SignOutScreen = lazy(() => import('../screens/settings/SignOutScreen'));
 const TrackScreen = lazy(() => import('../screens/sos/TrackScreen'));
+const LegalScreen = lazy(() => import('../screens/legal/LegalScreen'));
+const DeleteAccountScreen = lazy(() => import('../screens/settings/DeleteAccountScreen'));
 
 let launched = false;
 
@@ -92,6 +94,9 @@ export const router = createBrowserRouter([
       { path: '/settings/language', element: <LanguageScreen /> },
       { path: '/settings/theme', element: <ThemeScreen /> },
       { path: '/settings/sign-out', element: <SignOutScreen /> },
+      { path: '/settings/delete-account', element: <DeleteAccountScreen /> },
+      { path: '/terms', element: <LegalScreen doc="terms" /> },
+      { path: '/privacy', element: <LegalScreen doc="privacy" /> },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },

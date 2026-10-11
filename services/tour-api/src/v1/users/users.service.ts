@@ -7,6 +7,13 @@ import { usersRepo } from './users.repository';
 import type { UpdateMeInput } from './users.schemas';
 
 export const usersService = {
+  async deleteMe(userId: number) {
+    const user = await usersRepo.findById(userId);
+    if (!user) throw notFound('USER_NOT_FOUND', 'Account not found');
+    await usersRepo.deleteAccount(userId, user.phone);
+    return { deleted: true };
+  },
+
   async me(userId: number) {
     const user = await usersRepo.findById(userId);
     if (!user) throw notFound('USER_NOT_FOUND', 'Account not found');

@@ -54,3 +54,43 @@ describe('users/me', () => {
     expect(res.body.data).toMatchObject({ xp: 0, stamps: 0, placesVisited: 0, savedPlaces: 0 });
   });
 });
+
+describe('delete account', () => {
+  beforeEach(resetUsers);
+
+  it('erases the account and everything in it after typing DELETE', async () => {
+    const { prisma } = await import('../src/lib/prisma');
+    const { randomUUID } = await import('crypto');
+    const u = await signUp();
+    await api().post('/api/v1/contacts').set(auth(u.token)).send({ name: 'Aai', relation: 'Parent', phone: '9876543210' });
+    await api().put('/api/v1/medical').set(auth(u.token)).send({ bloodGroup: 'B+', allergies: 'Penicillin', medicines: '', notes: '', showOnLockScreen: true });
+    await api()
+      .post('/api/v1/sos/alert')
+      .set(auth(u.token))
+      .set('Idempotency-Key', randomUUID())
+      .send({ sessionId: randomUUID(), lat: 18.5195, lng: 73.8553 });
+    const me = await api().get('/api/v1/users/me').set(auth(u.token));
+    const id = me.body.data.id as number;
+    expect(await prisma.sosEvent.count({ where: { userId: id } })).toBe(1);
+    const sosTotal = await prisma.sosEvent.count();
+
+    expect((await api().delete('/api/v1/users/me').set(auth(u.token)).send({})).status).toBe(400);
+    expect((await api().delete('/api/v1/users/me').send({ confirm: 'DELETE' })).status).toBe(401);
+
+    const del = await api().delete('/api/v1/users/me').set(auth(u.token)).set('Cookie', u.cookie).send({ confirm: 'DELETE' });
+    expect(del.status).toBe(200);
+    expect((del.headers['set-cookie'] as unknown as string[]).join(' ')).toMatch(/pe_rt=;/);
+
+    // Nothing of theirs is left, including the SOS location
+    const left = await Promise.all([
+      prisma.user.count({ where: { id } }),
+      prisma.emergencyContact.count({ where: { userId: id } }),
+      prisma.medicalProfile.count({ where: { userId: id } }),
+      prisma.refreshToken.count({ where: { userId: id } }),
+      prisma.sosEvent.count({ where: { userId: id } }),
+    ]);
+    expect(left).toEqual([0, 0, 0, 0, 0]);
+    expect(await prisma.sosEvent.count()).toBe(sosTotal - 1);
+    expect((await api().post('/api/v1/auth/login').send({ email: u.email, password: u.password })).status).toBe(401);
+  });
+});

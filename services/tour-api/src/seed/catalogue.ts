@@ -51,13 +51,13 @@ export const PLACES: CataloguePlace[] = [
     lat: 18.5187, lng: 73.8567, estYear: '1630',
     description: 'Reconstructed red palace where young Shivaji Maharaj grew up with Jijabai. Paintings inside retell the Shaista Khan episode.',
     description_mr: 'शिवाजी महाराजांचे बालपण गेलेला लाल महाल.',
-    hours: '', entryFee: '', free: false, visitMinutes: 40, xp: 30, popularity: 70,
+    hours: '9:00 AM - 1:00 PM, 4:00 PM - 8:00 PM', entryFee: '', free: false, visitMinutes: 40, xp: 30, popularity: 70,
   },
   {
     name: 'Vishrambaug Wada', name_mr: 'विश्रामबाग वाडा', category: 'Heritage', kind: 'Wada', area: 'Sadashiv Peth',
-    lat: 18.5113, lng: 73.8527, estYear: '1807',
+    lat: 18.51385, lng: 73.85343, estYear: '1807',
     description: 'Elegant wada of Peshwa Bajirao II with carved teak balconies and a small museum of old Pune.',
-    hours: '', entryFee: '', free: false, visitMinutes: 45, xp: 30, popularity: 55,
+    hours: '10:00 AM - 7:00 PM, closed Monday', entryFee: '₹5', free: false, visitMinutes: 45, xp: 30, popularity: 55,
   },
   {
     name: 'Aga Khan Palace', name_mr: 'आगा खान पॅलेस', category: 'Heritage', area: 'Kalyani Nagar',
@@ -132,9 +132,9 @@ export const PLACES: CataloguePlace[] = [
   },
   {
     name: 'Mahatma Phule Museum', name_mr: 'महात्मा फुले संग्रहालय', category: 'Museum', area: 'Shivajinagar',
-    lat: 18.5233, lng: 73.8496, estYear: '1890',
+    lat: 18.52363, lng: 73.84521, estYear: '1890',
     description: 'One of the oldest museums in Maharashtra, with galleries on industry, geology and natural history.',
-    hours: '', entryFee: '', free: false, visitMinutes: 60, xp: 30, popularity: 30,
+    hours: '9:00 AM - 5:00 PM', opensAt: h(9), closesAt: h(17), entryFee: '', free: false, visitMinutes: 60, xp: 30, popularity: 30,
   },
 
   // ── Forts ─────────────────────────────────────────────────
@@ -171,20 +171,20 @@ export const PLACES: CataloguePlace[] = [
   // ── Nature ────────────────────────────────────────────────
   {
     name: 'Pashan Lake', name_mr: 'पाषाण तलाव', category: 'Nature', kind: 'Lake', area: 'Pashan',
-    lat: 18.534, lng: 73.785,
+    lat: 18.53211, lng: 73.78265,
     description: 'Quiet lake with migratory birds in winter; best early in the morning.',
     hours: 'Sunrise - sunset', opensAt: h(6), closesAt: h(18, 30), entryFee: 'Free', free: true,
     visitMinutes: 60, xp: 20, popularity: 30,
   },
   {
     name: 'Empress Botanical Garden', name_mr: 'एम्प्रेस गार्डन', category: 'Nature', kind: 'Garden', area: 'Camp',
-    lat: 18.5045, lng: 73.8884,
+    lat: 18.51306, lng: 73.89809,
     description: 'Shady 39-acre botanical garden with old trees and flower shows in January.',
-    hours: '', entryFee: '', free: false, visitMinutes: 60, accessible: true, xp: 20, popularity: 35,
+    hours: '9:00 AM - 5:30 PM', opensAt: h(9), closesAt: h(17, 30), entryFee: '₹20', free: false, visitMinutes: 60, accessible: true, xp: 20, popularity: 35,
   },
   {
     name: 'Vetal Tekdi', name_mr: 'वेताळ टेकडी', category: 'Nature', kind: 'Hill', area: 'Kothrud',
-    lat: 18.528, lng: 73.818,
+    lat: 18.52556, lng: 73.81534,
     description: "The city's green lung: forest trails used by morning walkers, with views from the top.",
     hours: 'Sunrise - sunset', opensAt: h(6), closesAt: h(18, 30), entryFee: 'Free', free: true,
     visitMinutes: 90, xp: 30, popularity: 40,
@@ -214,7 +214,7 @@ export const PLACES: CataloguePlace[] = [
   },
   {
     name: 'Vaishali Restaurant', name_mr: 'वैशाली', category: 'Food', area: 'FC Road',
-    lat: 18.5234, lng: 73.8415, estYear: '1951',
+    lat: 18.52085, lng: 73.84122, estYear: '1951',
     description: 'Iconic South Indian restaurant; try the SPDP and filter coffee. Queues on weekends.',
     hours: '7:00 AM - 11:00 PM', opensAt: h(7), closesAt: h(23), entryFee: '—', free: true,
     visitMinutes: 60, accessible: true, xp: 20, popularity: 75,
@@ -223,11 +223,11 @@ export const PLACES: CataloguePlace[] = [
     name: 'Bedekar Misal', name_mr: 'बेडेकर मिसळ', category: 'Food', area: 'Narayan Peth',
     lat: 18.5132, lng: 73.8503, estYear: '1948',
     description: 'Spicy Puneri misal served the old way. Closes early in the afternoon.',
-    hours: '', entryFee: '—', free: true, visitMinutes: 40, xp: 20, popularity: 55,
+    hours: '7:30 AM - 6:00 PM, closed Monday', entryFee: '—', free: true, visitMinutes: 40, xp: 20, popularity: 55,
   },
   {
     name: 'Goodluck Cafe', name_mr: 'गुडलक कॅफे', category: 'Food', area: 'Deccan Gymkhana',
-    lat: 18.524, lng: 73.84, estYear: '1935',
+    lat: 18.5173, lng: 73.84146, estYear: '1935',
     description: 'Irani cafe classic: bun maska, chai and keema pav.',
     hours: '7:30 AM - 11:30 PM', opensAt: h(7, 30), closesAt: h(23, 30), entryFee: '—', free: true,
     visitMinutes: 45, xp: 20, popularity: 60,

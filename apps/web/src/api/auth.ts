@@ -22,6 +22,8 @@ export const usersApi = {
   update: (patch: MePatch) => api<User>('/users/me', { method: 'PATCH', body: patch }),
   uploadAvatar: (image: Blob) => api<User>('/users/me/avatar', { blob: image }),
   removeAvatar: () => api<User>('/users/me/avatar', { method: 'DELETE' }),
+  /** Permanent. The server checks the typed confirmation too. */
+  deleteAccount: () => api<{ deleted: true }>('/users/me', { method: 'DELETE', body: { confirm: 'DELETE' } }),
   stamps: () =>
     api<{
       total: number;

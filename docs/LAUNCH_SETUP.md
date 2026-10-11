@@ -8,9 +8,108 @@ settings to fill in, and a **Verify** check you can run for real. Tick the box w
 Development defaults (console SMS, public demo servers) keep everything working locally, but
 none of them are allowed in production.
 
-_Last updated: Phase 8 (hardening: logs, error reporting, deploy files, Android app). Every build phase is done; what is left is this list and the real data (steps 6, 13, 14)._
+_Last updated: after Phase 8. Every build phase is done. Section 0 is the free student route through this list; sections 1–5 are the full reference._
 
 ---
+
+## 0. Free student setup, step by step
+
+The ₹0 route for a student without a credit card. Do the parts in order; each one ends with a check. Where it says **send me**, paste the value in our chat. Secret keys (passwords, API keys, tokens) go only into the server file in Part 5, never into the chat.
+
+| Piece | Service | Cost |
+| --- | --- | --- |
+| Domain | Name.com `.app` / `.dev` (GitHub Student Pack) | free, 1 year |
+| Server (app, safety service, Redis, HTTPS) | Azure for Students, B1s Linux server | free 12 months |
+| Database (PostgreSQL + PostGIS) | Azure Database for PostgreSQL, B1ms | free 12 months |
+| Building and deploying | GitHub Actions + GitHub Container Registry | free (public repository) |
+| Crash reports | Sentry (Student Pack) | free |
+| Map tiles | MapTiler free plan | free (non-commercial) |
+| Email | Resend free plan | free (3,000 / month) |
+| Google sign-in | Google Cloud | free |
+| SMS | Twilio trial | free credit |
+
+**Part 1: accounts that take time to approve (do these first)**
+1. **GitHub Student Developer Pack:** <https://education.github.com/pack> → *Get student benefits*. Sign in with GitHub, add your college email, and upload your college ID card. Approval takes from a few hours to a few days.
+2. **Azure for Students:** <https://azure.microsoft.com/free/students> → *Start free*. Sign in with your **college email**. No card is needed. You get $100 of credit and the free services for 12 months.
+3. **Twilio:** <https://www.twilio.com/try-twilio>. Sign up, verify your own mobile number, then:
+   - Under *Phone Numbers → Verified Caller IDs*, also verify the phone of each person you'll test SOS with. A trial account can only text verified numbers.
+   - Get a trial number from the console.
+- **Check:** you can log in to the Azure portal (<https://portal.azure.com>) and see "Azure for Students" under Subscriptions.
+
+**Part 2: once the Student Pack is approved**
+1. **Domain:** on the Student Pack page, open **Name.com** → claim the free domain, and pick a `.app` or `.dev` name (e.g. `puneexplorer.app`). **Send me** the name.
+2. **Sentry:** on the Student Pack page, open **Sentry** and activate the student plan. Create two projects: *Node.js* (call it `pune-explorer-api`) and *Browser JavaScript* (`pune-explorer-web`). **Send me** the two DSN links. They aren't secret: one ends up in the website's code anyway.
+
+**Part 3: the server and the database (Azure portal)**
+1. **Create the server:** *Virtual machines → Create → Azure virtual machine*.
+   - Subscription *Azure for Students*, region **Central India**, image **Ubuntu Server 24.04 LTS**.
+   - Size **Standard_B1s**. It's marked "free services eligible".
+   - Authentication: *SSH public key*, username `azureuser`. Download the `.pem` key when asked and keep it safe.
+   - Inbound ports: allow **SSH (22), HTTP (80), HTTPS (443)**.
+   - Disk: *Standard SSD*. Then Create.
+2. **Fix the public IP:** open the server → *Networking / IP configuration* → set the public IP to **Static**, so it never changes. **Send me** the public IP address.
+3. **Create the database:** *Azure Database for PostgreSQL flexible server → Create*.
+   - Region Central India, PostgreSQL **16**, workload **Development**, compute **Burstable B1ms**, storage **32 GB**. That's the free tier.
+   - Admin username `pune`, and a strong password that you save in your password manager.
+   - Networking: *Public access*. Add the server's public IP as a firewall rule.
+   - Then Create; it takes about 10 minutes.
+4. **Prepare the database:**
+   - Open it → *Server parameters* → search `azure.extensions` → tick **POSTGIS** → Save. The app needs the PostGIS map extension.
+   - Then *Databases → Add* → name it `pune_explorer`.
+- **Check:** both resources show "Running" / "Available" in the portal.
+
+**Part 4: DNS and the first build (me, with you)**
+1. At Name.com → your domain → *Manage DNS records*, add two `A` records pointing at the server's IP: `@` and `www`.
+2. I publish the code to GitHub's `main` branch **(I'll ask you first)**. GitHub Actions then builds the two app images; watch it under the repository's *Actions* tab.
+3. Make the images downloadable: GitHub → your profile → *Packages* → `pune-explorer-app` → *Package settings* → *Change visibility* → **Public**. Do the same for `pune-explorer-safety`.
+- **Check:** <https://dnschecker.org> shows your domain pointing at the server IP.
+
+**Part 5: set up the server (about 10 minutes)**
+1. Connect from this computer, in PowerShell: `ssh -i C:\path\to\your-key.pem azureuser@SERVER_IP`
+2. On the server, run the commands below, using your own domain and email. The script installs Docker, adds swap memory, turns on the firewall and automatic security updates, and creates `/opt/pune-explorer/.env.production` with new random secrets.
+   ```
+   curl -fsSL https://raw.githubusercontent.com/LEVELING2108/PuneTourGuide/main/deploy/server-setup.sh -o setup.sh
+   bash setup.sh puneexplorer.app you@example.com
+   ```
+3. **Back up the medical-data key:** run `grep MEDICAL_ENC_KEY /opt/pune-explorer/.env.production` and copy the value into your password manager. Without it, saved medical info can never be read again.
+4. **Connect the database:** `nano /opt/pune-explorer/.env.production`, set the line below, then save with Ctrl+O, Enter, Ctrl+X. If your password has symbols like `@ # % /`, write them as `%40 %23 %25 %2F`.
+   `DATABASE_URL=postgresql://pune:YOUR_DB_PASSWORD@YOUR-DB-NAME.postgres.database.azure.com:5432/pune_explorer?schema=public&sslmode=require&connection_limit=5`
+5. Log out (`exit`), log back in, then start everything and load the real data:
+   ```
+   cd /opt/pune-explorer
+   docker compose --env-file .env.production pull
+   docker compose --env-file .env.production up -d
+   docker compose --env-file .env.production run --rm app node dist/seed.js --force
+   docker compose --env-file .env.production --profile jobs run --rm refresh-help
+   ```
+- **Check:** `https://your-domain/api/v1/health/ready` shows `"ready"`, and `https://your-domain` opens the app on your phone with a padlock.
+
+**Part 6: switch on each service.** Edit `/opt/pune-explorer/.env.production` for the secret ones, then run `docker compose --env-file .env.production up -d` to apply. The **GitHub Variables** (repository *Settings → Secrets and variables → Actions → Variables*) are public values that get baked into the website. After changing any of them, re-run the *Release* workflow (*Actions → Release → Run workflow*).
+
+| Service | What to do | Server file (.env.production) | GitHub Variable |
+| --- | --- | --- | --- |
+| Map tiles (MapTiler) | Sign up at <https://cloud.maptiler.com>, copy the default API key | `MAP_TILE_ORIGINS=https://api.maptiler.com` | `VITE_MAP_TILE_URL=https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=YOUR_KEY` and `VITE_MAP_TILE_ATTRIBUTION=<a href="https://www.maptiler.com/copyright/">© MapTiler</a> <a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>` |
+| Crash reports (Sentry) | the DSNs from Part 2 | `SENTRY_DSN=` (the Node one) | `VITE_SENTRY_DSN=` (the Browser one) |
+| SMS (Twilio) | Console → *Account info* | `SMS_PROVIDER=twilio`, `SMS_API_KEY=ACxxxx:your_auth_token`, `SMS_SENDER_ID=+1your_twilio_number` | — |
+| Email (Resend) | Sign up at <https://resend.com> → *Domains → Add* your domain → add the DNS records it shows at Name.com → *API Keys → Create* | `EMAIL_API_KEY=re_...`, `EMAIL_FROM=Pune Explorer <no-reply@your-domain>` | — |
+| Google sign-in | <https://console.cloud.google.com> → new project → *OAuth consent screen* (External; app name, your email, privacy URL `https://your-domain/privacy`) → *Credentials → Create OAuth client ID → Web application* → Authorised JavaScript origins `https://your-domain` | `GOOGLE_CLIENT_ID=...apps.googleusercontent.com` | `VITE_GOOGLE_CLIENT_ID=` (same value) |
+| Privacy contact | an email you read, for data requests (DPDP Act) | — | `VITE_CONTACT_EMAIL=you@...` |
+
+- **Twilio and India:** a trial texts only the numbers you verified, which is fine for a demo. For the public, Indian carriers require DLT registration (step 9). Plan to move to MSG91 then; only the settings change.
+- **Check each one** using the **Verify** line of its step below: 7 (map), 19 (Sentry), 9 (SMS), 16 (email), 17 (Google), 18 (Terms and Privacy).
+
+**Part 7: automatic deploys and monitoring**
+1. **Automatic deploys:** in GitHub → *Settings → Secrets and variables → Actions*:
+   - **Secrets:** `DEPLOY_HOST` (server IP), `DEPLOY_USER` (`azureuser`), `DEPLOY_SSH_KEY` (the whole text of your `.pem` file).
+   - **Variable:** `DEPLOY_ENABLED=true`.
+   - From then on, every push to `main` updates the server by itself.
+2. **Uptime alerts:** a free [UptimeRobot](https://uptimerobot.com) monitor on `https://your-domain/api/v1/health/ready`, alerting your email or phone (step 21).
+- **Check:** push any small change; within about 10 minutes the *Release* run is green and the site shows it.
+
+**After the free year:** Azure for Students renews each year while you're a student. Otherwise, move the same setup to any server with Docker (step 20 A). The domain renewal costs about ₹1,000–1,500 a year.
+
+---
+
 
 ## 1. Which feature uses what
 
@@ -154,12 +253,19 @@ _Last updated: Phase 8 (hardening: logs, error reporting, deploy files, Android 
 - **Verify:** search "FC Road" on the Map: it moves to FC Road.
 
 ### ☐ 13. Verify the place data
-**Needed by:** Explore, Place, Plan and routes. The 26 curated places in `services/tour-api/src/seed/catalogue.ts` are real, but their **opening hours, entry fees, visit times and coordinates were typed in and must be checked** before launch: visit, phone, or use official sites.
-- Hospitals no longer come from this file (step 6 replaces them).
-- **Verify:** for each place, the hours and fee shown on the Place screen match the official source, and its pin sits on the real entrance.
+**Needed by:** Explore, Place, Plan and routes. The 26 curated places live in `services/tour-api/src/seed/catalogue.ts`. In production, load them with `node dist/seed.js --force` (Part 5).
+- **Pins:** checked on 2026-10-11 against OpenStreetMap with `npm run check:places -w services/tour-api`. 25 of 26 are confirmed, and 7 were corrected (Empress Garden, Goodluck Cafe, Mahatma Phule Museum, Vetal Tekdi, Pashan Lake, Vishrambaug Wada, Vaishali). **Bedekar Misal** is not in OpenStreetMap: confirm its pin on the spot.
+- **Hours:** filled in from current public listings where they were blank. Where sources disagree, or a place has a weekly closed day or a lunch break, only the text is shown, and the app doesn't claim "open now".
+- **Still to confirm at the counter or by phone** (public sources disagree):
+  - Shaniwar Wada fee: ₹25 in the app; some sources say ₹5 for Indians.
+  - Aga Khan Palace fee: ₹25 in the app; it may now be ₹20 online.
+  - Lal Mahal: fee and its 1–4 PM break.
+  - Bedekar Misal: hours and closed day.
+  - Lohagad: entry fee.
+- **Verify:** for each place, the hours and fee on the Place screen match the official source, and its pin sits on the real entrance.
 
 ### ☐ 14. Translations
-**Needed by:** the language setting. The SOS screen is translated into Marathi, Hindi and Gujarati in `apps/web/src/i18n/locales/*.json`. **Have a native speaker review each one**, since these are emergency instructions. The rest of the app is English for now.
+**Needed by:** the language setting. The SOS screen and the crash screen are translated into Marathi, Hindi and Gujarati in `apps/web/src/i18n/locales/*.json`. They were reviewed on 2026-10-11, and "emergency" was changed from आणीबाणी / आपातकाल, which mean the political Emergency, to आपत्कालीन स्थिती / आपात स्थिति. **A native speaker should still read each one**, since these are emergency instructions. The rest of the app is English for now.
 - **Verify:** Settings → Language → मराठी, then open SOS: a Marathi speaker confirms every line reads naturally and correctly.
 
 ### ☐ 15. App install (PWA)
@@ -187,9 +293,14 @@ _Last updated: Phase 8 (hardening: logs, error reporting, deploy files, Android 
   - Doing it again logs straight in.
   - If you already had an email account with the same Gmail address, it is linked rather than duplicated.
 
-### ☐ 18. Terms and privacy policy pages
-**Needed by:** sign-up consent. Accounts store when the terms were accepted (`termsAcceptedAt`). Publish real Terms and Privacy Policy pages (India's DPDP Act: say what you collect, especially location, contacts and medical info, and why) and point the "Terms" links in the sign-up views at them.
-- **Verify:** every "Terms" link on Sign up, Almost there and Google sign-in opens the published pages.
+### ☐ 18. Terms, privacy policy and account deletion
+**Needed by:** sign-up consent (accounts store `termsAcceptedAt`), India's DPDP Act, Google sign-in's consent screen and the Play Store.
+- **Pages:** the app has `/terms` and `/privacy`, linked from Sign up and Almost there. The text in `apps/web/src/content/legal.ts` describes exactly what the app collects, who it is shared with and how long it's kept. Have it reviewed by someone qualified before a public launch, and update `LAST_UPDATED` whenever it changes.
+- **Contact:** set `VITE_CONTACT_EMAIL` (GitHub Variable) to the address that handles data requests.
+- **Account deletion:** in Settings → Sign out → *Delete my account*, typing DELETE erases the account, contacts, medical info, plans, photo, sessions and SOS records (`DELETE /api/v1/users/me`). Use `https://your-domain/settings/delete-account` as the deletion link in the Play Console.
+- **Verify:**
+  - `https://your-domain/privacy` shows your contact email.
+  - Delete a test account: you can't log in with it again, and its contacts are gone from the phone.
 
 ### ☐ 19. Error reporting (Sentry)
 **Needed by:** finding out about crashes before users tell you. Optional, and free for a small app.
@@ -205,11 +316,11 @@ Pick **one** of these. Both serve the app and API from one domain and keep SOS w
 
 **A. One server with Docker (VPS, e.g. DigitalOcean, Hetzner, AWS Lightsail; 2 GB RAM or more)**
 1. Point your domain's DNS `A` record at the server and install Docker.
-2. `cp deploy/.env.production.example deploy/.env.production` and fill it in. Every line names its step here.
-3. `docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production up -d --build`
-4. Caddy fetches the HTTPS certificate by itself. The app, a separate SMS worker, the safety service (under `/safety`), Redis (password-protected, persistent) and Postgres + PostGIS all start. Migrations run automatically.
+2. `deploy/server-setup.sh` prepares the server, as in section 0 Part 5. Or copy `deploy/.env.production.example` to `.env.production` and fill it in; every line names its step here.
+3. Ready-made images: `docker compose --env-file .env.production pull && docker compose --env-file .env.production up -d`. To build on the server instead (2 GB+ RAM, whole repository): `docker compose -f deploy/docker-compose.prod.yml -f deploy/docker-compose.build.yml --env-file deploy/.env.production up -d --build`.
+4. Caddy fetches the HTTPS certificate by itself. The app, the safety service (under `/safety`) and Redis (password-protected, persistent) start, and migrations run automatically. `COMPOSE_PROFILES=db` adds Postgres + PostGIS on the server; `worker` adds a separate SMS worker (then set `RUN_WORKERS=false`).
 5. Nightly help import (step 6): add a cron line on the server:
-   `30 21 * * * cd /path/to/repo && docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production run --rm refresh-help`
+   `30 21 * * * cd /opt/pune-explorer && docker compose --env-file .env.production --profile jobs run --rm refresh-help` (`server-setup.sh` adds it for you)
 6. More traffic: `... up -d --scale app=3`. Caddy spreads requests, and Redis keeps rate limits and live tracking shared.
 7. Backups: use a managed Postgres, or schedule `pg_dump` off the server. Keep `MEDICAL_ENC_KEY` separately (step 4).
 

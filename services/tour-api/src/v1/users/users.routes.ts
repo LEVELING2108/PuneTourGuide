@@ -1,9 +1,10 @@
 import express, { Router } from 'express';
-import { avatarLimit } from '../../middleware/limits';
+import { avatarLimit, deleteAccountLimit } from '../../middleware/limits';
+import { clearRefreshCookie } from '../../lib/tokens';
 import { handle, ok } from '../../lib/http';
 import { requireAuth, userId } from '../../middleware/requireAuth';
 import { input, validate } from '../../middleware/validate';
-import { updateMeSchema, type UpdateMeInput } from './users.schemas';
+import { deleteMeSchema, updateMeSchema, type UpdateMeInput } from './users.schemas';
 import { usersService } from './users.service';
 
 const router = Router();
@@ -29,6 +30,18 @@ router.patch(
   '/me',
   validate({ body: updateMeSchema }),
   handle(async (_req, res) => ok(res, await usersService.updateMe(userId(res), input<UpdateMeInput>(res).body)))
+);
+
+// Delete the account and everything in it. Signs this device out too.
+router.delete(
+  '/me',
+  deleteAccountLimit,
+  validate({ body: deleteMeSchema }),
+  handle(async (_req, res) => {
+    const result = await usersService.deleteMe(userId(res));
+    clearRefreshCookie(res);
+    return ok(res, result);
+  })
 );
 
 // Raw image body (no multipart parser needed): Content-Type image/*, up to 5 MB

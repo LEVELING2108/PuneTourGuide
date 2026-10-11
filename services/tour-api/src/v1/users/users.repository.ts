@@ -2,6 +2,18 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma';
 
 export const usersRepo = {
+  /**
+   * Erase an account (DPDP Act right to erasure; Google Play account deletion). Plans, saves, stamps,
+   * contacts, medical info, photo, sessions and trip shares go with the user (onDelete: Cascade).
+   * SOS events would otherwise be kept with their location, so they are removed here, and so are
+   * pending login codes for the number. The SMS log keeps only masked numbers and loses the user link.
+   */
+  deleteAccount: (userId: number, phone: string | null) =>
+    prisma.$transaction([
+      prisma.sosEvent.deleteMany({ where: { userId } }),
+      ...(phone ? [prisma.otpCode.deleteMany({ where: { phone } })] : []),
+      prisma.user.delete({ where: { id: userId } }),
+    ]),
   findById: (id: number) => prisma.user.findUnique({ where: { id } }),
   findByEmail: (email: string) => prisma.user.findUnique({ where: { email } }),
   findByPhone: (phone: string) => prisma.user.findUnique({ where: { phone } }),

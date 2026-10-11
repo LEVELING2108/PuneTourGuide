@@ -13,6 +13,8 @@ type AuthState = {
   setSession: (s: SessionResponse) => void;
   setUser: (u: User) => void;
   signOut: () => Promise<void>;
+  /** Forget the session on this device without telling the server (it already ended it). */
+  endLocalSession: () => Promise<void>;
   bootstrap: () => Promise<void>;
 };
 
@@ -48,6 +50,9 @@ export const useAuthStore = create<AuthState>()((set) => ({
     } catch {
       /* offline: still sign out locally */
     }
+    await useAuthStore.getState().endLocalSession();
+  },
+  endLocalSession: async () => {
     if (isNative()) await nativeRefresh.clear();
     setAccessToken(null);
     set({ user: null });

@@ -20,6 +20,15 @@ export function cachedContacts(): CachedContact[] {
   }
 }
 
+/** Account deleted: the device copy of the contacts goes too (signing out keeps it for SOS). */
+export function forgetCachedContacts() {
+  try {
+    localStorage.removeItem(CACHE_KEY);
+  } catch {
+    /* blocked storage: nothing was kept */
+  }
+}
+
 function cache(list: Contact[]) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(list.map((c) => ({ name: c.name, phone: c.phone, isPrimary: c.isPrimary }))));

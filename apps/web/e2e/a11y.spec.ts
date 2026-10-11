@@ -9,8 +9,8 @@ const HERE = { latitude: 18.5195, longitude: 73.8553 };
 test.use({ geolocation: HERE, permissions: ['geolocation'] });
 test.describe.configure({ timeout: 180_000 });
 
-const PUBLIC = ['/welcome', '/intro', '/permissions', '/login', '/signup', '/forgot', '/', '/explore', '/explore/filters', '/map', '/sos'];
-const SIGNED_IN = ['/', '/plan', '/profile', '/settings', '/settings/profile', '/settings/contacts', '/settings/contacts/new', '/settings/medical', '/settings/offline', '/settings/language', '/settings/theme', '/settings/sign-out', '/almost-there', '/first-contact'];
+const PUBLIC = ['/welcome', '/intro', '/permissions', '/login', '/signup', '/forgot', '/', '/explore', '/explore/filters', '/map', '/sos', '/terms', '/privacy'];
+const SIGNED_IN = ['/', '/plan', '/profile', '/settings', '/settings/profile', '/settings/contacts', '/settings/contacts/new', '/settings/medical', '/settings/offline', '/settings/language', '/settings/theme', '/settings/sign-out', '/settings/delete-account', '/almost-there', '/first-contact'];
 
 async function prep(page: Page, theme: 'classic' | 'deccan') {
   await page.addInitScript(

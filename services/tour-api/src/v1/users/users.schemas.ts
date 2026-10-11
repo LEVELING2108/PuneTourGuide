@@ -24,3 +24,6 @@ export const updateMeSchema = z
   .strict();
 
 export type UpdateMeInput = z.infer<typeof updateMeSchema>;
+
+/** Deleting an account is permanent, so the app makes the person type DELETE. */
+export const deleteMeSchema = z.object({ confirm: z.literal('DELETE') }).strict();

@@ -42,6 +42,7 @@ export default function DeccanSignOutView({ v }: ViewProps) {
         </div>
         <Link to="/login" className="tap danger" onClick={v.signOut} style={{ height: "56px", borderRadius: "28px", background: "#A3281A", color: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>Sign out</Link>
         <Link to="/settings" className="tap ghost" style={{ height: "52px", borderRadius: "26px", border: "1px solid #D8C6A6", color: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>Cancel</Link>
+        <Link to="/settings/delete-account" style={{ alignSelf: "center", padding: "10px 12px", color: "var(--muted)", fontSize: "13px", textDecoration: "underline" }}>Delete my account</Link>
       </div>
     </div>
   );
