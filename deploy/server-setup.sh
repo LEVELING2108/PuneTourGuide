@@ -2,8 +2,10 @@
 # One-time setup of a fresh Ubuntu 22.04/24.04 server (e.g. Azure for Students B1s) for Pune Explorer.
 # Run it on the server as your normal (sudo) user:
 #
-#   curl -fsSL https://raw.githubusercontent.com/LEVELING2108/PuneTourGuide/main/deploy/server-setup.sh -o setup.sh
-#   bash setup.sh your-domain.app you@example.com
+#   curl -fsSL https://raw.githubusercontent.com/LEVELING2108/PuneTourGuide/research/deploy/server-setup.sh -o setup.sh
+#   BRANCH=research bash setup.sh your-domain.app you@example.com
+#
+# BRANCH=research runs the work-in-progress images (:research); main (the default) runs :latest.
 #
 # It installs Docker, adds swap (small servers), opens only ports 22/80/443, turns on automatic
 # security updates, puts the compose files in /opt/pune-explorer and creates .env.production
@@ -14,6 +16,7 @@ DOMAIN="${1:?Usage: bash setup.sh <domain> <email-for-https-certificates>}"
 ACME_EMAIL="${2:?Usage: bash setup.sh <domain> <email-for-https-certificates>}"
 REPO="${REPO:-LEVELING2108/PuneTourGuide}"
 BRANCH="${BRANCH:-main}"
+TAG="$([ "$BRANCH" = main ] && echo latest || echo research)"
 OWNER_LC="$(echo "${REPO%%/*}" | tr '[:upper:]' '[:lower:]')"
 DIR=/opt/pune-explorer
 RAW="https://raw.githubusercontent.com/${REPO}/${BRANCH}/deploy"
@@ -71,8 +74,8 @@ if [ ! -f .env.production ]; then
   set_env APP_URL "https://$DOMAIN"
   set_env CORS_ORIGINS "https://$DOMAIN,https://localhost"
   set_env EMAIL_FROM "\"Pune Explorer <no-reply@$DOMAIN>\""
-  set_env APP_IMAGE "ghcr.io/$OWNER_LC/pune-explorer-app:latest"
-  set_env SAFETY_IMAGE "ghcr.io/$OWNER_LC/pune-explorer-safety:latest"
+  set_env APP_IMAGE "ghcr.io/$OWNER_LC/pune-explorer-app:$TAG"
+  set_env SAFETY_IMAGE "ghcr.io/$OWNER_LC/pune-explorer-safety:$TAG"
   set_env JWT_SECRET "$(rand_b64 48)"
   set_env MEDICAL_ENC_KEY "$(openssl rand -hex 32)"
   set_env REDIS_PASSWORD "$REDIS_PASSWORD"

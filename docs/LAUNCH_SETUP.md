@@ -60,7 +60,7 @@ The ₹0 route for a student without a credit card. Do the parts in order; each 
 
 **Part 4: DNS and the first build (me, with you)**
 1. At Name.com → your domain → *Manage DNS records*, add two `A` records pointing at the server's IP: `@` and `www`.
-2. I publish the code to GitHub's `main` branch **(I'll ask you first)**. GitHub Actions then builds the two app images; watch it under the repository's *Actions* tab.
+2. The work happens on the **`research`** branch: every change goes in through a pull request into `research`, and `research` is merged into `main` when the work is complete. Each push to `research` makes GitHub Actions build the app images tagged `research`, and `main` builds `latest`. Watch them under the repository's *Actions* tab.
 3. Make the images downloadable: GitHub → your profile → *Packages* → `pune-explorer-app` → *Package settings* → *Change visibility* → **Public**. Do the same for `pune-explorer-safety`.
 - **Check:** <https://dnschecker.org> shows your domain pointing at the server IP.
 
@@ -68,8 +68,8 @@ The ₹0 route for a student without a credit card. Do the parts in order; each 
 1. Connect from this computer, in PowerShell: `ssh -i C:\path\to\your-key.pem azureuser@SERVER_IP`
 2. On the server, run the commands below, using your own domain and email. The script installs Docker, adds swap memory, turns on the firewall and automatic security updates, and creates `/opt/pune-explorer/.env.production` with new random secrets.
    ```
-   curl -fsSL https://raw.githubusercontent.com/LEVELING2108/PuneTourGuide/main/deploy/server-setup.sh -o setup.sh
-   bash setup.sh puneexplorer.app you@example.com
+   curl -fsSL https://raw.githubusercontent.com/LEVELING2108/PuneTourGuide/research/deploy/server-setup.sh -o setup.sh
+   BRANCH=research bash setup.sh puneexplorer.app you@example.com
    ```
 3. **Back up the medical-data key:** run `grep MEDICAL_ENC_KEY /opt/pune-explorer/.env.production` and copy the value into your password manager. Without it, saved medical info can never be read again.
 4. **Connect the database:** `nano /opt/pune-explorer/.env.production`, set the line below, then save with Ctrl+O, Enter, Ctrl+X. If your password has symbols like `@ # % /`, write them as `%40 %23 %25 %2F`.
@@ -102,7 +102,7 @@ The ₹0 route for a student without a credit card. Do the parts in order; each 
 1. **Automatic deploys:** in GitHub → *Settings → Secrets and variables → Actions*:
    - **Secrets:** `DEPLOY_HOST` (server IP), `DEPLOY_USER` (`azureuser`), `DEPLOY_SSH_KEY` (the whole text of your `.pem` file).
    - **Variable:** `DEPLOY_ENABLED=true`.
-   - From then on, every push to `main` updates the server by itself.
+   - From then on, every merge into `research` (and later `main`) updates the server by itself.
 2. **Uptime alerts:** a free [UptimeRobot](https://uptimerobot.com) monitor on `https://your-domain/api/v1/health/ready`, alerting your email or phone (step 21).
 - **Check:** push any small change; within about 10 minutes the *Release* run is green and the site shows it.
 
