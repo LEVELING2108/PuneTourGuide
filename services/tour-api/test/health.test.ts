@@ -31,3 +31,10 @@ describe('request ids', () => {
     expect(res.headers['x-request-id']).not.toContain(' ');
   });
 });
+
+describe('security headers', () => {
+  it('send only our origin to other sites (map tile keys check it), never paths', async () => {
+    const res = await request(app).get('/api/health');
+    expect(res.headers['referrer-policy']).toBe('strict-origin-when-cross-origin');
+  });
+});
