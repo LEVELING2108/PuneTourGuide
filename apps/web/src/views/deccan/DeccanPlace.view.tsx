@@ -84,7 +84,7 @@ export default function DeccanPlaceView({ v }: ViewProps) {
             {v.description}
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", borderTop: "1.5px dashed #D8C6A6", paddingTop: "10px" }}>
-            <div>
+            <div style={{ paddingRight: "10px" }}>
               <div style={{ fontSize: "10.5px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>OPEN</div>
               <div style={{ fontFamily: "var(--font-display)", fontSize: "18px" }}>{v.hours}</div>
             </div>
@@ -111,6 +111,12 @@ export default function DeccanPlaceView({ v }: ViewProps) {
               <span style={{ color: "var(--muted)" }}>· nearest hospital{v.hospitalKm}</span>
             </span>
           </Link>
+        {v.googleHref && (
+          <a href={v.googleHref} target="_blank" rel="noreferrer" style={{ alignSelf: "center", display: "flex", alignItems: "center", gap: "6px", padding: "8px 12px", color: "var(--muted)", fontSize: "13px", textDecoration: "none" }}>
+            Reviews and photos on Google Maps
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></svg>
+          </a>
+        )}
           <div style={{ display: "flex", gap: "10px" }}>
             <Link to={v.directionsHref} className="ghost" style={{ flex: "1", height: "56px", borderRadius: "28px", border: "1px solid #CDB894", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "15.5px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>Directions</Link>
             <Link to="/plan" className="cta" onClick={v.addToPlan} style={{ flex: "1.4", height: "56px", borderRadius: "28px", background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "15.5px", fontWeight: "600", color: "var(--surface)", textDecoration: "none" }}>
