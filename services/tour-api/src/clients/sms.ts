@@ -20,6 +20,43 @@ export type SendResult = { provider: string; providerId: string | null };
 
 const http = axios.create({ timeout: 10_000 });
 
+/**
+ * A failed send, with a reason that is safe to store (never the phone number). `permanent` means
+ * retrying cannot help (wrong or unverified number, country blocked, bad credentials).
+ */
+export class SmsError extends Error {
+  constructor(
+    message: string,
+    public readonly permanent: boolean
+  ) {
+    super(message);
+  }
+}
+
+// https://www.twilio.com/docs/api/errors
+const TWILIO_PERMANENT: Record<number, string> = {
+  20003: 'wrong Account SID or Auth Token',
+  21211: 'not a valid phone number',
+  21408: 'sending to this country is not enabled (Messaging geo permissions)',
+  21606: 'the From number cannot send SMS',
+  21608: 'number not verified on the trial account',
+  21610: 'the recipient replied STOP',
+  21612: 'this number cannot be reached from the sender',
+  21614: 'not a mobile number',
+};
+
+/** Twilio's error as a storable reason: code plus a description, any number in it masked. */
+export function twilioError(err: unknown): SmsError {
+  const res = (err as { response?: { status?: number; data?: { code?: number; message?: string } } }).response;
+  const code = res?.data?.code;
+  if (code && TWILIO_PERMANENT[code]) return new SmsError(`Twilio ${code}: ${TWILIO_PERMANENT[code]}`, true);
+  const text = (res?.data?.message ?? (err as Error).message ?? 'request failed').replace(/\+?\d[\d\s-]{6,}\d/g, '[number]');
+  // Other 4xx are request problems too; 429 and 5xx and network errors are worth retrying
+  const status = res?.status ?? 0;
+  const permanent = status >= 400 && status < 500 && status !== 429;
+  return new SmsError(`Twilio ${code ?? (status || 'network')}: ${text}`, permanent);
+}
+
 /** Development: print instead of sending. Phone masked; medical text never printed. */
 async function sendConsole(sms: Sms): Promise<SendResult> {
   logger.info({ kind: sms.kind, to: maskPhone(sms.to) }, `sms (console): ${sms.logBody}`);
@@ -29,12 +66,16 @@ async function sendConsole(sms: Sms): Promise<SendResult> {
 /** Twilio Messages API. SMS_API_KEY = "AccountSid:AuthToken", SMS_SENDER_ID = sender number. */
 async function sendTwilio(sms: Sms): Promise<SendResult> {
   const [sid, token] = (env.SMS_API_KEY ?? '').split(':');
-  const { data } = await http.post(
-    `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`,
-    new URLSearchParams({ To: sms.to, From: env.SMS_SENDER_ID ?? '', Body: sms.body }).toString(),
-    { auth: { username: sid, password: token }, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
-  );
-  return { provider: 'twilio', providerId: data?.sid ?? null };
+  try {
+    const { data } = await http.post(
+      `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`,
+      new URLSearchParams({ To: sms.to, From: env.SMS_SENDER_ID ?? '', Body: sms.body }).toString(),
+      { auth: { username: sid, password: token }, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+    );
+    return { provider: 'twilio', providerId: data?.sid ?? null };
+  } catch (err) {
+    throw twilioError(err);
+  }
 }
 
 /**

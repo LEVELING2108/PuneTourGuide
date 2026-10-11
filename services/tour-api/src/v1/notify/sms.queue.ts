@@ -1,6 +1,6 @@
-import { Queue, Worker, type Job } from 'bullmq';
+import { Queue, UnrecoverableError, Worker, type Job } from 'bullmq';
 import IORedis from 'ioredis';
-import { sendSms, smsProvider, type Sms } from '../../clients/sms';
+import { SmsError, sendSms, smsProvider, type Sms } from '../../clients/sms';
 import { env } from '../../config/env';
 import { decrypt, encrypt } from '../../lib/crypto';
 import { logger } from '../../lib/logger';
@@ -43,8 +43,10 @@ async function deliver(logId: number, sms: Sms, attempt: number) {
     const r = await sendSms(sms);
     await notifyRepo.markSent(logId, r.providerId, attempt);
   } catch (err) {
-    await notifyRepo.markFailed(logId, (err as Error).message, attempt, attempt >= ATTEMPTS);
-    throw err;
+    // A wrong or unverified number will not work on a later attempt: stop now
+    const permanent = err instanceof SmsError && err.permanent;
+    await notifyRepo.markFailed(logId, (err as Error).message, attempt, permanent || attempt >= ATTEMPTS);
+    throw permanent ? new UnrecoverableError((err as Error).message) : err;
   }
 }
 
@@ -53,7 +55,8 @@ async function deliverInline(logId: number, sms: Sms) {
   for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
     try {
       return await deliver(logId, sms, attempt);
-    } catch {
+    } catch (err) {
+      if (err instanceof UnrecoverableError) return;
       if (attempt < ATTEMPTS) await new Promise((r) => setTimeout(r, 2000 * 2 ** (attempt - 1)));
     }
   }
