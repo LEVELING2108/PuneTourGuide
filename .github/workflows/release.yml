@@ -42,8 +42,29 @@ jobs:
           if [ "${GITHUB_REF_NAME}" = "main" ]; then echo "CHANNEL=latest" >> "$GITHUB_ENV"; else echo "CHANNEL=research" >> "$GITHUB_ENV"; fi
 
       # VITE_* values are public (they end up in the browser); they come from repository Variables.
-      # build-args is parsed like CSV: a value containing a double quote swallows the lines after it,
-      # so HTML values (the map credit) are not passed here; the app derives the credit itself.
+      # build-push-action mis-parses its build-args list when a value is empty (or contains a double
+      # quote): that line swallows the ones after it. So list only the settings that are set, and
+      # keep HTML (the map credit) out entirely; the app derives the credit itself.
+      - name: Build settings (only the ones that are set)
+        id: args
+        env:
+          VITE_MAP_TILE_URL: ${{ vars.VITE_MAP_TILE_URL }}
+          VITE_MAP_TILES_OFFLINE: ${{ vars.VITE_MAP_TILES_OFFLINE }}
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
+          VITE_CONTACT_EMAIL: ${{ vars.VITE_CONTACT_EMAIL }}
+          VITE_RELEASE: ${{ github.sha }}
+        run: |
+          list=""
+          for k in VITE_MAP_TILE_URL VITE_MAP_TILES_OFFLINE VITE_GOOGLE_CLIENT_ID VITE_SENTRY_DSN VITE_CONTACT_EMAIL VITE_RELEASE; do
+            v="${!k}"
+            if [ -z "$v" ]; then echo "$k: not set"; continue; fi
+            case "$v" in *'"'*) echo "::error::$k contains a double quote, which the build cannot pass on"; exit 1;; esac
+            echo "$k: set"
+            list+="$k=$v"$'\n'
+          done
+          { echo 'list<<END_OF_ARGS'; printf '%s' "$list"; echo 'END_OF_ARGS'; } >> "$GITHUB_OUTPUT"
+
       - name: App (web + Tour API)
         uses: docker/build-push-action@v6
         with:
@@ -53,13 +74,7 @@ jobs:
           tags: ${{ env.APP_IMAGE }}:${{ env.CHANNEL }},${{ env.APP_IMAGE }}:${{ github.sha }}
           cache-from: type=gha,scope=app
           cache-to: type=gha,mode=max,scope=app
-          build-args: |
-            VITE_MAP_TILE_URL=${{ vars.VITE_MAP_TILE_URL }}
-            VITE_MAP_TILES_OFFLINE=${{ vars.VITE_MAP_TILES_OFFLINE }}
-            VITE_GOOGLE_CLIENT_ID=${{ vars.VITE_GOOGLE_CLIENT_ID }}
-            VITE_SENTRY_DSN=${{ vars.VITE_SENTRY_DSN }}
-            VITE_CONTACT_EMAIL=${{ vars.VITE_CONTACT_EMAIL }}
-            VITE_RELEASE=${{ github.sha }}
+          build-args: ${{ steps.args.outputs.list }}
 
       - name: Safety service
         uses: docker/build-push-action@v6
