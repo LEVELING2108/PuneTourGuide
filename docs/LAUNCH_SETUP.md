@@ -61,8 +61,8 @@ The ₹0 route for a student without a credit card. Do the parts in order; each 
 **Part 4: DNS and the first build (me, with you)**
 1. At Name.com → your domain → *Manage DNS records*, add two `A` records pointing at the server's IP: `@` and `www`.
 2. The work happens on the **`research`** branch: every change goes in through a pull request into `research`, and `research` is merged into `main` when the work is complete. Each push to `research` makes GitHub Actions build the app images tagged `research`, and `main` builds `latest`. Watch them under the repository's *Actions* tab.
-3. Make the images downloadable: GitHub → your profile → *Packages* → `pune-explorer-app` → *Package settings* → *Change visibility* → **Public**. Do the same for `pune-explorer-safety`.
-- **Check:** <https://dnschecker.org> shows your domain pointing at the server IP.
+3. The images are public, because they come from a public repository, so the server can download them without a login. (Checked 2026-10-11: `pune-explorer-app:research` and `pune-explorer-safety:research` are both published.)
+- **Check:** <https://dnschecker.org> shows your domain pointing at the server IP, and the repository's *Actions* tab shows a green *Release* run.
 
 **Part 5: set up the server (about 10 minutes)**
 1. Connect from this computer, in PowerShell: `ssh -i C:\path\to\your-key.pem azureuser@SERVER_IP`
