@@ -10,6 +10,7 @@ import { namesText, useLiveStore } from '../../features/live';
 import { useCurrentPosition, useWatchPosition } from '../../features/location';
 import { kmText, usePlace, usePlan } from '../../features/places';
 import { alongMetres, clockIn, closestIndex, distText, durText, metres, offRouteMetres, type LatLng, type Pair } from '../../lib/geo';
+import { googleDirectionsUrl } from '../../lib/googleMaps';
 import { chipColors, usePalette } from '../../lib/palette';
 import { useIsLoggedIn } from '../../stores/auth';
 import NavigationView from '../../views/classic/Navigation.view';
@@ -206,6 +207,7 @@ export default function NavigationScreen() {
     }),
     eta,
     meta,
+    googleHref: dest ? googleDirectionsUrl(dest, mode) : '',
     nextDist,
     instruction,
     streetMr: '',

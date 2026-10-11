@@ -7,9 +7,16 @@ import { useFlash } from '../../lib/useFlash';
 import { useTheme } from '../../stores/theme';
 import PlaceView from '../../views/classic/Place.view';
 import DeccanPlaceView from '../../views/deccan/DeccanPlace.view';
+import { googlePlaceUrl } from '../../lib/googleMaps';
 
 /** "8:00 AM - 6:30 PM" → "8 AM–6:30 PM" so it fits the 3-column fact row. */
-const compactHours = (h: string) => h.replace(/:00(?= ?[AP]M)/g, '').replace(/ - /g, '–').replace(/ – /g, '–');
+// "9:00 AM - 5:30 PM" → "9 AM–5:30 PM"; each time stays whole and the line may wrap after the dash
+const compactHours = (h: string) =>
+  h
+    .replace(/:00(?= ?[AP]M)/g, '')
+    .replace(/ [-–] /g, '–')
+    .replace(/ (?=[AP]M)/g, ' ')
+    .replace(/–/g, '–​');
 
 const visitText = (min: number | null) => (!min ? 'Check locally' : min < 60 ? `${min} min` : `${Math.round((min / 60) * 10) / 10} hr`);
 
@@ -55,6 +62,7 @@ export default function PlaceScreen() {
     hospitalLine: d?.hospital ? `${d.hospital.name}${d.hospital.km !== null ? ` · ${kmText(d.hospital.km)}` : ''}` : 'See help on the map',
     helpHref: '/map?layer=help',
     directionsHref: placeId ? `/directions?to=${placeId}` : '/directions',
+    googleHref: d ? googlePlaceUrl(d) : '',
     ctaLabel: inPlan ? 'In your plan' : 'Add to plan',
     ctaLabelDeccan: inPlan ? 'In your journey' : 'Add to journey',
     xpLabel: inPlan ? 'View' : `+${d?.xp ?? 30} XP`,

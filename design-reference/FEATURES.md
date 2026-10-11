@@ -128,6 +128,7 @@ Medical info is sensitive: store encrypted at rest, only return it to the owner,
 | ✅ Sign out | Clear JWT; keep contacts/medical/offline packs cached on device | — |
 | ✅ Delete my account (link in the sign-out sheet; no mockup) | Type DELETE → erase account, contacts, medical, plans, photo, sessions, SOS records; clear the device contact copy (DPDP Act, Play Store) | `DELETE /users/me` |
 | ✅ Terms / Privacy links (Sign up, Almost there) | Open `/terms` and `/privacy` (no mockup; theme tokens only) | — |
+| ✅ Reviews and photos on Google Maps (Place) · Open in Google Maps (Directions) | Hand-off by Google Maps URL (no API key): place listing by name; turn-by-turn in walking / driving mode | — |
 | ✅ Passport (Deccan): stamps grid, XP bar | | EXISTS `/users/stats` (EXTEND with stamps) |
 
 ## 4. Non-functional

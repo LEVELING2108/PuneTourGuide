@@ -100,6 +100,12 @@ export default function PlaceView({ v }: ViewProps) {
             <path d="M9 6l6 6-6 6" />
           </svg>
         </Link>
+        {v.googleHref && (
+          <a href={v.googleHref} target="_blank" rel="noreferrer" style={{ alignSelf: "center", display: "flex", alignItems: "center", gap: "6px", padding: "8px 12px", color: "var(--muted)", fontSize: "13px", textDecoration: "none" }}>
+            Reviews and photos on Google Maps
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></svg>
+          </a>
+        )}
         <div className="rise d6" style={{ display: "flex", gap: "10px", marginTop: "auto", paddingBottom: "32px" }}>
           <Link to={v.directionsHref} className="ghost" style={{ flex: "1", height: "56px", borderRadius: "28px", border: "1px solid #C9D0CC", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "15px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
