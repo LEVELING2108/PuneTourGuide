@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { authApi } from '../../api/auth';
-import { ApiError } from '../../api/client';
 import { Themed } from '../../components/Themed';
-import { googleIdToken } from '../../features/google';
 import { afterSignIn, otpTarget, safeNext } from '../../features/signin';
 import { usePalette } from '../../lib/palette';
 import { useSettingsStore } from '../../stores/settings';
@@ -86,19 +84,19 @@ export default function SignUpScreen() {
     ctaHref: isEmail ? '/first-contact' : '/otp',
     submit,
     error,
-    google: async (e: React.MouseEvent) => {
-      e.preventDefault();
+    googleToken: async (idToken: string) => {
       if (busy) return;
       setError('');
       setBusy(true);
       try {
-        navigate(afterSignIn(await authApi.google(await googleIdToken('signup')), next), { replace: true });
+        navigate(afterSignIn(await authApi.google(idToken), next), { replace: true });
       } catch (err) {
-        setError(err instanceof Error && !(err instanceof ApiError) ? err.message : errorText(err));
+        setError(errorText(err));
       } finally {
         setBusy(false);
       }
     },
+    googleUnavailable: setError,
   };
   return <Themed classic={SignUpView} deccan={DeccanSignUpView} v={v} />;
 }

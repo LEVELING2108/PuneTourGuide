@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { authApi } from '../../api/auth';
-import { ApiError } from '../../api/client';
 import { Themed } from '../../components/Themed';
 import { usePalette } from '../../lib/palette';
-import { googleIdToken } from '../../features/google';
 import { afterSignIn, otpTarget, safeNext } from '../../features/signin';
 import LoginView from '../../views/classic/Login.view';
 import DeccanLoginView from '../../views/deccan/DeccanLogin.view';
@@ -91,19 +89,19 @@ export default function LoginScreen() {
     loginLabel: busy ? 'Logging in…' : 'Log in',
     sendLabel: busy && mode === 'phone' ? 'Sending…' : 'Send code',
     error,
-    google: async (e: React.MouseEvent) => {
-      e.preventDefault();
+    googleToken: async (idToken: string) => {
       if (busy) return;
       setError('');
       setBusy(true);
       try {
-        navigate(afterSignIn(await authApi.google(await googleIdToken('signin')), next), { replace: true });
+        navigate(afterSignIn(await authApi.google(idToken), next), { replace: true });
       } catch (err) {
-        setError(err instanceof Error && !(err instanceof ApiError) ? err.message : errorText(err));
+        setError(errorText(err));
       } finally {
         setBusy(false);
       }
     },
+    googleUnavailable: setError,
   };
   return <Themed classic={LoginView} deccan={DeccanLoginView} v={v} />;
 }

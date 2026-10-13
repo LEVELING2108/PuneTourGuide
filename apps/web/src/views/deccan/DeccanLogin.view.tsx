@@ -1,6 +1,7 @@
 // Generated from design-reference/deccan/DeccanLogin.dc.html by scripts/convert-designs.py, then wired up by hand.
 import { Link } from 'react-router';
 import type { ViewProps } from '../types';
+import { GoogleButton } from '../../components/GoogleButton';
 import { GoogleG } from '../../components/GoogleG';
 
 const css = `
@@ -74,10 +75,12 @@ export default function DeccanLoginView({ v }: ViewProps) {
         </div>
       </div>
       <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "252px", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "26px 24px 26px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "14px" }}>
-        <Link to="/" className="rise d3 tap gbtn" onClick={v.google} style={{ height: "54px", boxSizing: "border-box", borderRadius: "27px", border: "1px solid #D8C6A6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>
-          <GoogleG />
-          {" "}Continue with Google
-        </Link>
+        <GoogleButton context="signin" className="rise d3" onToken={v.googleToken} onUnavailable={v.googleUnavailable}>
+          <Link to="/" className="tap gbtn" style={{ height: "54px", boxSizing: "border-box", borderRadius: "27px", border: "1px solid #D8C6A6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>
+            <GoogleG />
+            {" "}Continue with Google
+          </Link>
+        </GoogleButton>
         <div className="rise d3" style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "12px", color: "var(--muted)" }}>
           <span style={{ flex: "1", height: "1px", background: "#DCCDB6" }} />
           or

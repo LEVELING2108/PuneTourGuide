@@ -2,6 +2,7 @@
 import { Link } from 'react-router';
 import { Fragment } from 'react';
 import type { ViewProps } from '../types';
+import { GoogleButton } from '../../components/GoogleButton';
 import { GoogleG } from '../../components/GoogleG';
 
 const css = `
@@ -64,10 +65,12 @@ export default function SignUpView({ v }: ViewProps) {
         </div>
       </div>
       <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "206px", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "24px 24px 24px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "13px" }}>
-        <Link to="/first-contact" onClick={v.google} className="rise d3 tap gbtn" style={{ height: "54px", boxSizing: "border-box", flexShrink: "0", borderRadius: "27px", border: "1px solid #D5DAD6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>
-          <GoogleG />
-          {" "}Sign up with Google
-        </Link>
+        <GoogleButton context="signup" className="rise d3" onToken={v.googleToken} onUnavailable={v.googleUnavailable}>
+          <Link to="/first-contact" className="tap gbtn" style={{ height: "54px", boxSizing: "border-box", flexShrink: "0", borderRadius: "27px", border: "1px solid #D5DAD6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>
+            <GoogleG />
+            {" "}Sign up with Google
+          </Link>
+        </GoogleButton>
         <div className="rise d4" role="tablist" aria-label="Sign up with" style={{ position: "relative", height: "44px", flexShrink: "0", borderRadius: "22px", background: "#E9EBE7", padding: "4px", boxSizing: "border-box", display: "flex" }}>
           <div className="seg" style={{ position: "absolute", top: "4px", left: "4px", width: "calc(50% - 4px)", height: "36px", borderRadius: "18px", background: "var(--surface)", boxShadow: "0 2px 8px -2px rgba(17,22,20,0.2)", transform: `translateX(${v.segX})` }} />
           <button className="segtxt" role="tab" aria-selected={v.emailSel} onClick={v.pickEmail} style={{ position: "relative", flex: "1", border: "none", background: "transparent", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "600", color: v.emailColor, cursor: "pointer" }}>Email</button>
