@@ -125,17 +125,17 @@ function patchPlaceCaches(qc: ReturnType<typeof useQueryClient>, placeId: number
   qc.setQueriesData<PlaceSummary>({ queryKey: ['place', placeId] }, (old) => (old ? { ...old, ...patch } : old));
 }
 
-/** + / ✓ add-to-plan toggle. Resolves with the weekday it was added to (for the toast). */
+/** + / ✓ add-to-plan toggle. Adds to `dayId` (default: the server's pick); resolves with the day it went to (for the toast). */
 export function useTogglePlan() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (p: { id: number; planStopId: number | null }) => {
+    mutationFn: async (p: { id: number; planStopId: number | null; dayId?: number }) => {
       if (p.planStopId) {
         await itineraryApi.removeStop(p.planStopId);
-        return { added: false as const, stopId: null, weekday: null };
+        return { added: false as const, stopId: null, dayText: null };
       }
-      const r = await itineraryApi.addStop(p.id);
-      return { added: true as const, stopId: r.stop.id, weekday: r.day.weekday };
+      const r = await itineraryApi.addStop(p.id, p.dayId);
+      return { added: true as const, stopId: r.stop.id, dayText: `Day ${r.day.day} · ${r.day.weekday}` };
     },
     onMutate: (p) => patchPlaceCaches(qc, p.id, { planStopId: p.planStopId ? null : -1 }),
     onSuccess: (r, p) => patchPlaceCaches(qc, p.id, { planStopId: r.stopId }),

@@ -41,9 +41,9 @@ export type OptimiseResult = { day: PlanDay; minutesSaved: number; estimated: bo
 export const itineraryApi = {
   plan: () => api<PlanDay[]>('/itinerary'),
   addStop: (placeId: number, dayId?: number) =>
-    api<{ stop: Stop; day: { id: number; weekday: string } }>('/itinerary/stops', { body: { placeId, ...(dayId ? { dayId } : {}) } }),
+    api<{ stop: Stop; day: { id: number; day: number; weekday: string } }>('/itinerary/stops', { body: { placeId, ...(dayId ? { dayId } : {}) } }),
   removeStop: (id: number) => api<{ id: number; placeId: number | null }>(`/itinerary/stops/${id}`, { method: 'DELETE' }),
-  updateStop: (id: number, patch: { done?: boolean; time?: string }) =>
+  updateStop: (id: number, patch: { done?: boolean; time?: string; dayId?: number }) =>
     api<TickResult>(`/itinerary/stops/${id}`, { method: 'PATCH', body: patch }),
   fromRoute: (routeId: number, dayId?: number) => api<PlanDay>(`/itinerary/from-route/${routeId}`, { body: dayId ? { dayId } : {} }),
   routes: () => api<RouteTicket[]>('/routes'),

@@ -99,6 +99,8 @@ Medical info is sensitive: store encrypted at rest, only return it to the owner,
 | ✅ Navigation: Walk / Auto | Re-route with profile `foot`/`car` | OSRM |
 | ✅ Navigation: End directions / SOS | → Plan / → SOS | — |
 | ✅ Plan: Day tabs, tick visited | Tick → +XP and **collect a stamp** | EXISTS PATCH stop; **NEW** `POST /api/stamps` (or do it inside the PATCH) |
+| ✅ Plan: Move to Day N | Moves a stop to the end of the other day, re-timed | EXISTS PATCH stop (EXTEND with `dayId`) |
+| ✅ Add to plan / route ticket: day picker | Sheet asks Day 1 or Day 2; starts on the Plan tab last viewed or added to | EXISTS `POST /itinerary/stops`, `from-route` (`dayId`) |
 | ✅ Plan: Optimise | Calls optimise, shows “saves N min” from response | EXISTS `/itinerary/optimize` (EXTEND to return time saved) |
 | ✅ Plan: Share live trip toggle | Creates tracking session, shares link to contacts | RoadSoS `create-session` + **NEW** `POST /api/share-trip` (sends link by SMS/WhatsApp intent) |
 | ✅ Place: Save | Toggle save, toast | EXISTS |

@@ -91,4 +91,53 @@ describe('itinerary + routes', () => {
       'Raja Dinkar Kelkar Museum',
     ]);
   });
+
+  it('adds places and routes to Day 2 when asked', async () => {
+    const u = await signUp();
+    const [, day2] = (await api().get('/api/v1/itinerary').set(auth(u.token))).body.data;
+    const add = await api().post('/api/v1/itinerary/stops').set(auth(u.token)).send({ placeId: await placeId('Shaniwar Wada'), dayId: day2.id });
+    expect(add.status).toBe(201);
+    expect(add.body.data.day).toMatchObject({ id: day2.id, day: 2 });
+
+    const routes = await api().get('/api/v1/routes');
+    const temples = routes.body.data.find((r: { slug: string }) => r.slug !== 'peth-walk');
+    const loaded = await api().post(`/api/v1/itinerary/from-route/${temples.id}`).set(auth(u.token)).send({ dayId: day2.id });
+    expect(loaded.status).toBe(201);
+    expect(loaded.body.data.id).toBe(day2.id);
+
+    const plan = (await api().get('/api/v1/itinerary').set(auth(u.token))).body.data;
+    expect(plan[0].stops).toHaveLength(0);
+    expect(plan[1].stops[0].place.name).toBe('Shaniwar Wada');
+
+    const other = await signUp();
+    const foreign = await api().post('/api/v1/itinerary/stops').set(auth(other.token)).send({ placeId: await placeId('Lal Mahal'), dayId: day2.id });
+    expect(foreign.status).toBe(404);
+  });
+
+  it('moves a stop to the end of another day', async () => {
+    const u = await signUp();
+    const [day1, day2] = (await api().get('/api/v1/itinerary').set(auth(u.token))).body.data;
+    const wada = await placeId('Shaniwar Wada');
+    const a = await api().post('/api/v1/itinerary/stops').set(auth(u.token)).send({ placeId: wada });
+    await api().post('/api/v1/itinerary/stops').set(auth(u.token)).send({ placeId: await placeId('Lal Mahal'), dayId: day2.id });
+
+    const move = await api().patch(`/api/v1/itinerary/stops/${a.body.data.stop.id}`).set(auth(u.token)).send({ dayId: day2.id });
+    expect(move.status).toBe(200);
+    expect(move.body.data.stop.time).toBe('10:15 AM'); // after Lal Mahal: 9:00 + 45 min visit + 30 min travel
+
+    const plan = (await api().get('/api/v1/itinerary').set(auth(u.token))).body.data;
+    expect(plan[0].stops).toHaveLength(0);
+    expect(plan[1].stops.map((s: { place: { name: string } }) => s.place.name)).toEqual(['Lal Mahal', 'Shaniwar Wada']);
+
+    // The same place can't be on a day twice
+    const again = await api().post('/api/v1/itinerary/stops').set(auth(u.token)).send({ placeId: wada, dayId: day1.id });
+    const clash = await api().patch(`/api/v1/itinerary/stops/${again.body.data.stop.id}`).set(auth(u.token)).send({ dayId: day2.id });
+    expect(clash.status).toBe(409);
+    expect(clash.body.error.code).toBe('ALREADY_IN_PLAN');
+
+    const other = await signUp();
+    const [, otherDay2] = (await api().get('/api/v1/itinerary').set(auth(other.token))).body.data;
+    const foreign = await api().patch(`/api/v1/itinerary/stops/${again.body.data.stop.id}`).set(auth(u.token)).send({ dayId: otherDay2.id });
+    expect(foreign.status).toBe(404);
+  });
 });

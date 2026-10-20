@@ -36,9 +36,11 @@ for (const theme of ['classic', 'deccan'] as const) {
     await expect(page.getByText('Sinhagad Fort')).toBeVisible();
     await shot(page, `${theme}-explore-forts`);
 
-    // + adds to plan with a toast, ✓ removes
+    // + asks which day, adds to it with a toast, ✓ removes
     await page.getByRole('button', { name: 'Add Sinhagad Fort to plan' }).click();
-    await expect(page.getByRole('status')).toContainText('Sinhagad Fort added to');
+    await expect(page.getByRole('dialog', { name: 'Add to which day?' })).toBeVisible();
+    await page.getByRole('button', { name: /^Day 2 · / }).click();
+    await expect(page.getByRole('status')).toContainText('Sinhagad Fort added to Day 2');
     await expect(page.getByRole('button', { name: 'Remove Sinhagad Fort from plan' })).toBeVisible();
 
     // Search

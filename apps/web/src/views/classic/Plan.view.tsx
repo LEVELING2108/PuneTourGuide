@@ -72,7 +72,12 @@ export default function PlanView({ v }: ViewProps) {
                         <div style={{ fontFamily: "var(--font-display)", fontSize: "22px", lineHeight: "1.05" }}>{s.name}</div>
                         <div style={{ fontSize: "12px", fontWeight: "600", color: "#86611F" }}>{s.xp}</div>
                       </div>
-                      <div style={{ fontSize: "12.5px", color: s.helpColor }}>{s.help}</div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px" }}>
+                        <div style={{ fontSize: "12.5px", color: s.helpColor }}>{s.help}</div>
+                        {s.moveLabel && (
+                          <button className="tap" onClick={s.move} aria-label={s.moveAria} style={{ flexShrink: "0", height: "32px", padding: "0 12px", borderRadius: "16px", border: "1px solid var(--line)", background: "var(--bg)", fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: "600", color: "var(--primary)", cursor: "pointer" }}>{s.moveLabel}</button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

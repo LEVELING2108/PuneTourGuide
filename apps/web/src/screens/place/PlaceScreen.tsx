@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from 'react-router';
+import { useDayPicker } from '../../components/DayPicker';
 import { Themed } from '../../components/Themed';
 import { nearParam, useCurrentPosition } from '../../features/location';
 import { kmText, usePlace, useRequireLogin, useTogglePlan, useToggleSave } from '../../features/places';
@@ -31,6 +32,7 @@ export default function PlaceScreen() {
   const requireLogin = useRequireLogin();
   const toggleSave = useToggleSave();
   const togglePlan = useTogglePlan();
+  const picker = useDayPicker();
   const toast = useFlash(2500);
 
   const d = place.data;
@@ -66,14 +68,16 @@ export default function PlaceScreen() {
     ctaLabel: inPlan ? 'In your plan' : 'Add to plan',
     ctaLabelDeccan: inPlan ? 'In your journey' : 'Add to journey',
     xpLabel: inPlan ? 'View' : `+${d?.xp ?? 30} XP`,
-    addToPlan: (e: React.MouseEvent) => {
+    addToPlan: async (e: React.MouseEvent) => {
       if (inPlan || !d) return; // "In your plan" just opens the Plan tab
       e.preventDefault();
       if (!requireLogin()) return;
+      const dayId = await picker.ask(theme === 'deccan' ? 'Add to which day of your journey?' : 'Add to which day?', d.name);
+      if (dayId === null) return;
       togglePlan.mutate(
-        { id: d.id, planStopId: null },
+        { id: d.id, planStopId: null, dayId },
         {
-          onSuccess: (r) => toast.flash(`Added to ${r.weekday}`),
+          onSuccess: (r) => toast.flash(`Added to ${r.dayText}`),
           onError: (err) => toast.flash(err.message),
         }
       );
@@ -96,5 +100,10 @@ export default function PlaceScreen() {
       );
     },
   };
-  return <Themed classic={PlaceView} deccan={DeccanPlaceView} v={v} />;
+  return (
+    <>
+      <Themed classic={PlaceView} deccan={DeccanPlaceView} v={v} />
+      {picker.sheet}
+    </>
+  );
 }

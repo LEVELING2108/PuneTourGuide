@@ -113,7 +113,7 @@ export const itineraryService = {
       order: (day.stops[day.stops.length - 1]?.order ?? -1) + 1,
     });
     const fresh = await itineraryRepo.stop(userId, stop.id);
-    return { stop: toStopDto(fresh!), day: { id: day.id, weekday: weekday(day.date ?? puneToday()) } };
+    return { stop: toStopDto(fresh!), day: { id: day.id, day: day.day, weekday: weekday(day.date ?? puneToday()) } };
   },
 
   async removeStop(userId: number, stopId: number) {
@@ -123,15 +123,27 @@ export const itineraryService = {
     return { id: stop.id, placeId: stop.placeId };
   },
 
-  /** Tick visited → +XP and a passport stamp (once per place). */
-  async updateStop(userId: number, stopId: number, patch: { done?: boolean; time?: string }) {
+  /** Tick visited → +XP and a passport stamp (once per place); or move the stop to the end of another day. */
+  async updateStop(userId: number, stopId: number, patch: { done?: boolean; time?: string; dayId?: number }) {
     const stop = await itineraryRepo.stop(userId, stopId);
     if (!stop) throw notFound('STOP_NOT_FOUND', 'Stop not found');
+    const moving = !!patch.dayId && patch.dayId !== stop.itineraryDayId;
+    if (moving) {
+      const day = await this.targetDay(userId, patch.dayId);
+      if (stop.placeId && day.stops.some((s) => s.placeId === stop.placeId)) {
+        throw conflict('ALREADY_IN_PLAN', `${stop.place?.name ?? stop.name} is already in your plan for ${weekday(day.date ?? puneToday())}`);
+      }
+      await itineraryRepo.updateStop(stop.id, {
+        itineraryDay: { connect: { id: day.id } },
+        order: (day.stops[day.stops.length - 1]?.order ?? -1) + 1,
+        time: patch.time ?? nextTime(day),
+      });
+    }
     let reward = { stampCollected: false, xpAwarded: 0, totalXp: undefined as number | undefined };
     if (patch.done !== undefined && patch.done !== stop.done) {
       reward = await itineraryRepo.setDone(userId, stop.id, patch.done, stop.placeId, stop.place?.xp ?? 30);
     }
-    if (patch.time) await itineraryRepo.updateStop(stop.id, { time: patch.time });
+    if (patch.time && !moving) await itineraryRepo.updateStop(stop.id, { time: patch.time });
     const fresh = await itineraryRepo.stop(userId, stopId);
     return { stop: toStopDto(fresh!), ...reward };
   },

@@ -6,6 +6,11 @@ import { useAuthStore } from '../stores/auth';
 /** Today's date in Pune as YYYY-MM-DD (matches PlanDay.date). */
 export const puneTodayIso = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
 
+/** The day to start on: the one last viewed or added to, else today's, else Day 1. */
+export function defaultDayId(days: PlanDay[], remembered: number | null) {
+  return (days.find((d) => d.id === remembered) ?? days.find((d) => d.date === puneTodayIso()) ?? days[0])?.id;
+}
+
 const setStopDone = (days: PlanDay[] | undefined, stopId: number, done: boolean) =>
   days?.map((d) => ({ ...d, stops: d.stops.map((s) => (s.id === stopId ? { ...s, done } : s)) }));
 
@@ -31,6 +36,15 @@ export function useTickStop() {
         qc.invalidateQueries({ queryKey: ['stats'] });
       }
     },
+  });
+}
+
+/** Move a stop to the end of another day. */
+export function useMoveStop() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (p: { stopId: number; dayId: number }) => itineraryApi.updateStop(p.stopId, { dayId: p.dayId }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ['itinerary'] }),
   });
 }
 

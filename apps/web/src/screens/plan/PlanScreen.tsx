@@ -1,15 +1,15 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import type { Stop } from '../../api/itinerary';
 import { Themed } from '../../components/Themed';
 import { useAccountRequired } from '../../features/account';
 import { kmText, placeTone, usePlan } from '../../features/places';
 import { namesText } from '../../features/live';
-import { puneTodayIso, useOptimiseDay, useTickStop } from '../../features/plan';
+import { defaultDayId, useMoveStop, useOptimiseDay, useTickStop } from '../../features/plan';
 import { isNoContacts, useTripShare } from '../../features/trip';
 import { usePalette } from '../../lib/palette';
 import { useFlash } from '../../lib/useFlash';
 import { useIsLoggedIn } from '../../stores/auth';
+import { usePlanStore } from '../../stores/plan';
 import { useTheme } from '../../stores/theme';
 import PlanView from '../../views/classic/Plan.view';
 import DeccanPlanView from '../../views/deccan/DeccanPlan.view';
@@ -30,16 +30,18 @@ export default function PlanScreen() {
   const plan = usePlan(loggedIn);
   const tick = useTickStop();
   const optimise = useOptimiseDay();
+  const move = useMoveStop();
   const toast = useFlash(3100);
   const share = useTripShare();
-  const [picked, setPicked] = useState<number | null>(null);
+  // The tab you last viewed or added to stays open when you come back from Explore
+  const { dayId: remembered, setDay } = usePlanStore();
 
   useAccountRequired();
 
   const days = plan.data ?? [];
-  const todayIdx = Math.max(0, days.findIndex((d) => d.date === puneTodayIso()));
-  const idx = picked ?? todayIdx;
+  const idx = Math.max(0, days.findIndex((d) => d.id === defaultDayId(days, remembered)));
   const day = days[idx];
+  const otherDay = days[idx === 0 ? 1 : 0];
   const list = day?.stops ?? [];
   const earned = list.filter((s) => s.done).reduce((n, s) => n + s.place.xp, 0);
   const left = list.filter((s) => !s.done).length;
@@ -66,6 +68,18 @@ export default function PlanScreen() {
       tick: d ? p.surface : p.stopRingOff,
       opacity: d ? 0.62 : 1,
       line: i === list.length - 1 ? 'none' : 'block',
+      moveLabel: otherDay ? `Move to Day ${otherDay.day}` : '',
+      moveAria: otherDay ? `Move ${s.place.name} to Day ${otherDay.day}` : '',
+      move: () => {
+        if (!otherDay) return;
+        move.mutate(
+          { stopId: s.id, dayId: otherDay.id },
+          {
+            onSuccess: () => toast.flash(`${s.place.name} moved to Day ${otherDay.day} · ${otherDay.weekday}`),
+            onError: (err) => toast.flash(err.message),
+          }
+        );
+      },
       toggle: () =>
         tick.mutate(
           { stopId: s.id, done: !d },
@@ -102,8 +116,8 @@ export default function PlanScreen() {
     c2: idx === 1 ? p.onInk : p.muted,
     day1Pressed: idx === 0 ? 'true' : 'false',
     day2Pressed: idx === 1 ? 'true' : 'false',
-    pickDay1: () => setPicked(0),
-    pickDay2: () => setPicked(1),
+    pickDay1: () => days[0] && setDay(days[0].id),
+    pickDay2: () => days[1] && setDay(days[1].id),
     // Live trip sharing (TECH_DESIGN §9.6): texted link + location while the toggle is on
     sharing: share.on ? 'true' : 'false',
     sharePressed: share.on ? 'true' : 'false',
