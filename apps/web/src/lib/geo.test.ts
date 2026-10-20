@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { declutter, dotBox, labelBox } from '../components/map/declutter';
-import { alongMetres, closestIndex, distText, durText, esc, metres, splitLegs, type Pair } from './geo';
+import { alongMetres, closestIndex, distText, durText, esc, metres, parseAt, splitLegs, type Pair } from './geo';
 
 const line: Pair[] = [
   [18.5, 73.8],
@@ -53,5 +53,14 @@ describe('declutter', () => {
   it('always keeps forced markers (you, route stops)', () => {
     const kept = declutter([at(18.52, 73.85, true), at(18.52, 73.85, true), at(18.52, 73.85)], 14, () => dotBox(30));
     expect(kept).toHaveLength(2);
+  });
+});
+
+describe('parseAt', () => {
+  it('reads "lat,lng" and rejects junk', () => {
+    expect(parseAt('18.5195,73.8553')).toEqual({ lat: 18.5195, lng: 73.8553 });
+    expect(parseAt(null)).toBeNull();
+    expect(parseAt('99,73')).toBeNull();
+    expect(parseAt('18.5,73.8;drop')).toBeNull();
   });
 });

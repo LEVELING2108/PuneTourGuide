@@ -67,6 +67,18 @@ export const placeTone = (category: string | null | undefined, theme: ThemeName)
 
 export const kmText = (km: number | null | undefined) => (km === null || km === undefined ? null : km < 10 ? `${km} km` : `${Math.round(km)} km`);
 
+/** Distance between two places: metres under 1 km ("650 m"), else km. */
+export const shortKmText = (km: number) => (km < 1 ? `${Math.max(50, Math.round((km * 1000) / 50) * 50)} m` : `${km} km`);
+
+/**
+ * Rough door-to-door time from straight-line km, marked "~": walking up to 1.5 km
+ * (×1.3 for streets, 4.8 km/h), else driving (×1.4, 22 km/h city average).
+ */
+export function travelText(km: number) {
+  if (km <= 1.5) return `~${Math.max(1, Math.round(((km * 1.3) / 4.8) * 60))} min walk`;
+  return `~${Math.max(1, Math.round(((km * 1.4) / 22) * 60))} min drive`;
+}
+
 /** List-row text and colours for a place, matching the Explore mockups. */
 export function placeRow(p: PlaceSummary, theme: ThemeName) {
   const dist = kmText(p.km);
@@ -102,6 +114,9 @@ export const usePlaceCount = (query: PlaceQuery) =>
 export const useCategoryCounts = () =>
   useQuery({ queryKey: ['categoryCounts'], queryFn: placesApi.categories, staleTime: 10 * 60_000 });
 
+export const useNearby = (id: number | null) =>
+  useQuery({ queryKey: ['nearby', id], queryFn: () => placesApi.nearby(id!), enabled: !!id, staleTime: 5 * 60_000 });
+
 export const usePlace = (id: number | null, near?: string) =>
   useQuery({ queryKey: ['place', id, near], queryFn: () => placesApi.get(id!, near), enabled: !!id });
 
@@ -123,6 +138,10 @@ function patchPlaceCaches(qc: ReturnType<typeof useQueryClient>, placeId: number
     old ? { ...old, data: old.data.map((p) => (p.id === placeId ? { ...p, ...patch } : p)) } : old
   );
   qc.setQueriesData<PlaceSummary>({ queryKey: ['place', placeId] }, (old) => (old ? { ...old, ...patch } : old));
+  const inList = (list: PlaceSummary[]) => list.map((p) => (p.id === placeId ? { ...p, ...patch } : p));
+  qc.setQueriesData<{ places: PlaceSummary[]; food: PlaceSummary[] }>({ queryKey: ['nearby'] }, (old) =>
+    old ? { places: inList(old.places), food: inList(old.food) } : old
+  );
 }
 
 /** + / ✓ add-to-plan toggle. Adds to `dayId` (default: the server's pick); resolves with the day it went to (for the toast). */

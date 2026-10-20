@@ -14,7 +14,7 @@ import { useCurrentPosition } from '../../features/location';
 import { PUNE_CENTRE } from '../../features/permissions';
 import { kmText, placeTone, usePlaceCount, usePlaces, usePlan } from '../../features/places';
 import { puneTodayIso } from '../../features/plan';
-import { distText, durText, metres, midpoint, splitLegs, type LatLng, type Pair } from '../../lib/geo';
+import { distText, durText, metres, midpoint, parseAt, splitLegs, type LatLng, type Pair } from '../../lib/geo';
 import { chipColors, usePalette } from '../../lib/palette';
 import { useIsLoggedIn } from '../../stores/auth';
 import { useTheme } from '../../stores/theme';
@@ -62,11 +62,14 @@ export default function MapScreen() {
   const [mode, setMode] = useState<Mode>(initialLayer === 'route' ? 'route' : 'places');
   const [help, setHelp] = useState(true);
   const [sheet, setSheet] = useState<Sheet>(initialLayer === 'route' ? 'route' : initialLayer === 'places' ? 'places' : 'help');
-  const [centre, setCentre] = useState<LatLng>(() => (pos.known ? pos : PUNE_CENTRE));
-  // Start with you in the part of the map the search bar and sheet leave visible.
-  const [view, setView] = useState<MapView | null>(() =>
-    pos.known ? { key: 'start', fit: [[pos.lat, pos.lng]], padding: SHEET_PAD, maxZoom: 14 } : null
-  );
+  // ?at=lat,lng (a place's "See on map") opens there instead of on you
+  const at = parseAt(params.get('at'));
+  const [centre, setCentre] = useState<LatLng>(() => at ?? (pos.known ? pos : PUNE_CENTRE));
+  // Start with you (or the place) in the part of the map the search bar and sheet leave visible.
+  const [view, setView] = useState<MapView | null>(() => {
+    const start = at ?? (pos.known ? pos : null);
+    return start ? { key: 'start', fit: [[start.lat, start.lng]], padding: SHEET_PAD, maxZoom: 14 } : null;
+  });
   const [zoom, setZoom] = useState(14);
   const [q, setQ] = useState('');
   const me = pos.known ? pos : null;

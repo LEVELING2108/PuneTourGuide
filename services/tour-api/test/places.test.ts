@@ -90,4 +90,37 @@ describe('places', () => {
     expect(res.body.data.Fort).toBeGreaterThanOrEqual(4);
     expect(res.body.data['kind:Wada']).toBeGreaterThanOrEqual(3);
   });
+
+  it('suggests places and food near a place, nearest first, never the place itself', async () => {
+    const wada = await prisma.place.findFirstOrThrow({ where: { name: 'Shaniwar Wada' } });
+    const res = await api().get(`/api/v1/places/${wada.id}/nearby`);
+    expect(res.status).toBe(200);
+    const { places, food } = res.body.data;
+    expect(places.length).toBeGreaterThanOrEqual(3);
+    expect(places.length).toBeLessThanOrEqual(6);
+    expect(places.map((p: { id: number }) => p.id)).not.toContain(wada.id);
+    expect(places.every((p: { category: string; km: number }) => p.category !== 'Food' && p.km <= 3)).toBe(true);
+    expect(places.map((p: { name: string }) => p.name)).toContain('Lal Mahal');
+    expect(food.every((p: { category: string }) => p.category === 'Food')).toBe(true);
+    // Open (or unknown hours) before closed; distance order within each group
+    const closedAt = places.findIndex((p: { openNow: boolean | null }) => p.openNow === false);
+    if (closedAt >= 0) expect(places.slice(closedAt).every((p: { openNow: boolean | null }) => p.openNow === false)).toBe(true);
+  });
+
+  it('looks further out for places with little around them', async () => {
+    const fort = await prisma.place.findFirstOrThrow({ where: { name: 'Sinhagad Fort' } });
+    const res = await api().get(`/api/v1/places/${fort.id}/nearby`);
+    expect(res.status).toBe(200);
+    expect(res.body.data.places.every((p: { km: number }) => p.km <= 10)).toBe(true);
+  });
+
+  it('marks nearby places already in the plan', async () => {
+    const u = await signUp();
+    const wada = await prisma.place.findFirstOrThrow({ where: { name: 'Shaniwar Wada' } });
+    const mahal = await prisma.place.findFirstOrThrow({ where: { name: 'Lal Mahal' } });
+    const add = await api().post('/api/v1/itinerary/stops').set(auth(u.token)).send({ placeId: mahal.id });
+    const res = await api().get(`/api/v1/places/${wada.id}/nearby`).set(auth(u.token));
+    expect(res.body.data.places.find((p: { id: number }) => p.id === mahal.id).planStopId).toBe(add.body.data.stop.id);
+    expect((await api().get('/api/v1/places/999999/nearby')).status).toBe(404);
+  });
 });

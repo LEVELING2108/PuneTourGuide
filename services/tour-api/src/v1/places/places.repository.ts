@@ -100,6 +100,22 @@ export const placesRepo = {
     return rows[0] ?? null;
   },
 
+  /**
+   * Places within `radiusKm` of another place, nearest first (GIST index), never the place itself.
+   * `food` picks the Food category only, otherwise everything but Food. `km` is from that place.
+   */
+  async nearby(id: number, at: { lat: number; lng: number }, food: boolean, radiusKm: number, limit: number): Promise<PlaceRow[]> {
+    const point = Prisma.sql`ST_SetSRID(ST_MakePoint(${at.lng}, ${at.lat}), 4326)`;
+    return prisma.$queryRaw<PlaceRow[]>`
+      SELECT ${COLUMNS}, ST_Distance(p.location::geography, ${point}::geography) / 1000 AS km
+      FROM "Place" p
+      WHERE p.latitude IS NOT NULL AND p.id <> ${id}
+        AND ${food ? Prisma.sql`p.category = 'Food'` : Prisma.sql`p.category <> 'Food'`}
+        AND ST_DWithin(p.location::geography, ${point}::geography, ${radiusKm * 1000})
+      ORDER BY p.location <-> ${point}
+      LIMIT ${limit}`;
+  },
+
   async countsByCategory(): Promise<Record<string, number>> {
     const rows = await prisma.$queryRaw<{ key: string; n: number }[]>`
       SELECT category AS key, count(*)::int AS n FROM "Place" WHERE latitude IS NOT NULL GROUP BY category

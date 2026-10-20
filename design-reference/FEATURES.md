@@ -105,6 +105,7 @@ Medical info is sensitive: store encrypted at rest, only return it to the owner,
 | ✅ Plan: Share live trip toggle | Creates tracking session, shares link to contacts | RoadSoS `create-session` + **NEW** `POST /api/share-trip` (sends link by SMS/WhatsApp intent) |
 | ✅ Place: Save | Toggle save, toast | EXISTS |
 | ✅ Place: Add to plan / Directions / nearest hospital | | EXISTS / OSRM / emergency-services |
+| ✅ Place: Also nearby / Food nearby | Cards open the place, “+” adds to a chosen day, “See on map” opens Map at the place | **NEW** `GET /api/places/:id/nearby`; Map `?at=lat,lng` |
 
 ### SOS (works logged-out and offline)
 | Control | Behaviour | Backend |

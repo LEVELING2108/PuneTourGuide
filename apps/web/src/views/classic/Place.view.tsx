@@ -1,6 +1,7 @@
 // Generated from design-reference/classic/Place.dc.html by scripts/convert-designs.py, then wired up by hand.
 import { Link } from 'react-router';
 import type { ViewProps } from '../types';
+import { NearbyPlaces } from '../../components/NearbyPlaces';
 
 const css = `
 .scr-classic-Place a{color:var(--primary)}
@@ -106,7 +107,7 @@ export default function PlaceView({ v }: ViewProps) {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></svg>
           </a>
         )}
-        <div className="rise d6" style={{ display: "flex", gap: "10px", marginTop: "auto", paddingBottom: "32px" }}>
+        <div className="rise d6" style={{ display: "flex", gap: "10px", marginTop: "auto" }}>
           <Link to={v.directionsHref} className="ghost" style={{ flex: "1", height: "56px", borderRadius: "28px", border: "1px solid #C9D0CC", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "15px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 11l18-8-8 18-2-8z" />
@@ -117,6 +118,9 @@ export default function PlaceView({ v }: ViewProps) {
             {v.ctaLabel}{" "}
             <span style={{ fontSize: "12.5px", color: "#A9CFC6" }}>{v.xpLabel}</span>
           </Link>
+        </div>
+        <div style={{ paddingTop: "12px", paddingBottom: "32px" }}>
+          <NearbyPlaces sections={v.nearbySections} loading={v.nearbyLoading} emptyText={v.nearbyEmpty} mapHref={v.nearbyMapHref} />
         </div>
       </div>
     </div>

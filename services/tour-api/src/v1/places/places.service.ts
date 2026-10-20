@@ -5,6 +5,12 @@ import type { PlaceQuery } from './places.schemas';
 
 const CACHE_TTL = 600; // 10 minutes (TECH_DESIGN §9.1)
 
+/** "Also nearby" on a place: close by first, wider for places out of town (forts, hills). */
+const NEARBY_KM = 3;
+const NEARBY_WIDE_KM = 10;
+const NEARBY_MIN = 3;
+const NEARBY_LIMIT = 6;
+
 const round1 = (n: number | null) => (n === null || n === undefined ? null : Math.round(n * 10) / 10);
 
 const isOpen = (row: PlaceRow, now = puneMinutesNow()) =>
@@ -85,6 +91,36 @@ export const placesService = {
     if (!row) throw notFound('PLACE_NOT_FOUND', 'Place not found');
     const [dto] = await annotate([toDetail(row)], userId);
     return dto;
+  },
+
+  /**
+   * Places and food near a place. Rows are cached per place (they only change when the catalogue does);
+   * open/closed and the user's plan flags are worked out per request. Closed places go last.
+   */
+  async nearby(id: number, userId: number | null) {
+    const key = `tour:places:v1:nearby:${id}`;
+    let rows = await getCachedData<{ places: PlaceRow[]; food: PlaceRow[] }>(key);
+    if (!rows) {
+      const place = await placesRepo.byId(id);
+      if (!place) throw notFound('PLACE_NOT_FOUND', 'Place not found');
+      if (place.latitude === null || place.longitude === null) {
+        rows = { places: [], food: [] };
+      } else {
+        const at = { lat: place.latitude, lng: place.longitude };
+        const pick = async (food: boolean) => {
+          const wide = await placesRepo.nearby(id, at, food, NEARBY_WIDE_KM, NEARBY_LIMIT);
+          const close = wide.filter((r) => (r.km ?? Infinity) <= NEARBY_KM);
+          return close.length >= NEARBY_MIN ? close : wide;
+        };
+        const [places, food] = await Promise.all([pick(false), pick(true)]);
+        rows = { places, food };
+      }
+      await setCachedData(key, rows, CACHE_TTL * 6);
+    }
+    // Stable sort: nearest first, with places known to be closed right now moved to the end
+    const order = (list: PlaceRow[]) => list.map(toDto).sort((a, b) => Number(a.openNow === false) - Number(b.openNow === false));
+    const [places, food] = await Promise.all([annotate(order(rows.places), userId), annotate(order(rows.food), userId)]);
+    return { places, food };
   },
 
   async categoryCounts() {
