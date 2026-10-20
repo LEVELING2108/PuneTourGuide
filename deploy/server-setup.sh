@@ -105,7 +105,8 @@ fi
 
 say "Nightly help-point import at 03:00 IST (21:30 UTC)"
 CRON="30 21 * * * cd $DIR && docker compose --env-file .env.production --profile jobs run --rm refresh-help >> $DIR/refresh-help.log 2>&1"
-( crontab -l 2>/dev/null | grep -v 'refresh-help' ; echo "$CRON" ) | crontab -
+# A new server has no crontab yet: "crontab -l" fails, which must not stop the script (set -e / pipefail)
+( { crontab -l 2>/dev/null || true; } | { grep -v 'refresh-help' || true; } ; echo "$CRON" ) | crontab -
 
 say "Done"
 cat <<EOF
