@@ -44,6 +44,14 @@ router.get(
   })
 );
 
+/** "Also nearby" + "Food nearby" on the Place screen. */
+router.get(
+  '/:id/nearby',
+  optionalAuth,
+  validate({ params: idParam }),
+  handle(async (_req, res) => ok(res, await placesService.nearby(input<unknown, unknown, { id: number }>(res).params.id, maybeUserId(res))))
+);
+
 router.put(
   '/:id/save',
   requireAuth,

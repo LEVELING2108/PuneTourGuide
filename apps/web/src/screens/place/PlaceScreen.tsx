@@ -2,7 +2,9 @@ import { useNavigate, useParams } from 'react-router';
 import { useDayPicker } from '../../components/DayPicker';
 import { Themed } from '../../components/Themed';
 import { nearParam, useCurrentPosition } from '../../features/location';
-import { kmText, usePlace, useRequireLogin, useTogglePlan, useToggleSave } from '../../features/places';
+import { kmText, placeTone, shortKmText, travelText, useNearby, usePlace, useRequireLogin, useTogglePlan, useToggleSave } from '../../features/places';
+import type { PlaceSummary } from '../../api/places';
+import type { NearbyCard } from '../../components/NearbyPlaces';
 import { usePalette } from '../../lib/palette';
 import { useFlash } from '../../lib/useFlash';
 import { useTheme } from '../../stores/theme';
@@ -34,6 +36,7 @@ export default function PlaceScreen() {
   const togglePlan = useTogglePlan();
   const picker = useDayPicker();
   const toast = useFlash(2500);
+  const nearby = useNearby(placeId);
 
   const d = place.data;
   const saved = !!d?.isSaved;
@@ -41,7 +44,43 @@ export default function PlaceScreen() {
   const words = (d?.name ?? '').split(' ');
   const deccanSaved = theme === 'deccan';
 
+  const card = (x: PlaceSummary): NearbyCard => {
+    const added = x.planStopId !== null;
+    return {
+      key: x.id,
+      name: x.name,
+      label: x.kind && x.category !== 'Heritage' ? x.kind : x.category,
+      tone: placeTone(x.category, theme),
+      distance: x.km !== null ? `${shortKmText(x.km)} away` : '',
+      travel: x.km !== null ? travelText(x.km) : '',
+      status: x.openNow === null ? null : x.openNow ? 'Open now' : 'Closed now',
+      closed: x.openNow === false,
+      href: `/place/${x.id}`,
+      added,
+      addLabel: added ? `Remove ${x.name} from plan` : `Add ${x.name} to plan`,
+      toggle: async () => {
+        if (!requireLogin()) return;
+        const dayId = added ? undefined : await picker.ask(theme === 'deccan' ? 'Add to which day of your journey?' : 'Add to which day?', x.name);
+        if (dayId === null) return;
+        togglePlan.mutate(
+          { id: x.id, planStopId: x.planStopId, dayId },
+          {
+            onSuccess: (r) => toast.flash(r.added ? `Added to ${r.dayText}` : 'Removed from your plan'),
+            onError: (err) => toast.flash(err.message),
+          }
+        );
+      },
+    };
+  };
+
   const v = {
+    nearbySections: [
+      { key: 'places', title: 'Also nearby', items: (nearby.data?.places ?? []).map(card) },
+      { key: 'food', title: 'Food nearby', items: (nearby.data?.food ?? []).map(card) },
+    ],
+    nearbyLoading: nearby.isLoading,
+    nearbyEmpty: nearby.isSuccess ? 'No other places close by.' : null,
+    nearbyMapHref: d?.lat != null && d?.lng != null ? `/map?layer=places&at=${d.lat.toFixed(4)},${d.lng.toFixed(4)}` : '/map?layer=places',
     back: (e: React.MouseEvent) => {
       if (window.history.length > 1) {
         e.preventDefault();

@@ -354,6 +354,7 @@ All Tour API routes live under `/api/v1`. Success responses are `{ "data": …, 
 | GET `/places` | optional | `q, category, near, radiusKm, openNow, free, accessible, helpWithinKm, cursor, limit` |
 | GET `/places/count` | optional | Same filters, returns a number (Filters sheet) |
 | GET `/places/:id` | optional | Detail incl. nearest hospital, `isSaved` if logged in |
+| GET `/places/:id/nearby` | optional | “Also nearby” + “Food nearby” for a place: ≤6 each, within 3 km (10 km if fewer than 3), nearest first, closed-now last; km from that place; cached per place |
 | PUT/DELETE `/places/:id/save` | user | Save / unsave |
 | GET `/routes` | public | Curated routes (peth walk, fort trip…) |
 | GET `/itinerary?date=` | user | Days with ordered stops |

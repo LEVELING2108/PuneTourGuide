@@ -1,6 +1,7 @@
 // Generated from design-reference/deccan/DeccanPlace.dc.html by scripts/convert-designs.py, then wired up by hand.
 import { Link } from 'react-router';
 import type { ViewProps } from '../types';
+import { NearbyPlaces } from '../../components/NearbyPlaces';
 
 const css = `
 .scr-deccan-DeccanPlace a{color:var(--primary)}
@@ -123,6 +124,9 @@ export default function DeccanPlaceView({ v }: ViewProps) {
               {v.ctaLabelDeccan}{" "}
               <span style={{ fontSize: "13px", color: "#F2C9DC" }}>{v.xpLabel}</span>
             </Link>
+          </div>
+          <div style={{ paddingTop: "18px" }}>
+            <NearbyPlaces sections={v.nearbySections} loading={v.nearbyLoading} emptyText={v.nearbyEmpty} mapHref={v.nearbyMapHref} gutter={22} />
           </div>
         </div>
       </div>

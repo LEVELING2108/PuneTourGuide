@@ -74,3 +74,12 @@ export const midpoint = (line: Pair[]): Pair => line[Math.floor(line.length / 2)
 /** Escape text for marker HTML (place and OSM names are data, never markup). */
 export const esc = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+
+/** "18.5195,73.8553" → a point, or null if missing or out of range. */
+export function parseAt(v: string | null): LatLng | null {
+  const m = v?.match(/^(-?\d{1,2}(?:\.\d+)?),(-?\d{1,3}(?:\.\d+)?)$/);
+  if (!m) return null;
+  const lat = Number(m[1]);
+  const lng = Number(m[2]);
+  return Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lat, lng } : null;
+}
