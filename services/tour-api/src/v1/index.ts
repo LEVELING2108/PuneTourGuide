@@ -13,6 +13,7 @@ import miscRoutes from './misc.routes';
 import placesRoutes from './places/places.routes';
 import routesRoutes from './routes.routes';
 import usersRoutes, { avatarRouter } from './users/users.routes';
+import googleRoutes from './google/google.routes';
 
 /** /api/v1: { data, meta } envelopes, Zod-validated inputs, typed errors. */
 const v1 = Router();
@@ -22,6 +23,7 @@ v1.use('/health', healthRoutes);
 v1.use('/auth', authRoutes);
 v1.use('/users', usersRoutes);
 v1.use('/places', placesRoutes);
+v1.use('/google', googleRoutes);
 v1.use('/routes', routesRoutes);
 v1.use('/itinerary', itineraryRoutes);
 v1.use('/help', helpRoutes);

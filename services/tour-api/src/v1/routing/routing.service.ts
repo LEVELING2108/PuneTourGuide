@@ -1,3 +1,4 @@
+import { haversineKm } from '../../lib/geo';
 import { osrmRoute, osrmTable, type LatLng, type OsrmRoute, type OsrmStep, type Profile } from '../../clients/osrm';
 import { AppError } from '../../lib/errors';
 import { getCachedData, setCachedData } from '../../services/cacheService';
@@ -16,13 +17,6 @@ function once<T>(key: string, fn: () => Promise<T>): Promise<T> {
   return p;
 }
 
-const haversineKm = (a: LatLng, b: LatLng) => {
-  const R = 6371;
-  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
-  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
-  const s = Math.sin(dLat / 2) ** 2 + Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.min(1, Math.sqrt(s)));
-};
 
 /** Road-time estimate when the router is down: 1.3 x straight line at Pune city auto speed. */
 const estimateSeconds = (a: LatLng, b: LatLng) => ((haversineKm(a, b) * 1.3) / 18) * 3600;

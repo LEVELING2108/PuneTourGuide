@@ -57,6 +57,8 @@ export const testAlertLimit = make('test-alert', 24 * 60 * 60_000, 20);
 /** Contact changes and live-trip sharing (each share texts every contact). */
 export const contactsWriteLimit = make('contacts-write', 60 * 60_000, 60);
 export const tripShareLimit = make('trip-share', 60 * 60_000, 10);
+/** Google Maps reads (photos, ratings, side quests) per account, or per IP for guests. Mount after optionalAuth. */
+export const googleReadLimit = make('google-read', 10 * 60_000, 300, (req, res) => (res.locals.userId ? `u:${res.locals.userId}` : `ip:${ipKey(req)}`));
 /** "Mark as visited" from the Place screen, per account (XP is awarded once per place anyway). */
 export const visitLimit = make('visit', 60 * 60_000, 60, (req, res) => `u:${res.locals.userId ?? ipKey(req)}`);
 

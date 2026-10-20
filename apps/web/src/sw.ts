@@ -30,6 +30,7 @@ registerRoute(
 );
 
 // Public reads only: places, help points, routes, offline-pack list, weather, nearby services.
+// Never /api/v1/google/*: Google Maps content may not be stored (Maps Platform terms).
 const PUBLIC_API = /^\/api\/v1\/(places(\/|$|\?)|help(\/|$|\?)|routes(\/|$)|offline-packs(\/|$)|weather$)/;
 registerRoute(
   ({ url, request }) => request.method === 'GET' && url.origin === self.location.origin && (PUBLIC_API.test(url.pathname) || url.pathname.startsWith('/safety/api/emergency-services')),

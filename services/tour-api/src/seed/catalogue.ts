@@ -1,3 +1,4 @@
+import { haversineKm } from '../lib/geo';
 /**
  * Curated Pune catalogue for Pune Explorer.
  *
@@ -294,14 +295,7 @@ export const ROUTES: CatalogueRoute[] = [
   },
 ];
 
-export const haversineKm = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => {
-  const R = 6371;
-  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
-  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
-  const s =
-    Math.sin(dLat / 2) ** 2 + Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.min(1, Math.sqrt(s)));
-};
+export { haversineKm };
 
 export function nearestHospital(p: { lat: number; lng: number }) {
   let best = HOSPITALS[0];

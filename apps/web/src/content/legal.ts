@@ -46,10 +46,11 @@ export const privacy = (): LegalDoc => ({
         'SMS provider (Twilio or MSG91): your contacts’ numbers and the message text, to deliver SOS and other messages, and your number to send login codes.',
         'Email provider (Resend): your email address, to send password-reset emails.',
         'Google: only if you choose “Continue with Google”.',
+        'Google Maps: place photos, ratings, opening hours and side quests come from Google Maps. Our server asks Google about a place without your identity; your device loads the photos directly from Google, so Google sees your IP address. Google’s Privacy Policy (policies.google.com/privacy) applies to that.',
         'Map tile provider: your device loads map images directly from it, so it sees your IP address and the map area on screen.',
         'Routing and address search (OpenStreetMap-based services): our server sends them the start and end points of a route or the text you search, without your identity.',
         'Error reporting (Sentry): crash details with personal data removed (no request contents, IP addresses or account details).',
-        'Hosting: our servers and database run with a cloud provider (Microsoft Azure) that stores the data on our behalf.',
+        'Hosting: our servers and database run with a cloud provider (Google Cloud) that stores the data on our behalf.',
         'Emergency services are never contacted by the app automatically: the SOS button opens your phone’s dialer with 112.',
         'We may disclose data where Indian law requires it.',
       ],
@@ -120,7 +121,7 @@ export const terms = (): LegalDoc => ({
     {
       heading: 'The service',
       body: [
-        'The app is provided “as is” and may change, pause or stop. Map data © OpenStreetMap contributors. To the extent the law allows, we are not liable for indirect losses arising from use of the app, and nothing in these terms limits rights you have under Indian consumer law.',
+        'The app is provided “as is” and may change, pause or stop. Map data © OpenStreetMap contributors. Place photos, ratings, opening hours and side quests are from Google Maps; by using them you also agree to the Google Maps Additional Terms of Service (maps.google.com/help/terms_maps) and Google’s Privacy Policy (policies.google.com/privacy). They may be incomplete or out of date: check before you travel. To the extent the law allows, we are not liable for indirect losses arising from use of the app, and nothing in these terms limits rights you have under Indian consumer law.',
       ],
     },
     {

@@ -41,7 +41,13 @@ export default function PlaceView({ v }: ViewProps) {
               <circle cx="210" cy="210" r="140" fill="none" stroke="var(--bg)" />
               <circle cx="210" cy="210" r="190" fill="none" stroke="var(--bg)" />
             </svg>
-            <div style={{ fontSize: "12px", letterSpacing: "0.14em", color: "#A9CFC6", border: "1px dashed #5F8F86", borderRadius: "12px", padding: "8px 14px", marginTop: "-40px" }}>PLACE PHOTO</div>
+            {!v.heroPhoto && <div style={{ fontSize: "12px", letterSpacing: "0.14em", color: "#A9CFC6", border: "1px dashed #5F8F86", borderRadius: "12px", padding: "8px 14px", marginTop: "-40px" }}>PLACE PHOTO</div>}
+            {v.heroPhoto && (
+              <>
+                <img src={v.heroPhoto} alt="" decoding="async" onError={v.heroPhotoFailed} style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover" }} />
+                <div aria-hidden="true" style={{ position: "absolute", inset: "0", background: "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.72) 100%)" }} />
+              </>
+            )}
           </div>
           <Link to="/explore" className="tap" aria-label="Back" onClick={v.back} style={{ position: "absolute", top: "56px", left: "20px", width: "44px", height: "44px", borderRadius: "22px", background: "rgba(246,246,243,0.16)", border: "1px solid rgba(246,246,243,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -53,6 +59,7 @@ export default function PlaceView({ v }: ViewProps) {
               <path d="M6 3h12v18l-6-4-6 4z" />
             </svg>
           </button>
+          {v.heroCredit && <div style={{ position: "absolute", top: "108px", left: "20px", fontSize: "10.5px", color: "rgba(246,246,243,0.85)", textShadow: "0 1px 2px rgba(0,0,0,0.6)" }}>{v.heroCredit}</div>}
           {v.showToast && (
             <>
               <div className="toast" role="status" style={{ position: "absolute", top: "112px", right: "20px", padding: "10px 14px", borderRadius: "14px", background: "var(--bg)", color: "var(--ink)", fontSize: "13px", fontWeight: "600", boxShadow: "0 14px 28px -14px rgba(0,0,0,0.5)" }}>{v.toastText}</div>
@@ -66,6 +73,7 @@ export default function PlaceView({ v }: ViewProps) {
               <span style={{ fontStyle: "italic" }}>{v.titleB}</span>
             </h1>
             <div style={{ fontFamily: "'Mukta', sans-serif", fontSize: "15px", color: "#CFE3DE" }}>{v.nameMr}</div>
+            {v.ratingLine && <div style={{ fontSize: "13px", fontWeight: "600", color: "#F2E3BF" }}>{v.ratingLine}</div>}
           </div>
         </div>
       </div>
@@ -143,6 +151,8 @@ export default function PlaceView({ v }: ViewProps) {
         </div>
         <div style={{ paddingTop: "12px", paddingBottom: "32px" }}>
           <NearbyPlaces sections={v.nearbySections} loading={v.nearbyLoading} emptyText={v.nearbyEmpty} mapHref={v.nearbyMapHref} />
+          <div style={{ height: "22px" }} />
+          <NearbyPlaces sections={v.googleSections} loading={v.googleLoading} loadingTitle="Side quests" emptyText={null} attribution="Places, ratings and photos: Google Maps" label="Side quests and food" />
         </div>
       </div>
     </div>

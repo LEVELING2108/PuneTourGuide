@@ -16,7 +16,8 @@
     "refresh:help": "tsx src/scripts/refresh-help.ts",
     "worker": "tsx src/worker.ts",
     "worker:prod": "node dist/worker.js",
-    "check:places": "tsx src/scripts/check-places.ts"
+    "check:places": "tsx src/scripts/check-places.ts",
+    "google:link": "tsx src/scripts/link-google-places.ts"
   },
   "author": "",
   "license": "ISC",

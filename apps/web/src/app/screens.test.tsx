@@ -6,7 +6,7 @@ import { useThemeStore } from '../stores/theme';
 import { router } from './router';
 
 const ROUTES = [
-  '/', '/explore', '/explore/filters', '/map', '/directions', '/plan', '/place/1', '/sos', '/profile', '/profile/visited', '/settings',
+  '/', '/explore', '/explore/filters', '/map', '/directions', '/plan', '/place/1', '/sos', '/profile', '/profile/visited', '/spot/ChIJ2RgRhuaTwjsRC-nUx4nVtMs', '/settings',
   '/settings/profile', '/settings/contacts', '/settings/contacts/new', '/settings/contacts/1', '/settings/medical',
   '/settings/offline', '/settings/language', '/settings/theme', '/settings/sign-out', '/welcome', '/intro',
   '/permissions', '/login', '/signup', '/otp', '/almost-there', '/first-contact', '/forgot',

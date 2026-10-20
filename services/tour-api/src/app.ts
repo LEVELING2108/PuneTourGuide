@@ -61,7 +61,8 @@ app.use(
             styleSrc: ["'self'", "'unsafe-inline'", 'https://accounts.google.com/gsi/style'],
             frameSrc: ['https://accounts.google.com/gsi/'],
             fontSrc: ["'self'"],
-            imgSrc: ["'self'", 'data:', 'blob:', ...tileOrigins],
+            // Google place photos: the API redirects to Google's short-lived image URLs
+            imgSrc: ["'self'", 'data:', 'blob:', 'https://*.googleusercontent.com', ...tileOrigins],
             // Tiles also appear here: offline packs download them with fetch()
             connectSrc: ["'self'", 'https://accounts.google.com/gsi/', 'wss:', 'https://*.sentry.io', ...tileOrigins, ...safetyOrigins()],
             workerSrc: ["'self'"],

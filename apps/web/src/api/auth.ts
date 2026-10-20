@@ -29,6 +29,7 @@ export const usersApi = {
       total: number;
       collected: number;
       forts: number;
+      sideQuests: number;
       stamps: { placeId: number; name: string; nameMr: string | null; category: string; kind: string | null; area: string | null; xp: number; estYear: string | null; collectedAt: string }[];
     }>('/users/me/stamps'),
   stats: () => api<{ xp: number; level: number; levelName: string; stamps: number; placesVisited: number; savedPlaces: number }>('/users/me/stats'),

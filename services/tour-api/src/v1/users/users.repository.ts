@@ -37,7 +37,7 @@ export const usersRepo = {
 
   /** Passport: every stamp with its place, newest first, plus how many places can be stamped. */
   async stamps(userId: number) {
-    const [rows, total, forts] = await Promise.all([
+    const [rows, total, forts, sideQuests] = await Promise.all([
       prisma.stamp.findMany({
         where: { userId },
         orderBy: { collectedAt: 'desc' },
@@ -45,8 +45,9 @@ export const usersRepo = {
       }),
       prisma.place.count({ where: { curated: true } }),
       prisma.stamp.count({ where: { userId, place: { category: 'Fort' } } }),
+      prisma.spotVisit.count({ where: { userId } }),
     ]);
-    return { rows, total, forts };
+    return { rows, total, forts, sideQuests };
   },
 
   // ── Avatar (stored re-encoded; served by random key) ─────────

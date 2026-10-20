@@ -93,10 +93,11 @@ The ₹0 route for a student without a credit card. Do the parts in order; each 
 | SMS (Twilio) | Console → *Account info* | `SMS_PROVIDER=twilio`, `SMS_API_KEY=ACxxxx:your_auth_token`, `SMS_SENDER_ID=+1your_twilio_number` | — |
 | Email (Resend) | Sign up at <https://resend.com> → *Domains → Add* your domain → add the DNS records it shows at Name.com → *API Keys → Create* | `EMAIL_API_KEY=re_...`, `EMAIL_FROM=Pune Explorer <no-reply@your-domain>` | — |
 | Google sign-in | <https://console.cloud.google.com> → new project → *OAuth consent screen* (External; app name, your email, privacy URL `https://your-domain/privacy`) → *Credentials → Create OAuth client ID → Web application* → Authorised JavaScript origins `https://your-domain` | `GOOGLE_CLIENT_ID=...apps.googleusercontent.com` | `VITE_GOOGLE_CLIENT_ID=` (same value) |
+| Google Maps (photos, ratings, side quests) | Same Google Cloud project → enable **Places API (New)** and **Routes API** → *Credentials → Create credentials → API key* named `pune-explorer-server`: API restrictions = those two APIs only; application restrictions = *IP addresses* → your server's IP. Set a budget alert (*Billing → Budgets & alerts*, ₹1,000, untick the savings boxes). Then on the server: `docker compose --env-file .env.production exec tour-api npm run google:link` | `GOOGLE_MAPS_SERVER_KEY=AIza...`, optional `GOOGLE_DAILY_CAPS=details=230,nearby=230,photo=300` | — (the key never goes in the website) |
 | Privacy contact | an email you read, for data requests (DPDP Act) | — | `VITE_CONTACT_EMAIL=you@...` |
 
 - **Twilio and India:** a trial texts only the numbers you verified, which is fine for a demo. For the public, Indian carriers require DLT registration (step 9). Plan to move to MSG91 then; only the settings change.
-- **Check each one** using the **Verify** line of its step below: 7 (map), 19 (Sentry), 9 (SMS), 16 (email), 17 (Google), 18 (Terms and Privacy).
+- **Check each one** using the **Verify** line of its step below: 7 (map), 19 (Sentry), 9 (SMS), 16 (email), 17 (Google), 17b (Google Maps), 18 (Terms and Privacy).
 
 **Part 7: automatic deploys and monitoring**
 1. **Automatic deploys:** in GitHub → *Settings → Secrets and variables → Actions*:
@@ -283,6 +284,16 @@ The ₹0 route for a student without a credit card. Do the parts in order; each 
 - Create a [Resend](https://resend.com) account, verify your sending domain (it gives you SPF and DKIM DNS records to add), and create an API key.
 - Settings (Tour API): `EMAIL_API_KEY`, `EMAIL_FROM="Pune Explorer <no-reply@your-domain>"`.
 - **Verify:** Log in → Forgot? → your email → the email arrives (check that it isn't in spam). The link opens `/reset`, you set a new password, other phones are signed out, and the old link no longer works.
+
+### ☐ 17b. Google Maps: photos, ratings and side quests
+**Needed by:** the real photo, "★ rating · Open now" line, Side quests and Food nearby on each place, and the side-quest pages. Without it, places show as before (no photo, our own food list).
+- Settings (Tour API): `GOOGLE_MAPS_SERVER_KEY`, and optionally `GOOGLE_DAILY_CAPS`. Google's own quotas can't be lowered on a trial account, so these caps (per day, Pune time, counted in Redis) are the hard limit; when one is reached the app hides Google extras until the next day. Defaults stay inside the India free amounts (7,000 a month each for details, nearby search and photos).
+- Link places once, and again after adding places: `npm run google:link -w services/tour-api`. It prints each match; fix a wrong one by editing `googlePlaceId` in the Place table.
+- **Verify:**
+  - Open Sinhagad Fort: a photo with "Photo: <name>", and "★ 4.6 · … reviews · Open/Closed now" under the name.
+  - Scroll down: Side quests (e.g. Sunrise Point, Kalyan Darwaja) and Food nearby, each card with a photo and rating; tap one → its page with hours, address and Open in Google Maps.
+  - "Been here?" on a side quest → +10 XP once; Profile → Places visited shows "1 side quest done".
+  - In the browser's dev tools, `/api/v1/google/...` responses carry `Cache-Control: no-store` (Google's terms forbid storing their content).
 
 ### ☐ 17. Sign in with Google
 **Needed by:** the "Continue with Google" buttons on Log in and Sign up. Without it, the button explains that Google sign-in isn't set up.

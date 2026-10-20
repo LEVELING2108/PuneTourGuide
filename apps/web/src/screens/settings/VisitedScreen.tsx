@@ -54,7 +54,11 @@ export default function VisitedScreen() {
               <div style={{ height: '6px', borderRadius: '3px', background: 'color-mix(in srgb, var(--bg) 18%, transparent)', overflow: 'hidden' }}>
                 <div style={{ width: `${pct}%`, height: '6px', borderRadius: '3px', background: 'var(--gold)' }} />
               </div>
-              {stamps.length > 0 && <div style={{ fontSize: '12.5px', opacity: 0.75 }}>{categoryText(stamps)}</div>}
+              {(stamps.length > 0 || q.data.sideQuests > 0) && (
+                <div style={{ fontSize: '12.5px', opacity: 0.75 }}>
+                  {[categoryText(stamps), q.data.sideQuests ? `${q.data.sideQuests} side ${q.data.sideQuests === 1 ? 'quest' : 'quests'} done` : ''].filter(Boolean).join(' · ')}
+                </div>
+              )}
             </div>
           )}
 

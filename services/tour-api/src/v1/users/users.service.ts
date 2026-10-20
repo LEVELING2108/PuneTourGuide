@@ -58,11 +58,12 @@ export const usersService = {
   avatar: (key: string) => usersRepo.avatarByKey(key),
 
   async stamps(userId: number) {
-    const { rows, total, forts } = await usersRepo.stamps(userId);
+    const { rows, total, forts, sideQuests } = await usersRepo.stamps(userId);
     return {
       total,
       collected: rows.length,
       forts,
+      sideQuests,
       stamps: rows.map((r) => ({
         placeId: r.place.id,
         name: r.place.name,
