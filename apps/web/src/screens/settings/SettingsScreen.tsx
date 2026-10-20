@@ -41,6 +41,8 @@ export default function SettingsScreen() {
     levelPct: s.levelPct,
     statsText: s.statsText,
     toNextText: s.toNextText,
+    visitedText: s.stamps ? `${s.stamps.collected} of ${s.stamps.total} stamps · ${s.stamps.collected ? 'see where you’ve been' : 'none yet'}` : s.loggedIn ? 'Loading…' : 'Log in to see where you’ve been',
+    visitedHref: s.loggedIn ? '/profile/visited' : '/login?next=%2Fprofile%2Fvisited',
     safetyStatus: complete ? 'Complete' : 'Needs setup',
     safetyDot: complete ? '#2FA58A' : '#C27A1E',
     contactsText: s.contactsText,

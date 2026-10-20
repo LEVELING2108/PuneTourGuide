@@ -66,6 +66,7 @@ export default function ProfileTabScreen() {
     stampCount: s.stamps ? `${s.stamps.collected} of ${s.stamps.total}` : '',
     stamps,
     nextText: stamps.length ? 'Next stamp' : 'First stamp',
+    visitedHref: s.loggedIn ? '/profile/visited' : '/login?next=%2Fprofile%2Fvisited',
   };
   return <DeccanProfileView v={v} />;
 }

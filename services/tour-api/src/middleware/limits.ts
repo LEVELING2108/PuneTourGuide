@@ -57,6 +57,8 @@ export const testAlertLimit = make('test-alert', 24 * 60 * 60_000, 20);
 /** Contact changes and live-trip sharing (each share texts every contact). */
 export const contactsWriteLimit = make('contacts-write', 60 * 60_000, 60);
 export const tripShareLimit = make('trip-share', 60 * 60_000, 10);
+/** "Mark as visited" from the Place screen, per account (XP is awarded once per place anyway). */
+export const visitLimit = make('visit', 60 * 60_000, 60, (req, res) => `u:${res.locals.userId ?? ipKey(req)}`);
 
 /** Avatar uploads are CPU work (image re-encode). */
 export const avatarLimit = make('avatar', 60 * 60_000, 20);

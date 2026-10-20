@@ -60,6 +60,19 @@ export default function ProfileView({ v }: ViewProps) {
               <span>{v.toNextText}</span>
             </div>
           </div>
+          <Link to={v.visitedHref} className="rise d2 row" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 16px", borderRadius: "20px", background: "var(--surface)", border: "1px solid var(--line)", textDecoration: "none", color: "var(--ink)" }}>
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" />
+              <circle cx="12" cy="9.5" r="2.5" />
+            </svg>
+            <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "2px" }}>
+              <div style={{ fontSize: "15px", fontWeight: "600" }}>Places visited</div>
+              <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>{v.visitedText}</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </Link>
           <div className="rise d3" style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingBottom: "4px" }}>
               <h2 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "24px", fontWeight: "400" }}>Safety profile</h2>

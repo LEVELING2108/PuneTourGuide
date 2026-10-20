@@ -22,15 +22,16 @@ export const usersRepo = {
   update: (id: number, data: Prisma.UserUpdateInput) => prisma.user.update({ where: { id }, data }),
 
   async stats(userId: number) {
-    const [stamps, saved, visited] = await Promise.all([
+    // Visited = every stamped place (plan ticks and "Mark as visited") plus ticked legacy stops with no catalogue place
+    const [stamps, saved, legacy] = await Promise.all([
       prisma.stamp.count({ where: { userId } }),
       prisma.userSavedPlace.count({ where: { userId } }),
       prisma.itineraryStop.findMany({
-        where: { done: true, itineraryDay: { userId } },
-        select: { placeId: true, name: true },
+        where: { done: true, placeId: null, itineraryDay: { userId } },
+        select: { name: true },
       }),
     ]);
-    const visitedPlaces = new Set(visited.map((s) => s.placeId ?? s.name)).size;
+    const visitedPlaces = stamps + new Set(legacy.map((s) => s.name)).size;
     return { stamps, saved, visitedPlaces };
   },
 
@@ -40,7 +41,7 @@ export const usersRepo = {
       prisma.stamp.findMany({
         where: { userId },
         orderBy: { collectedAt: 'desc' },
-        select: { collectedAt: true, place: { select: { id: true, name: true, name_mr: true, category: true, kind: true, estYear: true } } },
+        select: { collectedAt: true, place: { select: { id: true, name: true, name_mr: true, category: true, kind: true, area: true, xp: true, estYear: true } } },
       }),
       prisma.place.count({ where: { curated: true } }),
       prisma.stamp.count({ where: { userId, place: { category: 'Fort' } } }),

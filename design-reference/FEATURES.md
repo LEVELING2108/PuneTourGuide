@@ -106,6 +106,8 @@ Medical info is sensitive: store encrypted at rest, only return it to the owner,
 | ✅ Place: Save | Toggle save, toast | EXISTS |
 | ✅ Place: Add to plan / Directions / nearest hospital | | EXISTS / OSRM / emergency-services |
 | ✅ Place: Also nearby / Food nearby | Cards open the place, “+” adds to a chosen day, “See on map” opens Map at the place | **NEW** `GET /api/places/:id/nearby`; Map `?at=lat,lng` |
+| ✅ Place: Been here? / Mark as visited | Confirm sheet → stamp + XP once, ticked in the plan; shows “Visited · date” after | **NEW** `POST /api/places/:id/visit` |
+| ✅ Profile: Places visited | Every stamp by month with date, area, XP; summary (n of N stamps, XP, categories); Classic row + Deccan “See all” | EXISTS `GET /api/users/me/stamps` (EXTEND with area, xp) |
 
 ### SOS (works logged-out and offline)
 | Control | Behaviour | Backend |

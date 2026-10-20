@@ -24,6 +24,8 @@ export type PlaceSummary = {
   curated: boolean;
   isSaved: boolean;
   planStopId: number | null;
+  /** When you collected this place's stamp (ISO), or null. */
+  visitedAt: string | null;
 };
 
 export type PlaceDetail = PlaceSummary & {
@@ -55,6 +57,8 @@ export const placesApi = {
   get: (id: number, near?: string) => api<PlaceDetail>(`/places/${id}`, { query: { near } }),
   /** "Also nearby" + "Food nearby"; km is from that place. */
   nearby: (id: number) => api<{ places: PlaceSummary[]; food: PlaceSummary[] }>(`/places/${id}/nearby`),
+  visit: (id: number) =>
+    api<{ placeId: number; stampCollected: boolean; xpAwarded: number; totalXp: number; visitedAt: string }>(`/places/${id}/visit`, { method: 'POST' }),
   save: (id: number) => api<{ isSaved: boolean }>(`/places/${id}/save`, { method: 'PUT' }),
   unsave: (id: number) => api<{ isSaved: boolean }>(`/places/${id}/save`, { method: 'DELETE' }),
 };

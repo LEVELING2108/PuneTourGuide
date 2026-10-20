@@ -41,6 +41,8 @@ function toDto(row: PlaceRow) {
     curated: row.curated,
     isSaved: false,
     planStopId: null as number | null,
+    /** When the user collected this place's stamp (ISO), or null. */
+    visitedAt: null as string | null,
   };
 }
 
@@ -63,7 +65,12 @@ const cacheKey = (q: PlaceQuery) => {
 async function annotate<T extends PlaceDto>(items: T[], userId: number | null): Promise<T[]> {
   if (!userId || !items.length) return items;
   const flags = await placesRepo.userFlags(userId, items.map((p) => p.id));
-  return items.map((p) => ({ ...p, isSaved: flags.saved.has(p.id), planStopId: flags.planned.get(p.id) ?? null }));
+  return items.map((p) => ({
+    ...p,
+    isSaved: flags.saved.has(p.id),
+    planStopId: flags.planned.get(p.id) ?? null,
+    visitedAt: flags.visited.get(p.id)?.toISOString() ?? null,
+  }));
 }
 
 export const placesService = {
@@ -130,6 +137,13 @@ export const placesService = {
     const counts = await placesRepo.countsByCategory();
     await setCachedData(key, counts, CACHE_TTL);
     return counts;
+  },
+
+  async visit(userId: number, placeId: number) {
+    const row = await placesRepo.byId(placeId);
+    if (!row) throw notFound('PLACE_NOT_FOUND', 'Place not found');
+    const r = await placesRepo.visit(userId, placeId, row.xp);
+    return { placeId, ...r, visitedAt: r.visitedAt.toISOString() };
   },
 
   async setSaved(userId: number, placeId: number, saved: boolean) {

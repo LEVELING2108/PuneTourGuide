@@ -2,7 +2,8 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { useLocation, useNavigate } from 'react-router';
 import { itineraryApi } from '../api/itinerary';
 import { placesApi, type PlaceQuery, type PlaceSummary } from '../api/places';
-import { useIsLoggedIn } from '../stores/auth';
+import { useAuthStore, useIsLoggedIn } from '../stores/auth';
+import { usersApi } from '../api/auth';
 import type { ThemeName } from '../stores/theme';
 
 /** Chip label → API filter, per theme (Deccan chips use Wadas / Food lanes / Hills). */
@@ -160,6 +161,24 @@ export function useTogglePlan() {
     onSuccess: (r, p) => patchPlaceCaches(qc, p.id, { planStopId: r.stopId }),
     onError: (_e, p) => patchPlaceCaches(qc, p.id, { planStopId: p.planStopId }),
     onSettled: () => qc.invalidateQueries({ queryKey: ['itinerary'] }),
+  });
+}
+
+/** "Mark as visited": stamp + XP once per place, and the place is ticked in the plan. */
+export function useMarkVisited() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (placeId: number) => placesApi.visit(placeId),
+    onSuccess: (r) => {
+      patchPlaceCaches(qc, r.placeId, { visitedAt: r.visitedAt });
+      const { user, setUser } = useAuthStore.getState();
+      if (user) setUser({ ...user, xp: r.totalXp });
+      // Level, progress and the passport change with XP: take the server's numbers
+      if (r.stampCollected) usersApi.me().then(setUser, () => undefined);
+      qc.invalidateQueries({ queryKey: ['stamps'] });
+      qc.invalidateQueries({ queryKey: ['stats'] });
+      qc.invalidateQueries({ queryKey: ['itinerary'] });
+    },
   });
 }
 

@@ -1,8 +1,9 @@
 import { useNavigate, useParams } from 'react-router';
+import { useConfirm } from '../../components/Confirm';
 import { useDayPicker } from '../../components/DayPicker';
 import { Themed } from '../../components/Themed';
 import { nearParam, useCurrentPosition } from '../../features/location';
-import { kmText, placeTone, shortKmText, travelText, useNearby, usePlace, useRequireLogin, useTogglePlan, useToggleSave } from '../../features/places';
+import { kmText, placeTone, shortKmText, travelText, useMarkVisited, useNearby, usePlace, useRequireLogin, useTogglePlan, useToggleSave } from '../../features/places';
 import type { PlaceSummary } from '../../api/places';
 import type { NearbyCard } from '../../components/NearbyPlaces';
 import { usePalette } from '../../lib/palette';
@@ -35,6 +36,8 @@ export default function PlaceScreen() {
   const toggleSave = useToggleSave();
   const togglePlan = useTogglePlan();
   const picker = useDayPicker();
+  const confirm = useConfirm();
+  const markVisited = useMarkVisited();
   const toast = useFlash(2500);
   const nearby = useNearby(placeId);
 
@@ -73,7 +76,27 @@ export default function PlaceScreen() {
     };
   };
 
+  const visitedOn = d?.visitedAt ? new Date(d.visitedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
+
   const v = {
+    visited: !!visitedOn,
+    notVisited: !!d && !visitedOn,
+    visitedText: visitedOn ? `Stamp collected ${visitedOn}` : '',
+    visitTitle: 'Been here?',
+    visitText: markVisited.isPending ? 'Saving…' : `Mark as visited · +${d?.xp ?? 30} XP`,
+    markVisited: async () => {
+      if (!d || markVisited.isPending || !requireLogin()) return;
+      const yes = await confirm.ask({
+        title: `Did you visit ${d.name}?`,
+        detail: `You collect its stamp and +${d.xp} XP once. It's ticked in your plan too.`,
+        confirm: 'Yes, I visited',
+      });
+      if (!yes) return;
+      markVisited.mutate(d.id, {
+        onSuccess: (r) => toast.flash(r.stampCollected ? `Stamp collected · +${r.xpAwarded} XP` : 'Already in your passport'),
+        onError: (err) => toast.flash(err.message),
+      });
+    },
     nearbySections: [
       { key: 'places', title: 'Also nearby', items: (nearby.data?.places ?? []).map(card) },
       { key: 'food', title: 'Food nearby', items: (nearby.data?.food ?? []).map(card) },
@@ -106,7 +129,8 @@ export default function PlaceScreen() {
     googleHref: d ? googlePlaceUrl(d) : '',
     ctaLabel: inPlan ? 'In your plan' : 'Add to plan',
     ctaLabelDeccan: inPlan ? 'In your journey' : 'Add to journey',
-    xpLabel: inPlan ? 'View' : `+${d?.xp ?? 30} XP`,
+    // XP comes once per place: no promise of it after the stamp is collected
+    xpLabel: inPlan ? 'View' : visitedOn ? '' : `+${d?.xp ?? 30} XP`,
     addToPlan: async (e: React.MouseEvent) => {
       if (inPlan || !d) return; // "In your plan" just opens the Plan tab
       e.preventDefault();
@@ -143,6 +167,7 @@ export default function PlaceScreen() {
     <>
       <Themed classic={PlaceView} deccan={DeccanPlaceView} v={v} />
       {picker.sheet}
+      {confirm.sheet}
     </>
   );
 }

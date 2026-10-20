@@ -78,7 +78,10 @@ export default function DeccanProfileView({ v }: ViewProps) {
           <div className="rise d3" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
               <h2 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "22px", fontWeight: "400" }}>Stamps collected</h2>
-              <div style={{ fontSize: "13px", color: "var(--muted)" }}>{v.stampCount}</div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}>
+                <div style={{ fontSize: "13px", color: "var(--muted)" }}>{v.stampCount}</div>
+                <Link to={v.visitedHref} style={{ fontSize: "13px", fontWeight: "600", color: "var(--primary)", textDecoration: "none" }}>See all</Link>
+              </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "10px", padding: "12px", borderRadius: "14px", background: "var(--surface)", border: "1px solid var(--line)" }}>
               {((v.stamps ?? []) as any[]).map((st: any) => (

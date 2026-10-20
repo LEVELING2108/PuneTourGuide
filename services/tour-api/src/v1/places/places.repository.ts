@@ -124,21 +124,38 @@ export const placesRepo = {
     return Object.fromEntries(rows.map((r) => [r.key, r.n]));
   },
 
-  /** Saved + in-plan flags for a set of places, for one user. */
+  /** Saved, in-plan and visited flags for a set of places, for one user. */
   async userFlags(userId: number, placeIds: number[]) {
-    if (!placeIds.length) return { saved: new Set<number>(), planned: new Map<number, number>() };
-    const [saved, stops] = await Promise.all([
+    if (!placeIds.length) return { saved: new Set<number>(), planned: new Map<number, number>(), visited: new Map<number, Date>() };
+    const [saved, stops, stamps] = await Promise.all([
       prisma.userSavedPlace.findMany({ where: { userId, placeId: { in: placeIds } }, select: { placeId: true } }),
       prisma.itineraryStop.findMany({
         where: { placeId: { in: placeIds }, itineraryDay: { userId } },
         select: { id: true, placeId: true },
         orderBy: { id: 'asc' },
       }),
+      prisma.stamp.findMany({ where: { userId, placeId: { in: placeIds } }, select: { placeId: true, collectedAt: true } }),
     ]);
     const planned = new Map<number, number>();
     stops.forEach((s) => s.placeId && !planned.has(s.placeId) && planned.set(s.placeId, s.id));
-    return { saved: new Set(saved.map((s) => s.placeId)), planned };
+    return { saved: new Set(saved.map((s) => s.placeId)), planned, visited: new Map(stamps.map((s) => [s.placeId, s.collectedAt])) };
   },
+
+  /**
+   * "I've been here": collect the stamp and the place's XP once (stamps are unique per user + place),
+   * and tick the place wherever it is in the user's plan.
+   */
+  visit: (userId: number, placeId: number, xp: number) =>
+    prisma.$transaction(async (tx) => {
+      const { count } = await tx.stamp.createMany({ data: [{ userId, placeId }], skipDuplicates: true });
+      if (count === 1) await tx.user.update({ where: { id: userId }, data: { xp: { increment: xp } } });
+      await tx.itineraryStop.updateMany({ where: { placeId, done: false, itineraryDay: { userId } }, data: { done: true } });
+      const [stamp, user] = await Promise.all([
+        tx.stamp.findUniqueOrThrow({ where: { userId_placeId: { userId, placeId } }, select: { collectedAt: true } }),
+        tx.user.findUniqueOrThrow({ where: { id: userId }, select: { xp: true } }),
+      ]);
+      return { stampCollected: count === 1, xpAwarded: count === 1 ? xp : 0, totalXp: user.xp, visitedAt: stamp.collectedAt };
+    }),
 
   exists: async (id: number) => !!(await prisma.place.findUnique({ where: { id }, select: { id: true } })),
   save: (userId: number, placeId: number) =>
