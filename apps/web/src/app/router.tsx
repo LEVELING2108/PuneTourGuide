@@ -26,6 +26,7 @@ const PlanScreen = lazy(() => import('../screens/plan/PlanScreen'));
 const PlaceScreen = lazy(() => import('../screens/place/PlaceScreen'));
 const ProfileTabScreen = lazy(() => import('../screens/settings/ProfileTabScreen'));
 const SettingsScreen = lazy(() => import('../screens/settings/SettingsScreen'));
+const VisitedScreen = lazy(() => import('../screens/settings/VisitedScreen'));
 const EditProfileScreen = lazy(() => import('../screens/settings/EditProfileScreen'));
 const ContactsScreen = lazy(() => import('../screens/settings/ContactsScreen'));
 const ContactEditScreen = lazy(() => import('../screens/settings/ContactEditScreen'));
@@ -84,6 +85,7 @@ export const router = createBrowserRouter([
       { path: '/sos', element: <SosScreen /> },
       { path: '/track/:sessionId', element: <TrackScreen /> },
       { path: '/profile', element: <ProfileTabScreen /> },
+      { path: '/profile/visited', element: <VisitedScreen /> },
       { path: '/settings', element: <SettingsScreen /> },
       { path: '/settings/profile', element: <EditProfileScreen /> },
       { path: '/settings/contacts', element: <ContactsScreen /> },

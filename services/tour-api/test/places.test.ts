@@ -123,4 +123,32 @@ describe('places', () => {
     expect(res.body.data.places.find((p: { id: number }) => p.id === mahal.id).planStopId).toBe(add.body.data.stop.id);
     expect((await api().get('/api/v1/places/999999/nearby')).status).toBe(404);
   });
+
+  it('marks a place visited once: stamp, XP, plan tick and the visited flag', async () => {
+    const u = await signUp();
+    const fort = await prisma.place.findFirstOrThrow({ where: { name: 'Sinhagad Fort' } });
+    const stop = await api().post('/api/v1/itinerary/stops').set(auth(u.token)).send({ placeId: fort.id });
+
+    expect((await api().post(`/api/v1/places/${fort.id}/visit`)).status).toBe(401);
+    const first = await api().post(`/api/v1/places/${fort.id}/visit`).set(auth(u.token));
+    expect(first.status).toBe(200);
+    expect(first.body.data).toMatchObject({ placeId: fort.id, stampCollected: true, xpAwarded: fort.xp, totalXp: fort.xp });
+
+    const again = await api().post(`/api/v1/places/${fort.id}/visit`).set(auth(u.token));
+    expect(again.body.data).toMatchObject({ stampCollected: false, xpAwarded: 0, totalXp: fort.xp, visitedAt: first.body.data.visitedAt });
+
+    const detail = await api().get(`/api/v1/places/${fort.id}`).set(auth(u.token));
+    expect(detail.body.data.visitedAt).toBe(first.body.data.visitedAt);
+    const plan = (await api().get('/api/v1/itinerary').set(auth(u.token))).body.data;
+    expect(plan.flatMap((d: { stops: { id: number; done: boolean }[] }) => d.stops).find((s: { id: number }) => s.id === stop.body.data.stop.id).done).toBe(true);
+
+    const stamps = await api().get('/api/v1/users/me/stamps').set(auth(u.token));
+    expect(stamps.body.data.stamps[0]).toMatchObject({ placeId: fort.id, area: fort.area, xp: fort.xp });
+    // A place marked visited from its page counts as visited even if it was never planned
+    const lal = await prisma.place.findFirstOrThrow({ where: { name: 'Lal Mahal' } });
+    await api().post(`/api/v1/places/${lal.id}/visit`).set(auth(u.token));
+    const stats = await api().get('/api/v1/users/me/stats').set(auth(u.token));
+    expect(stats.body.data).toMatchObject({ stamps: 2, placesVisited: 2, xp: fort.xp + lal.xp });
+    expect((await api().post('/api/v1/places/999999/visit').set(auth(u.token))).status).toBe(404);
+  });
 });

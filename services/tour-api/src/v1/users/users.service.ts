@@ -69,6 +69,8 @@ export const usersService = {
         nameMr: r.place.name_mr,
         category: r.place.category,
         kind: r.place.kind,
+        area: r.place.area,
+        xp: r.place.xp,
         estYear: r.place.estYear || null,
         collectedAt: r.collectedAt.toISOString(),
       })),

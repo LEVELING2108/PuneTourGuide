@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { handle, ok } from '../../lib/http';
+import { visitLimit } from '../../middleware/limits';
 import { maybeUserId, optionalAuth, requireAuth, userId } from '../../middleware/requireAuth';
 import { idParam, input, validate } from '../../middleware/validate';
 import { placeQuerySchema, type PlaceQuery } from './places.schemas';
@@ -50,6 +51,15 @@ router.get(
   optionalAuth,
   validate({ params: idParam }),
   handle(async (_req, res) => ok(res, await placesService.nearby(input<unknown, unknown, { id: number }>(res).params.id, maybeUserId(res))))
+);
+
+/** "Mark as visited": stamp + XP once per place; ticks it in the plan too. */
+router.post(
+  '/:id/visit',
+  requireAuth,
+  visitLimit,
+  validate({ params: idParam }),
+  handle(async (_req, res) => ok(res, await placesService.visit(userId(res), input<unknown, unknown, { id: number }>(res).params.id)))
 );
 
 router.put(

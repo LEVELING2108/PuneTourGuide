@@ -112,6 +112,30 @@ export default function DeccanPlaceView({ v }: ViewProps) {
               <span style={{ color: "var(--muted)" }}>· nearest hospital{v.hospitalKm}</span>
             </span>
           </Link>
+          {v.visited && (
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <span style={{ width: "34px", height: "34px", borderRadius: "17px", background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--surface)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10" /></svg>
+              </span>
+              <span style={{ flex: "1", fontSize: "14.5px" }}>
+                <b style={{ fontWeight: "600" }}>Visited</b>
+                {" "}
+                <span style={{ color: "var(--muted)" }}>· {v.visitedText}</span>
+              </span>
+            </div>
+          )}
+          {v.notVisited && (
+            <button className="tap" onClick={v.markVisited} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "0", border: "none", background: "transparent", color: "var(--ink)", fontFamily: "var(--font-body)", textAlign: "left", cursor: "pointer" }}>
+              <span style={{ width: "34px", height: "34px", borderRadius: "17px", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5" /></svg>
+              </span>
+              <span style={{ flex: "1", fontSize: "14.5px" }}>
+                <b style={{ fontWeight: "600" }}>{v.visitTitle}</b>
+                {" "}
+                <span style={{ color: "var(--primary)", fontWeight: "600" }}>{v.visitText}</span>
+              </span>
+            </button>
+          )}
         {v.googleHref && (
           <a href={v.googleHref} target="_blank" rel="noreferrer" style={{ alignSelf: "center", display: "flex", alignItems: "center", gap: "6px", padding: "8px 12px", color: "var(--muted)", fontSize: "13px", textDecoration: "none" }}>
             Reviews and photos on Google Maps
