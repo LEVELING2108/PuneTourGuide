@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { googlePhotoUrl, type Spot } from '../../api/google';
+import { photoCredit, ratingText, useGoogleNearby, useGooglePlace } from '../../features/googlePlaces';
 import { useConfirm } from '../../components/Confirm';
 import { useDayPicker } from '../../components/DayPicker';
 import { Themed } from '../../components/Themed';
@@ -40,6 +43,10 @@ export default function PlaceScreen() {
   const markVisited = useMarkVisited();
   const toast = useFlash(2500);
   const nearby = useNearby(placeId);
+  // Live Google Maps extras: photo, rating, open now, side quests and food (absent when off, capped or offline)
+  const google = useGooglePlace(placeId);
+  const gNearby = useGoogleNearby(placeId);
+  const [heroFailed, setHeroFailed] = useState<string | null>(null);
 
   const d = place.data;
   const saved = !!d?.isSaved;
@@ -76,6 +83,26 @@ export default function PlaceScreen() {
     };
   };
 
+  const g = google.data?.available ? google.data : null;
+  const gn = gNearby.data?.available ? gNearby.data : null;
+  const heroPhoto = g?.photo ? googlePhotoUrl(g.photo, 860) : null;
+  const liveStatus = g?.openNow === true ? 'Open now' : g?.openNow === false ? 'Closed now' : null;
+
+  const spotCard = (x: Spot): NearbyCard => ({
+    key: x.googleId,
+    name: x.name,
+    label: x.type ?? 'Place',
+    tone: 'var(--primary)',
+    distance: x.km !== null ? `${shortKmText(x.km)} away` : '',
+    travel: x.km !== null ? travelText(x.km) : '',
+    status: x.openNow === null ? null : x.openNow ? 'Open now' : 'Closed now',
+    closed: x.openNow === false,
+    href: `/spot/${encodeURIComponent(x.googleId)}`,
+    photoUrl: x.photo ? googlePhotoUrl(x.photo, 336) : null,
+    rating: ratingText(x.rating, x.ratingCount),
+    done: !!x.visitedAt,
+  });
+
   const visitedOn = d?.visitedAt ? new Date(d.visitedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
 
   const v = {
@@ -97,10 +124,22 @@ export default function PlaceScreen() {
         onError: (err) => toast.flash(err.message),
       });
     },
+    heroPhoto: heroPhoto && heroFailed !== heroPhoto ? heroPhoto : null,
+    heroPhotoFailed: () => setHeroFailed(heroPhoto),
+    heroCredit: heroPhoto && heroFailed !== heroPhoto ? photoCredit(g?.photo ?? null) : null,
+    ratingLine: g ? [ratingText(g.rating, g.ratingCount), liveStatus].filter(Boolean).join(' · ') || null : null,
     nearbySections: [
       { key: 'places', title: 'Also nearby', items: (nearby.data?.places ?? []).map(card) },
-      { key: 'food', title: 'Food nearby', items: (nearby.data?.food ?? []).map(card) },
+      // Google's food row replaces ours when it's available (ours has only a handful of places)
+      ...(gn?.food.length ? [] : [{ key: 'food', title: 'Food nearby', items: (nearby.data?.food ?? []).map(card) }]),
     ],
+    googleSections: gn
+      ? [
+          { key: 'quests', title: 'Side quests', items: gn.sideQuests.map(spotCard) },
+          { key: 'gfood', title: 'Food nearby', items: gn.food.map(spotCard) },
+        ]
+      : [],
+    googleLoading: gNearby.isLoading,
     nearbyLoading: nearby.isLoading,
     nearbyEmpty: nearby.isSuccess ? 'No other places close by.' : null,
     nearbyMapHref: d?.lat != null && d?.lng != null ? `/map?layer=places&at=${d.lat.toFixed(4)},${d.lng.toFixed(4)}` : '/map?layer=places',
@@ -126,7 +165,7 @@ export default function PlaceScreen() {
     hospitalLine: d?.hospital ? `${d.hospital.name}${d.hospital.km !== null ? ` · ${kmText(d.hospital.km)}` : ''}` : 'See help on the map',
     helpHref: '/map?layer=help',
     directionsHref: placeId ? `/directions?to=${placeId}` : '/directions',
-    googleHref: d ? googlePlaceUrl(d) : '',
+    googleHref: g?.mapsUri ?? (d ? googlePlaceUrl(d) : ''),
     ctaLabel: inPlan ? 'In your plan' : 'Add to plan',
     ctaLabelDeccan: inPlan ? 'In your journey' : 'Add to journey',
     // XP comes once per place: no promise of it after the stamp is collected

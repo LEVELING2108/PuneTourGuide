@@ -356,6 +356,9 @@ All Tour API routes live under `/api/v1`. Success responses are `{ "data": …, 
 | GET `/places/:id` | optional | Detail incl. nearest hospital, `isSaved` if logged in |
 | GET `/places/:id/nearby` | optional | “Also nearby” + “Food nearby” for a place: ≤6 each, within 3 km (10 km if fewer than 3), nearest first, closed-now last; km from that place; cached per place |
 | POST `/places/:id/visit` | user | “Mark as visited”: stamp + place XP once per place, ticks it in the plan; rate-limited per account |
+| GET `/google/places/:id`, `/google/places/:id/nearby` | optional | Live Google rating/open now/photo, side quests + food (§9.13) |
+| GET `/google/spots/:googleId`, POST `/google/spots/:googleId/visit` | optional / user | Side quest page; +10 XP once |
+| GET `/google/photo?name&w` | optional | Redirect to a Google photo |
 | PUT/DELETE `/places/:id/save` | user | Save / unsave |
 | GET `/routes` | public | Curated routes (peth walk, fort trip…) |
 | GET `/itinerary?date=` | user | Days with ordered stops |
@@ -496,6 +499,16 @@ Splash → Intro (shown once: `localStorage.pe_onboarded`) → Turn on safety (L
 - Email sign-up → first emergency contact → Home. Mobile: Send code → Enter code → (new) Almost there → first contact → Home; (existing) → Home. Google: popup → `POST /auth/google` → new users → first contact.
 - Forgot password → email link opens `/reset?token=` in the app → new password → log in.
 - Sign out clears tokens but keeps contacts, medical summary and offline packs on the device so SOS still works.
+
+### 9.13 Google Maps: photos, ratings and side quests
+
+Since 2026-10-21 everything except SOS moves to Google Maps Platform (this step: Places; the map and directions follow). SOS, nearby help and offline help stay on OpenStreetMap so they work offline and logged out.
+- Our catalogue keeps XP, stamps, Marathi names and plans; each place stores only its Google `googlePlaceId` (filled by `npm run google:link`, Text Search IDs only, no charge).
+- Place screen: `GET /google/places/:id` (Place Details, Enterprise fields: rating, open now, hours, photo) and `GET /google/places/:id/nearby` (two Nearby Searches: side quests = attractions, trails, parks, viewpoints, landmarks; food = restaurants, cafés, tea, bakeries with food as the main type). 1.5 km in the city, 5 km beyond 10 km from the centre; our own catalogue places are filtered out. Google's food row replaces ours when available.
+- Side quest page `/spot/:googleId`: `GET /google/spots/:googleId` (details + 3 photos); "Been here?" `POST /google/spots/:googleId/visit` gives +10 XP once (`SpotVisit`, only the Google id is stored; only spots the server has shown can be claimed).
+- Photos: `GET /google/photo?name&w` redirects to Google's short-lived image URL (the key stays on the server; photo authors are credited).
+- Rules from Google's terms: no Google content is stored or cached (responses are `no-store`; `/api/v1/google` is outside the offline cache; the query cache is memory only); Google data never appears on our non-Google map; "Google Maps" attribution on every Google row.
+- Cost: the server key is restricted to Places + Routes and sent in a header. Daily caps per call kind (`GOOGLE_DAILY_CAPS`, Redis, Pune day) are the hard limit because the console quotas can't be lowered; when reached, or when Google fails, endpoints return `{ available: false, reason }` and the app shows its own data. Plus a ₹1,000/month budget alert.
 
 ## 10. Frontend architecture
 

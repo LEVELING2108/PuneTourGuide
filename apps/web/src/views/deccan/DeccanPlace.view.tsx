@@ -45,6 +45,12 @@ export default function DeccanPlaceView({ v }: ViewProps) {
               <path d="M150 86 V66 H240 V86 Z M170 66 a25 18 0 0 1 50 0 Z" fill="#073638" />
               <path d="M48 170 V130 a14 14 0 0 1 28 0 V170 Z M92 170 V130 a14 14 0 0 1 28 0 V170 Z M136 170 V130 a14 14 0 0 1 28 0 V170 Z M180 170 V124 a15 15 0 0 1 30 0 V170 Z M226 170 V130 a14 14 0 0 1 28 0 V170 Z M270 170 V130 a14 14 0 0 1 28 0 V170 Z M314 170 V130 a14 14 0 0 1 28 0 V170 Z" fill="#0E5B5E" />
             </svg>
+            {v.heroPhoto && (
+              <>
+                <img src={v.heroPhoto} alt="" decoding="async" onError={v.heroPhotoFailed} style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover" }} />
+                <div aria-hidden="true" style={{ position: "absolute", inset: "0", background: "linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.25) 100%)" }} />
+              </>
+            )}
           </div>
           <svg width="390" height="12" viewBox="0 0 390 12" aria-hidden="true" style={{ position: "absolute", top: "0", left: "0" }}>
             <defs>
@@ -65,6 +71,7 @@ export default function DeccanPlaceView({ v }: ViewProps) {
               <path d="M6 3h12v18l-6-4-6 4z" />
             </svg>
           </button>
+          {v.heroCredit && <div style={{ position: "absolute", top: "106px", left: "20px", fontSize: "10.5px", color: "rgba(255,251,243,0.9)", textShadow: "0 1px 2px rgba(0,0,0,0.6)" }}>{v.heroCredit}</div>}
           {v.showToast && (
             <div className="toast" role="status" style={{ position: "absolute", top: "110px", right: "20px", padding: "10px 14px", borderRadius: "12px", background: "var(--surface)", color: "var(--ink)", fontSize: "13.5px", fontWeight: "600", boxShadow: "0 14px 28px -14px rgba(35,28,23,0.6)", borderLeft: "3px solid var(--gold)", zIndex: "3" }}>{v.toastText}</div>
           )}
@@ -80,6 +87,7 @@ export default function DeccanPlaceView({ v }: ViewProps) {
             <div style={{ fontSize: "11.5px", fontWeight: "600", letterSpacing: "0.16em", color: "#A4462B" }}>{v.kicker}</div>
             <h1 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "34px", fontWeight: "400", lineHeight: "1" }}>{v.name}</h1>
             <div style={{ fontFamily: "var(--font-accent)", fontSize: "17px", color: "var(--primary)" }}>{v.nameMr}</div>
+            {v.ratingLine && <div style={{ fontSize: "13.5px", fontWeight: "600", color: "#86611F" }}>{v.ratingLine}</div>}
           </div>
           <p style={{ margin: "0", fontSize: "15px", lineHeight: "1.5", color: "#3E342C" }}>
             {v.description}
@@ -151,6 +159,8 @@ export default function DeccanPlaceView({ v }: ViewProps) {
           </div>
           <div style={{ paddingTop: "18px" }}>
             <NearbyPlaces sections={v.nearbySections} loading={v.nearbyLoading} emptyText={v.nearbyEmpty} mapHref={v.nearbyMapHref} gutter={22} />
+            <div style={{ height: "22px" }} />
+            <NearbyPlaces sections={v.googleSections} loading={v.googleLoading} loadingTitle="Side quests" emptyText={null} attribution="Places, ratings and photos: Google Maps" label="Side quests and food" gutter={22} />
           </div>
         </div>
       </div>

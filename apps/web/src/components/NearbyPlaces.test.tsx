@@ -65,4 +65,20 @@ describe('NearbyPlaces', () => {
     const { container } = renderRows({ loading: true });
     expect(container.querySelector('[aria-busy="true"]')).not.toBeNull();
   });
+
+  it('shows Google spots with a photo and rating, and no add button', () => {
+    const { getByRole, queryByRole, getByText, container } = renderRows({
+      sections: [{ key: 'quests', title: 'Side quests', items: [card({ key: 'ChIJ-sunrise', name: 'Sunrise Point', photoUrl: '/api/v1/google/photo?name=x', rating: '★ 4.7 · 607 reviews', toggle: undefined, done: true })] }],
+      attribution: 'Places, ratings and photos: Google Maps',
+      label: 'Side quests and food',
+      mapHref: undefined,
+    });
+    expect(getByRole('region', { name: 'Side quests and food' })).toBeInTheDocument();
+    expect(container.querySelector('img')).toHaveAttribute('src', '/api/v1/google/photo?name=x');
+    expect(getByText('★ 4.7 · 607 reviews')).toBeInTheDocument();
+    expect(getByText(/✓ Done/)).toBeInTheDocument();
+    expect(queryByRole('button')).toBeNull();
+    expect(queryByRole('link', { name: 'See on map' })).toBeNull();
+    expect(getByText('Places, ratings and photos: Google Maps')).toBeInTheDocument();
+  });
 });

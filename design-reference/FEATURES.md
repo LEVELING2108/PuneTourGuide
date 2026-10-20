@@ -108,6 +108,9 @@ Medical info is sensitive: store encrypted at rest, only return it to the owner,
 | ✅ Place: Also nearby / Food nearby | Cards open the place, “+” adds to a chosen day, “See on map” opens Map at the place | **NEW** `GET /api/places/:id/nearby`; Map `?at=lat,lng` |
 | ✅ Place: Been here? / Mark as visited | Confirm sheet → stamp + XP once, ticked in the plan; shows “Visited · date” after | **NEW** `POST /api/places/:id/visit` |
 | ✅ Profile: Places visited | Every stamp by month with date, area, XP; summary (n of N stamps, XP, categories); Classic row + Deccan “See all” | EXISTS `GET /api/users/me/stamps` (EXTEND with area, xp) |
+| ✅ Place: Google photo, rating, open now | Real photo with credit; “★ 4.6 · 71,181 reviews · Open now”; Google Maps link | **NEW** `GET /api/google/places/:id` |
+| ✅ Place: Side quests + Food nearby (Google) | Photo cards with rating, distance, open now; tap → side quest page | **NEW** `GET /api/google/places/:id/nearby` |
+| ✅ Side quest page | Photos, rating, hours, address, Directions / Open in Google Maps, Been here? +10 XP once | **NEW** `GET /api/google/spots/:id`, `POST …/visit`, `GET /api/google/photo` |
 
 ### SOS (works logged-out and offline)
 | Control | Behaviour | Backend |
