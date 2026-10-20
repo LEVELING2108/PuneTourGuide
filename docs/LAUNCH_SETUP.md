@@ -40,23 +40,16 @@ The ₹0 route for a student without a credit card. Do the parts in order; each 
 1. **Domain:** on the Student Pack page, open **Name.com** → claim the free domain, and pick a `.app` or `.dev` name (e.g. `puneexplorer.app`). **Send me** the name.
 2. **Sentry:** on the Student Pack page, open **Sentry** and activate the student plan. Create two projects: *Node.js* (call it `pune-explorer-api`) and *Browser JavaScript* (`pune-explorer-web`). **Send me** the two DSN links. They aren't secret: one ends up in the website's code anyway.
 
-**Part 3: the server and the database (Azure portal)**
-1. **Create the server:** *Virtual machines → Create → Azure virtual machine*.
-   - Subscription *Azure for Students*, region **Central India**, image **Ubuntu Server 24.04 LTS**.
-   - Size **Standard_B1s**. It's marked "free services eligible".
-   - Authentication: *SSH public key*, username `azureuser`. Download the `.pem` key when asked and keep it safe.
-   - Inbound ports: allow **SSH (22), HTTP (80), HTTPS (443)**.
-   - Disk: *Standard SSD*. Then Create.
-2. **Fix the public IP:** open the server → *Networking / IP configuration* → set the public IP to **Static**, so it never changes. **Send me** the public IP address.
-3. **Create the database:** *Azure Database for PostgreSQL flexible server → Create*.
-   - Region Central India, PostgreSQL **16**, workload **Development**, compute **Burstable B1ms**, storage **32 GB**. That's the free tier.
-   - Admin username `pune`, and a strong password that you save in your password manager.
-   - Networking: *Public access*. Add the server's public IP as a firewall rule.
-   - Then Create; it takes about 10 minutes.
-4. **Prepare the database:**
-   - Open it → *Server parameters* → search `azure.extensions` → tick **POSTGIS** → Save. The app needs the PostGIS map extension.
-   - Then *Databases → Add* → name it `pune_explorer`.
-- **Check:** both resources show "Running" / "Available" in the portal.
+**Part 3: the server (Google Cloud Console)**
+
+We moved from Azure to Google Cloud on 2026-10-21: the Azure for Students policy only allowed regions outside India and no free size could be deployed there. Postgres + PostGIS runs on the same server in Docker (no separate database service to pay for); the disk's daily snapshots are its backups.
+1. **Create the server:** *Compute Engine → VM instances → Create instance* (enable the Compute Engine API if asked).
+   - Name `pune-explorer`, region **asia-south1 (Mumbai)**, zone any, machine **E2 → e2-medium** (2 vCPU, 4 GB), provisioning **Standard** (not Spot).
+   - *OS and storage → Change*: **Ubuntu 24.04 LTS, x86/64** (not Arm64, not Minimal), **Balanced persistent disk, 30 GB**. Keep the default snapshot schedule (daily backups).
+   - *Networking*: tick **Allow HTTP traffic** and **Allow HTTPS traffic** (not the load balancer health checks: Caddy on the server handles HTTPS). Open the `nic0` interface → *External IPv4 address* → **Reserve static external IP address** (`pune-explorer-ip`).
+   - About $33 a month (Mumbai, October 2026), paid from the free-trial credit.
+2. **Send me** the external IP. (Ours: `35.200.160.80`.)
+- **Check:** the VM shows a green tick in *VM instances*.
 
 **Part 4: DNS and the first build (me, with you)**
 1. At Name.com → your domain → *Manage DNS records*, add two `A` records pointing at the server's IP: `@` and `www`.
@@ -65,16 +58,15 @@ The ₹0 route for a student without a credit card. Do the parts in order; each 
 - **Check:** <https://dnschecker.org> shows your domain pointing at the server IP, and the repository's *Actions* tab shows a green *Release* run.
 
 **Part 5: set up the server (about 10 minutes)**
-1. Connect from this computer, in PowerShell: `ssh -i C:\path\to\your-key.pem azureuser@SERVER_IP`
+1. Connect: *Compute Engine → VM instances* → **SSH** next to `pune-explorer`. A terminal opens in the browser; no key file needed.
 2. On the server, run the commands below, using your own domain and email. The script installs Docker, adds swap memory, turns on the firewall and automatic security updates, and creates `/opt/pune-explorer/.env.production` with new random secrets.
    ```
    curl -fsSL https://raw.githubusercontent.com/LEVELING2108/PuneTourGuide/research/deploy/server-setup.sh -o setup.sh
-   BRANCH=research bash setup.sh puneexplorer.app you@example.com
+   BRANCH=research bash setup.sh puneexplorer.dev you@example.com
    ```
+   It also creates the database password and switches on the Postgres container (`COMPOSE_PROFILES=db`). With a managed database instead, run it with `DB=managed` and set `DATABASE_URL` yourself.
 3. **Back up the medical-data key:** run `grep MEDICAL_ENC_KEY /opt/pune-explorer/.env.production` and copy the value into your password manager. Without it, saved medical info can never be read again.
-4. **Connect the database:** `nano /opt/pune-explorer/.env.production`, set the line below, then save with Ctrl+O, Enter, Ctrl+X. If your password has symbols like `@ # % /`, write them as `%40 %23 %25 %2F`.
-   `DATABASE_URL=postgresql://pune:YOUR_DB_PASSWORD@YOUR-DB-NAME.postgres.database.azure.com:5432/pune_explorer?schema=public&sslmode=require&connection_limit=5`
-5. Log out (`exit`), log back in, then start everything and load the real data:
+4. Log out (`exit`), log back in, then start everything and load the real data:
    ```
    cd /opt/pune-explorer
    docker compose --env-file .env.production pull
