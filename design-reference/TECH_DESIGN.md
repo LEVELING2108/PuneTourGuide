@@ -358,7 +358,7 @@ All Tour API routes live under `/api/v1`. Success responses are `{ "data": …, 
 | GET `/routes` | public | Curated routes (peth walk, fort trip…) |
 | GET `/itinerary?date=` | user | Days with ordered stops |
 | POST `/itinerary/stops` | user | Add a place to a day |
-| PATCH `/itinerary/stops/:id` | user | Mark done (→ XP + stamp), change time/order |
+| PATCH `/itinerary/stops/:id` | user | Mark done (→ XP + stamp), change time, or move to another day (`dayId`) |
 | DELETE `/itinerary/stops/:id` | user | Remove a stop |
 | POST `/itinerary/optimize` | user | Reorder a day, returns `minutesSaved` |
 | POST `/itinerary/from-route/:routeId` | user | Copy a curated route into a day |
@@ -441,10 +441,11 @@ Each feature below follows the same path: **what the user does → what the app 
 
 ### 9.3 Day plans, Optimise, XP and stamps
 
-- Add to plan: `POST /itinerary/stops {placeId, date}` creates the day if needed and appends with the next `order`.
+- Add to plan: `POST /itinerary/stops {placeId, dayId?}` appends to the chosen day with the next `order` (no `dayId` → today's day, else Day 1). The app asks which day in a bottom sheet (Explore “+”, Place “Add to plan”, route tickets) and starts on the Plan tab last viewed or added to.
+- Move a stop: `PATCH /itinerary/stops/:id {dayId}` appends it to the end of that day, re-timed after the last stop (409 `ALREADY_IN_PLAN` if the place is already on that day).
 - Tick visited: `PATCH /itinerary/stops/:id {done:true}` runs **one transaction**: set `done`, add the place's XP to the user, create a `Stamp` (unique per user+place, so re-ticking never double-awards). Response includes new XP and whether a stamp was collected, so the app can play the stamp animation.
 - Optimise: server fetches an OSRM `table` (travel times between all stops of the day), keeps the first stop fixed, runs nearest-neighbour then **2-opt** improvement (fast for under 15 stops), saves the new `order` values in one transaction, returns `minutesSaved`. If already optimal, `minutesSaved = 0` and the app shows “Already the best order”.
-- Curated route tickets: `POST /itinerary/from-route/:id` copies the route's stops into a day.
+- Curated route tickets: `POST /itinerary/from-route/:id {dayId?}` copies the route's stops into the chosen day.
 
 ### 9.4 Map layers and directions
 

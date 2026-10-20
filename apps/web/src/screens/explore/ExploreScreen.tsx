@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { itineraryApi } from '../../api/itinerary';
 import { miscApi, type PlaceQuery } from '../../api/places';
+import { useDayPicker } from '../../components/DayPicker';
 import { Themed } from '../../components/Themed';
 import { nearParam, useCurrentPosition } from '../../features/location';
 import { CHIP_FILTERS, placeRow, usePlaces, useRequireLogin, useRoutes, useTogglePlan } from '../../features/places';
@@ -60,6 +61,7 @@ export default function ExploreScreen() {
   const places = usePlaces(query);
   const routes = useRoutes();
   const togglePlan = useTogglePlan();
+  const picker = useDayPicker();
   const toast = useFlash(2700);
   const [slide, setSlide] = useState(0);
 
@@ -101,12 +103,14 @@ export default function ExploreScreen() {
       addLabel: added ? `Remove ${pl.name} from plan` : `Add ${pl.name} to plan`,
       addBg: added ? p.primary : p.surface,
       addBd: added ? p.primary : p.addBd,
-      toggle: () => {
+      toggle: async () => {
         if (!requireLogin()) return;
+        const dayId = added ? undefined : await picker.ask('Add to which day?', pl.name);
+        if (dayId === null) return;
         togglePlan.mutate(
-          { id: pl.id, planStopId: pl.planStopId },
+          { id: pl.id, planStopId: pl.planStopId, dayId },
           {
-            onSuccess: (r) => toast.flash(r.added ? `${pl.name} added to ${r.weekday}` : `${pl.name} removed from your plan`),
+            onSuccess: (r) => toast.flash(r.added ? `${pl.name} added to ${r.dayText}` : `${pl.name} removed from your plan`),
             onError: (e) => toast.flash(e.message),
           }
         );
@@ -123,8 +127,10 @@ export default function ExploreScreen() {
       load: async (e: React.MouseEvent) => {
         e.preventDefault();
         if (!r || !requireLogin()) return;
+        const dayId = await picker.ask('Load into which day?', `${deccan ? (r.deccanTitle ?? r.title) : r.title} · ${r.stopCount} stops`);
+        if (dayId === null) return;
         try {
-          await itineraryApi.fromRoute(r.id);
+          await itineraryApi.fromRoute(r.id, dayId);
           await qc.invalidateQueries({ queryKey: ['itinerary'] });
           await qc.invalidateQueries({ queryKey: ['places'] });
           navigate('/plan');
@@ -158,5 +164,10 @@ export default function ExploreScreen() {
       if (i !== slide) setSlide(i);
     },
   };
-  return <Themed classic={ExploreView} deccan={DeccanExploreView} v={v} />;
+  return (
+    <>
+      <Themed classic={ExploreView} deccan={DeccanExploreView} v={v} />
+      {picker.sheet}
+    </>
+  );
 }

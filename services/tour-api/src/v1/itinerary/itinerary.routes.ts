@@ -15,9 +15,9 @@ const addStopSchema = z
   .strict();
 
 const patchStopSchema = z
-  .object({ done: z.boolean().optional(), time: time.optional() })
+  .object({ done: z.boolean().optional(), time: time.optional(), dayId: z.number().int().positive().optional() })
   .strict()
-  .refine((b) => b.done !== undefined || b.time !== undefined, 'Nothing to change');
+  .refine((b) => b.done !== undefined || b.time !== undefined || b.dayId !== undefined, 'Nothing to change');
 
 const optimiseSchema = z.object({ dayId: z.number().int().positive().optional() }).strict();
 
@@ -37,7 +37,7 @@ router.patch(
   '/stops/:id',
   validate({ params: idParam, body: patchStopSchema }),
   handle(async (_req, res) => {
-    const { params, body } = input<{ done?: boolean; time?: string }, unknown, { id: number }>(res);
+    const { params, body } = input<{ done?: boolean; time?: string; dayId?: number }, unknown, { id: number }>(res);
     return ok(res, await itineraryService.updateStop(userId(res), params.id, body));
   })
 );
