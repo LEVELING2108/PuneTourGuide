@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# One-time setup of a fresh Ubuntu 22.04/24.04 server (e.g. Azure for Students B1s) for Pune Explorer.
+# One-time setup of a fresh Ubuntu 22.04/24.04 server (e.g. Google Cloud e2-medium) for Pune Explorer.
 # Run it on the server as your normal (sudo) user:
 #
 #   curl -fsSL https://raw.githubusercontent.com/LEVELING2108/PuneTourGuide/research/deploy/server-setup.sh -o setup.sh
 #   BRANCH=research bash setup.sh your-domain.app you@example.com
 #
 # BRANCH=research runs the work-in-progress images (:research); main (the default) runs :latest.
+# DB=self (the default) runs Postgres + PostGIS on this server; DB=managed leaves DATABASE_URL for you to set.
 #
 # It installs Docker, adds swap (small servers), opens only ports 22/80/443, turns on automatic
 # security updates, puts the compose files in /opt/pune-explorer and creates .env.production
@@ -16,6 +17,7 @@ DOMAIN="${1:?Usage: bash setup.sh <domain> <email-for-https-certificates>}"
 ACME_EMAIL="${2:?Usage: bash setup.sh <domain> <email-for-https-certificates>}"
 REPO="${REPO:-LEVELING2108/PuneTourGuide}"
 BRANCH="${BRANCH:-main}"
+DB="${DB:-self}"
 TAG="$([ "$BRANCH" = main ] && echo latest || echo research)"
 OWNER_LC="$(echo "${REPO%%/*}" | tr '[:upper:]' '[:lower:]')"
 DIR=/opt/pune-explorer
@@ -66,8 +68,10 @@ if [ ! -f .env.production ]; then
   rand_b64() { openssl rand -base64 "$1" | tr -d '\n=+/' ; }
   RAM_MB=$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo)
   REDIS_PASSWORD="$(rand_b64 32)"
-  set_env() { # key value
-    if grep -q "^$1=" .env.production; then sed -i "s|^$1=.*|$1=$2|" .env.production; else echo "$1=$2" >> .env.production; fi
+  set_env() { # key value ("&", "|" and "\" in the value are kept literally)
+    local v
+    v=$(printf '%s' "$2" | sed 's/[&|\\]/\\&/g')
+    if grep -q "^$1=" .env.production; then sed -i "s|^$1=.*|$1=$v|" .env.production; else printf '%s=%s\n' "$1" "$2" >> .env.production; fi
   }
   set_env DOMAIN "$DOMAIN"
   set_env ACME_EMAIL "$ACME_EMAIL"
@@ -80,6 +84,13 @@ if [ ! -f .env.production ]; then
   set_env MEDICAL_ENC_KEY "$(openssl rand -hex 32)"
   set_env REDIS_PASSWORD "$REDIS_PASSWORD"
   set_env REDIS_URL "redis://:$REDIS_PASSWORD@redis:6379"
+  if [ "$DB" = self ]; then
+    # Postgres + PostGIS on this server (profile "db"); hex so the password needs no escaping in the URL
+    DB_PASSWORD="$(openssl rand -hex 24)"
+    set_env COMPOSE_PROFILES db
+    set_env POSTGRES_PASSWORD "$DB_PASSWORD"
+    set_env DATABASE_URL "postgresql://pune:$DB_PASSWORD@postgres:5432/pune_explorer?schema=public&connection_limit=10&pool_timeout=10"
+  fi
   if [ "$RAM_MB" -lt 1800 ]; then
     # Small server: one process each, capped memory
     set_env NODE_OPTIONS "--max-old-space-size=256"
@@ -106,5 +117,6 @@ Next (docs/LAUNCH_SETUP.md, "Free student setup"):
        docker compose --env-file .env.production up -d
        docker compose --env-file .env.production run --rm app node dist/seed.js --force
        docker compose --env-file .env.production --profile jobs run --rm refresh-help
+       docker compose --env-file .env.production run --rm app node dist/scripts/link-google-places.js   # once GOOGLE_MAPS_SERVER_KEY is set
   3. Open https://${DOMAIN}
 EOF
