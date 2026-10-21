@@ -42,9 +42,10 @@ jobs:
           if [ "${GITHUB_REF_NAME}" = "main" ]; then echo "CHANNEL=latest" >> "$GITHUB_ENV"; else echo "CHANNEL=research" >> "$GITHUB_ENV"; fi
 
       # VITE_* values are public (they end up in the browser); they come from repository Variables.
-      # build-push-action mis-parses its build-args list when a value is empty (or contains a double
-      # quote): that line swallows the ones after it. So list only the settings that are set, and
-      # keep HTML (the map credit) out entirely; the app derives the credit itself.
+      # build-push-action mis-splits a multi-line build-args list (an empty value, a quote or a stray
+      # line break makes one setting swallow the next ones), so the settings travel as ONE base64 line
+      # that the Dockerfile decodes into apps/web/.env.production.local. HTML (the map credit) stays
+      # out: the app derives the credit itself.
       - name: Build settings (only the ones that are set)
         id: args
         env:
@@ -55,15 +56,17 @@ jobs:
           VITE_CONTACT_EMAIL: ${{ vars.VITE_CONTACT_EMAIL }}
           VITE_RELEASE: ${{ github.sha }}
         run: |
-          list=""
+          file=""
           for k in VITE_MAP_TILE_URL VITE_MAP_TILES_OFFLINE VITE_GOOGLE_CLIENT_ID VITE_SENTRY_DSN VITE_CONTACT_EMAIL VITE_RELEASE; do
-            v="${!k}"
+            # Trim spaces and line breaks pasted around a value
+            v="$(printf '%s' "${!k}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
             if [ -z "$v" ]; then echo "$k: not set"; continue; fi
-            case "$v" in *'"'*) echo "::error::$k contains a double quote, which the build cannot pass on"; exit 1;; esac
-            echo "$k: set"
-            list+="$k=$v"$'\n'
+            case "$v" in *$'\n'*|*$'\r'*) echo "::error::$k has a line break inside it; fix the repository Variable"; exit 1;; esac
+            case "$v" in *'"'*|*'$'*) echo "::error::$k contains \" or \$, which the build cannot pass on"; exit 1;; esac
+            echo "$k: set (${#v} characters)"
+            file+="$k=$v"$'\n'
           done
-          { echo 'list<<END_OF_ARGS'; printf '%s' "$list"; echo 'END_OF_ARGS'; } >> "$GITHUB_OUTPUT"
+          echo "settings=$(printf '%s' "$file" | base64 -w0)" >> "$GITHUB_OUTPUT"
 
       - name: App (web + Tour API)
         uses: docker/build-push-action@v6
@@ -74,7 +77,25 @@ jobs:
           tags: ${{ env.APP_IMAGE }}:${{ env.CHANNEL }},${{ env.APP_IMAGE }}:${{ github.sha }}
           cache-from: type=gha,scope=app
           cache-to: type=gha,mode=max,scope=app
-          build-args: ${{ steps.args.outputs.list }}
+          build-args: VITE_SETTINGS_B64=${{ steps.args.outputs.settings }}
+
+      # Catch a setting that didn't make it into the website before anyone gets a broken build
+      - name: Check the website got its settings
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          VITE_CONTACT_EMAIL: ${{ vars.VITE_CONTACT_EMAIL }}
+        run: |
+          img="${APP_IMAGE}:${{ github.sha }}"
+          for k in VITE_GOOGLE_CLIENT_ID VITE_CONTACT_EMAIL; do
+            v="$(printf '%s' "${!k}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+            [ -z "$v" ] && continue
+            # The value must appear exactly, followed by a closing quote (not glued to another setting)
+            if docker run --rm --entrypoint sh -e P1="${v}\"" -e P2="${v}\`" -e P3="${v}'" "$img" -c 'grep -rqF -e "$P1" -e "$P2" -e "$P3" /repo/apps/web/dist/assets'; then
+              echo "$k: in the website"
+            else
+              echo "::error::$k is missing or garbled in the built website"; exit 1
+            fi
+          done
 
       - name: Safety service
         uses: docker/build-push-action@v6
