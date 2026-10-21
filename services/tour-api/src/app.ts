@@ -74,6 +74,9 @@ app.use(
     // the origin (never the path or query) on cross-site requests. Helmet's default sends nothing,
     // which would blank the map.
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    // Sign in with Google opens a popup that hands the sign-in back to this page. Helmet's default
+    // (same-origin) cuts that link, so the popup stays blank after the user allows access.
+    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
   })
 );
 

@@ -37,4 +37,9 @@ describe('security headers', () => {
     const res = await request(app).get('/api/health');
     expect(res.headers['referrer-policy']).toBe('strict-origin-when-cross-origin');
   });
+
+  it("let Google's sign-in popup hand the sign-in back to the page", async () => {
+    const res = await request(app).get('/api/health');
+    expect(res.headers['cross-origin-opener-policy']).toBe('same-origin-allow-popups');
+  });
 });
