@@ -78,12 +78,11 @@ Everything below is chosen so one person can build, run and demo it on free tier
 
 | Need | Choice | Notes |
 | --- | --- | --- |
-| Database | PostgreSQL 16 + PostGIS **(have)** | Hosted: Neon or Supabase (both support PostGIS) |
-| Cache, queues, pub/sub | Redis **(have)** | Hosted: Upstash |
-| Frontend hosting | Vercel **(have)** | Preview deploy per branch |
-| API hosting | Render or Railway | RoadSoS already has `render.yaml` |
+| Database | PostgreSQL 16 + PostGIS **(have)** | In Docker on the server (`COMPOSE_PROFILES=db`); a managed PostGIS works too |
+| Cache, queues, pub/sub | Redis **(have)** | In Docker on the server |
+| Hosting | Google Cloud VM (Mumbai, e2-medium) + Docker Compose | Caddy (HTTPS) serves the web app and API from one domain; `deploy/` |
 | Local dev | Docker Compose **(have)** | Postgres+PostGIS, Redis, both APIs |
-| CI/CD | GitHub Actions | Lint, test, migrate, deploy |
+| CI/CD | GitHub Actions + GitHub Container Registry | Lint, test, build images, deploy to the server |
 | Errors | Sentry (free tier) | Frontend + both backends |
 
 ### Third-party services
@@ -139,7 +138,7 @@ Two backends, one database, one Redis. The **Tour API** owns accounts and everyt
 
 ```
                  ┌────────────── Clients ────────────────┐
-                 │ React PWA (Vercel)  ·  Android (Capacitor)    │
+                 │ React PWA (web)  ·  Android (Capacitor)       │
                  └──────┬──────────────────────┬──────────┘
                         │ HTTPS REST (JWT)       │ HTTPS + WSS (no login)
           ┌─────────────▼─────────┐   ┌────────▼───────────────┐
@@ -416,7 +415,7 @@ Generate an OpenAPI spec from the Zod schemas and serve Swagger UI at `/api/docs
 
 ### Security checklist
 
-- `helmet`, CORS allowlist (your Vercel domain + Capacitor origin), HTTPS only, `compression`.
+- `helmet`, CORS allowlist (your domain + Capacitor origin), HTTPS only, `compression`.
 - Zod validation on every body, query and param; reject unknown fields.
 - Rate limits stored in Redis: login, OTP, SOS alert, test alert, password reset.
 - Raw SQL only through Prisma's tagged `$queryRaw`.
@@ -594,16 +593,15 @@ The riskiest pieces are SMS delivery, shake detection across phones and offline 
 ### CI/CD (GitHub Actions)
 
 1. On every push: install, lint, type-check, unit tests, API tests (Postgres + Redis service containers), build.
-2. On `main`: `prisma migrate deploy` against production, deploy tour-api and safety to Render, frontend to Vercel.
-3. Vercel preview deploy for every branch, so you can check each phase on your phone.
+2. On `research` and `main` (`.github/workflows/release.yml`): build the app image (web + Tour API) and the safety image, push them to GitHub Container Registry (`:research` / `:latest`), then, when `DEPLOY_ENABLED`, update the server over SSH. Migrations run when the app container starts (`prisma migrate deploy`).
+3. Work goes into `research` through pull requests, so each merge can be checked on a phone at the live domain before `research` is merged into `main`.
 
 ### Environments
 
 | Env | Frontend | APIs | Data |
 | --- | --- | --- | --- |
 | Local | Vite dev server | Docker Compose | Local PostGIS + Redis, seed data, SMS/email in console mode |
-| Preview | Vercel preview | Render (free) | Neon branch database |
-| Production | Vercel | Render / Railway | Neon or Supabase + Upstash |
+| Live (`research`, then `main`) | Built into the app image, served by Caddy | Docker Compose on the Google Cloud VM | Postgres + PostGIS and Redis in Docker on the same VM; daily disk snapshots |
 
 ### Environment variables
 
@@ -614,7 +612,7 @@ The riskiest pieces are SMS delivery, shake detection across phones and offline 
 - **Logs:** pino JSON logs with a request id; mask phones, never log secrets.
 - **Errors:** Sentry on web and both APIs, with release tags from CI.
 - **Health:** `/health` on both services; Render health checks restart a stuck instance.
-- **Backups:** Neon/Supabase point-in-time restore; export the seed data to the repo.
+- **Backups:** daily snapshots of the server disk (Google Cloud snapshot schedule); the seed data lives in the repo.
 - **Cold starts:** free Render instances sleep; the app should show cached data and keep SOS working (112 is always local), and a small cron can ping `/health` during your demo.
 
 ## 13. Risks, decisions and open questions
