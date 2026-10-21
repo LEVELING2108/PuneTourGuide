@@ -28,7 +28,11 @@ ARG VITE_SENTRY_DSN
 ARG VITE_CONTACT_EMAIL
 ARG VITE_SENTRY_ENVIRONMENT=production
 ARG VITE_RELEASE
-RUN npm run build -w apps/web \
+# CI passes the website settings as one base64 line (KEY=value per line inside): build-push-action
+# mis-splits multi-line build args, gluing settings together. Decoded into the file Vite reads for
+# production builds. Settings passed one by one above (local docker compose builds) still win.
+ARG VITE_SETTINGS_B64
+RUN if [ -n "$VITE_SETTINGS_B64" ]; then printf '%s' "$VITE_SETTINGS_B64" | base64 -d > apps/web/.env.production.local; fi  && npm run build -w apps/web \
  && npm run prisma:generate -w services/tour-api \
  && npm run build -w services/tour-api \
  && npm prune --omit=dev
