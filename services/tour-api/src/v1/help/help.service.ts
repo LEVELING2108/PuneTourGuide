@@ -2,12 +2,26 @@ import { overpass, type OsmElement } from '../../clients/overpass';
 import { getCachedData, invalidateCache, setCachedData } from '../../services/cacheService';
 import { helpRepo, type HelpNear, type HelpRow } from './help.repository';
 
-/** Pune city, PCMC and the fort/ghat trails around it (Sinhagad, Torna, Lonavala, Rajgad). */
-export const HELP_BBOX = { south: 18.2, west: 73.4, north: 18.85, east: 74.2 };
+type Box = { south: number; west: number; north: number; east: number };
+
+/**
+ * Where help is imported nightly, so the app answers from our own data instead of a slow live
+ * lookup: all of Pune district plus the highways out of it that travellers drive.
+ */
+export const HELP_AREAS: Box[] = [
+  // Pune district with Lonavala, Bhimashankar, Junnar, Baramati, Indapur, and Mahabaleshwar/Panchgani just south
+  { south: 17.85, west: 73.3, north: 19.45, east: 75.2 },
+  // Mumbai–Pune Expressway / NH48 down the ghat to Khopoli and Panvel
+  { south: 18.7, west: 73.0, north: 19.15, east: 73.3 },
+  // NH48 south to Satara
+  { south: 17.55, west: 73.85, north: 17.85, east: 74.15 },
+  // NH60 north to Sangamner, Sinnar and Nashik
+  { south: 19.45, west: 73.65, north: 20.05, east: 74.3 },
+];
 const CATEGORIES = ['hospital', 'clinic', 'police', 'fire_station'] as const;
 
-const inBox = (lat: number, lng: number) =>
-  lat >= HELP_BBOX.south && lat <= HELP_BBOX.north && lng >= HELP_BBOX.west && lng <= HELP_BBOX.east;
+export const inHelpArea = (lat: number, lng: number) =>
+  HELP_AREAS.some((b) => lat >= b.south && lat <= b.north && lng >= b.west && lng <= b.east);
 
 /** First phone number of an OSM phone tag, kept only if it is dialable. */
 export function cleanPhone(raw: string | undefined): string | null {
@@ -88,15 +102,16 @@ const rank = (h: HelpNear) =>
 
 export const helpService = {
   /**
-   * Import every named hospital, clinic, police and fire station in the Pune area from
+   * Import every named hospital, clinic, police and fire station in the help areas from
    * OpenStreetMap, drop points OSM no longer has, then refresh each place's nearest hospital.
    */
   async refresh(log: (msg: string) => void = () => undefined) {
-    const { south, west, north, east } = HELP_BBOX;
-    const q = `[out:json][timeout:180];nwr["amenity"~"^(${CATEGORIES.join('|')})$"](${south},${west},${north},${east});out center tags;`;
+    const amenity = `["amenity"~"^(${CATEGORIES.join('|')})$"]`;
+    const boxes = HELP_AREAS.map((b) => `nwr${amenity}(${b.south},${b.west},${b.north},${b.east});`).join('');
+    const q = `[out:json][timeout:300];(${boxes});out center tags;`;
     const seenAt = new Date();
     log('Querying OpenStreetMap (Overpass)…');
-    const elements = await overpass(q);
+    const elements = await overpass(q, 330_000);
     const rows = new Map<string, HelpRow>();
     for (const el of elements) {
       const r = toHelpRow(el);
@@ -119,7 +134,7 @@ export const helpService = {
 
   /** Help near a point. `covered` is false outside the imported area, so the app can ask the live service. */
   async near(lat: number, lng: number, radiusKm: number, limit: number) {
-    if (!inBox(lat, lng)) return { covered: false, items: [] as HelpNear[] };
+    if (!inHelpArea(lat, lng)) return { covered: false, items: [] as HelpNear[] };
     const key = `tour:help:${lat.toFixed(2)},${lng.toFixed(2)}:${radiusKm}:${limit}`;
     const cached = await getCachedData<{ covered: boolean; items: HelpNear[] }>(key);
     if (cached) return cached;
