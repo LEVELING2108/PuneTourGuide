@@ -19,8 +19,7 @@ The ₹0 route for a student without a credit card. Do the parts in order; each 
 | Piece | Service | Cost |
 | --- | --- | --- |
 | Domain | Name.com `.app` / `.dev` (GitHub Student Pack) | free, 1 year |
-| Server (app, safety service, Redis, HTTPS) | Azure for Students, B1s Linux server | free 12 months |
-| Database (PostgreSQL + PostGIS) | Azure Database for PostgreSQL, B1ms | free 12 months |
+| Server (app, safety service, Postgres + PostGIS, Redis, HTTPS) | Google Cloud, e2-medium VM in Mumbai | free-trial credit (ours lasts until 2027-01-19) |
 | Building and deploying | GitHub Actions + GitHub Container Registry | free (public repository) |
 | Crash reports | Sentry (Student Pack) | free |
 | Map tiles | MapTiler free plan | free (non-commercial) |
@@ -30,11 +29,11 @@ The ₹0 route for a student without a credit card. Do the parts in order; each 
 
 **Part 1: accounts that take time to approve (do these first)**
 1. **GitHub Student Developer Pack:** <https://education.github.com/pack> → *Get student benefits*. Sign in with GitHub, add your college email, and upload your college ID card. Approval takes from a few hours to a few days.
-2. **Azure for Students:** <https://azure.microsoft.com/free/students> → *Start free*. Sign in with your **college email**. No card is needed. You get $100 of credit and the free services for 12 months.
+2. **Google Cloud:** <https://console.cloud.google.com> → start the free trial and create a project (ours: `pune-tour-guide`). The trial credit pays for the server.
 3. **Twilio:** <https://www.twilio.com/try-twilio>. Sign up, verify your own mobile number, then:
    - Under *Phone Numbers → Verified Caller IDs*, also verify the phone of each person you'll test SOS with. A trial account can only text verified numbers.
    - Get a trial number from the console.
-- **Check:** you can log in to the Azure portal (<https://portal.azure.com>) and see "Azure for Students" under Subscriptions.
+- **Check:** the Google Cloud Console shows your project and the free-trial credit under *Billing*.
 
 **Part 2: once the Student Pack is approved**
 1. **Domain:** on the Student Pack page, open **Name.com** → claim the free domain, and pick a `.app` or `.dev` name (e.g. `puneexplorer.app`). **Send me** the name.
@@ -42,7 +41,7 @@ The ₹0 route for a student without a credit card. Do the parts in order; each 
 
 **Part 3: the server (Google Cloud Console)**
 
-We moved from Azure to Google Cloud on 2026-10-21: the Azure for Students policy only allowed regions outside India and no free size could be deployed there. Postgres + PostGIS runs on the same server in Docker (no separate database service to pay for); the disk's daily snapshots are its backups.
+Postgres + PostGIS runs on the same server in Docker (no separate database service to pay for); the disk's daily snapshots are its backups.
 1. **Create the server:** *Compute Engine → VM instances → Create instance* (enable the Compute Engine API if asked).
    - Name `pune-explorer`, region **asia-south1 (Mumbai)**, zone any, machine **E2 → e2-medium** (2 vCPU, 4 GB), provisioning **Standard** (not Spot).
    - *OS and storage → Change*: **Ubuntu 24.04 LTS, x86/64** (not Arm64, not Minimal), **Balanced persistent disk, 30 GB**. Keep the default snapshot schedule (daily backups).
@@ -93,13 +92,13 @@ We moved from Azure to Google Cloud on 2026-10-21: the Azure for Students policy
 
 **Part 7: automatic deploys and monitoring**
 1. **Automatic deploys:** in GitHub → *Settings → Secrets and variables → Actions*:
-   - **Secrets:** `DEPLOY_HOST` (server IP), `DEPLOY_USER` (`azureuser`), `DEPLOY_SSH_KEY` (the whole text of your `.pem` file).
+   - **Secrets:** `DEPLOY_HOST` (server IP), `DEPLOY_USER` (your user name on the server: the part before `@pune-explorer` in the SSH window), `DEPLOY_SSH_KEY` (the whole text of a private key whose public half you added under *Compute Engine → VM instances → pune-explorer → Edit → SSH keys*).
    - **Variable:** `DEPLOY_ENABLED=true`.
    - From then on, every merge into `research` (and later `main`) updates the server by itself.
 2. **Uptime alerts:** a free [UptimeRobot](https://uptimerobot.com) monitor on `https://your-domain/api/v1/health/ready`, alerting your email or phone (step 21).
 - **Check:** push any small change; within about 10 minutes the *Release* run is green and the site shows it.
 
-**After the free year:** Azure for Students renews each year while you're a student. Otherwise, move the same setup to any server with Docker (step 20 A). The domain renewal costs about ₹1,000–1,500 a year.
+**When the trial credit ends:** keep the VM on paid billing (about $33 a month), downsize it, or move the same setup to any server with Docker (step 20). The domain renewal costs about ₹1,000–1,500 a year.
 
 ---
 
@@ -153,13 +152,13 @@ We moved from Azure to Google Cloud on 2026-10-21: the Azure for Students policy
 - **Verify:** open the site on a phone. The browser shows a padlock, the location prompt appears on Home, and logging in survives a reload.
 
 ### ☐ 2. PostgreSQL with PostGIS
-**Needed by:** all data. Use a managed Postgres that supports the PostGIS extension (for example Neon, Supabase, AWS RDS, or Render Postgres).
+**Needed by:** all data. Ours runs in Docker on the server (`COMPOSE_PROFILES=db`, set up by `server-setup.sh`; migrations run when the app starts). A managed Postgres with the PostGIS extension also works: set `DATABASE_URL` to it.
 - Settings: `DATABASE_URL=postgresql://…?schema=public&connection_limit=10&pool_timeout=10`. Keep instances × `connection_limit` under the server's maximum connections, or use PgBouncer (`&pgbouncer=true`).
 - Run `npm run prisma:deploy`. This applies every migration, including the PostGIS indexes and triggers.
 - **Verify:** `GET https://your-domain/api/v1/health/ready` returns `"db": true`.
 
 ### ☐ 3. Redis
-**Needed by:** shared rate limits, caches, the SMS queue, live tracking across servers. Required as soon as you run more than one API or safety instance. Managed options include Upstash and Redis Cloud.
+**Needed by:** shared rate limits, caches, the SMS queue, live tracking across servers. Required as soon as you run more than one API or safety instance. Ours runs in Docker on the server, password-protected.
 - Settings: `REDIS_URL` on **both** the Tour API and the safety service (the same Redis).
 - **Verify:** `/api/v1/health/ready` returns `"redis": true`. Then log in with a wrong password 6 times: the 6th attempt returns "Too many attempts", even when retried against a second instance.
 
@@ -172,7 +171,7 @@ We moved from Azure to Google Cloud on 2026-10-21: the Azure for Students policy
 - **Verify:** the API starts with `NODE_ENV=production`. Save medical info in the app, reload, and it reads back. In the database, `MedicalProfile.allergiesEnc` is unreadable text.
 
 ### ☐ 5. Safety service (live tracking, help fallback)
-**Needed by:** SOS live location, the tracking page contacts open, Share live trip, and Help nearby outside the imported area. This is the RoadSoS FastAPI app in `services/safety` (Dockerfile and `render.yaml` included).
+**Needed by:** SOS live location, the tracking page contacts open, Share live trip, and Help nearby outside the imported area. This is the RoadSoS FastAPI app in `services/safety` (it has its own Dockerfile).
 - Settings (safety): `REDIS_URL`, `ALLOWED_ORIGINS=https://your-domain`, and optionally `OVERPASS_ENDPOINTS`.
 - Settings (web build): `VITE_SAFETY_URL=https://safety.your-domain`, or serve it under `/safety` on the same domain through your proxy, with WebSocket upgrade enabled for `/safety/ws/`.
 - **Verify:**
@@ -315,9 +314,8 @@ We moved from Azure to Google Cloud on 2026-10-21: the Azure for Students policy
   - The user sees "Something went wrong", and the response's `X-Request-Id` matches the log line.
 
 ### ☐ 20. Deploy
-Pick **one** of these. Both serve the app and API from one domain and keep SOS working if the API is down.
+One server with Docker serves the app and API from one domain and keeps SOS working if the API is down. Ours is the Google Cloud VM from section 0; any Linux server with 2 GB RAM or more works the same way.
 
-**A. One server with Docker (VPS, e.g. DigitalOcean, Hetzner, AWS Lightsail; 2 GB RAM or more)**
 1. Point your domain's DNS `A` record at the server and install Docker.
 2. `deploy/server-setup.sh` prepares the server, as in section 0 Part 5. Or copy `deploy/.env.production.example` to `.env.production` and fill it in; every line names its step here.
 3. Ready-made images: `docker compose --env-file .env.production pull && docker compose --env-file .env.production up -d`. To build on the server instead (2 GB+ RAM, whole repository): `docker compose -f deploy/docker-compose.prod.yml -f deploy/docker-compose.build.yml --env-file deploy/.env.production up -d --build`.
@@ -327,22 +325,14 @@ Pick **one** of these. Both serve the app and API from one domain and keep SOS w
 6. More traffic: `... up -d --scale app=3`. Caddy spreads requests, and Redis keeps rate limits and live tracking shared.
 7. Backups: use a managed Postgres, or schedule `pg_dump` off the server. Keep `MEDICAL_ENC_KEY` separately (step 4).
 
-**B. Render (managed; what TECH_DESIGN suggests)**
-1. Render → New → Blueprint → this repository. `render.yaml` creates the app, the safety service, Redis, Postgres and the nightly import job.
-2. Fill in the values it asks for. The safety service gets its own address, so set:
-   - `VITE_SAFETY_URL` and `SAFETY_PUBLIC_URL` to `https://<safety>.onrender.com`,
-   - `ALLOWED_ORIGINS` on the safety service to the app's URL.
-3. Add your domain in the app service's settings and set `APP_URL` / `CORS_ORIGINS` to it.
-4. Use paid instances: free ones sleep, and an SOS alert must never wait for a cold start.
-
-- **Verify (either way):**
+- **Verify:**
   - `https://your-domain/api/v1/health/ready` returns `{"status":"ready","db":true,"redis":true}`.
   - `curl -I https://your-domain/` shows `Strict-Transport-Security`, `Content-Security-Policy` and `X-Request-Id`.
   - Open the site on a phone, sign up, reload: still signed in.
   - The browser console shows no "Content Security Policy" errors on Home, Map and Log in.
 
 ### ☐ 21. Logs and uptime
-- Logs are JSON on standard output: your host's log viewer (Render Logs, `docker compose logs app`) is enough to start. Search by `reqId` to follow one request. Set `LOG_LEVEL=info` (or `warn` to reduce volume).
+- Logs are JSON on standard output: your host's log viewer (`docker compose logs app`) is enough to start. Search by `reqId` to follow one request. Set `LOG_LEVEL=info` (or `warn` to reduce volume).
 - Add a free uptime monitor (UptimeRobot, Better Stack) on `https://your-domain/api/v1/health/ready` and `https://your-domain/safety/health`, alerting your phone.
 - Lines to set alerts on: `"No SMS provider configured"`, `"sms queue unavailable"`, `"Redis unavailable"`, and any `"level":50` (error) spike.
 - **Verify:** stop the safety service for two minutes: the uptime monitor alerts you, and SOS in the app still dials 112.
