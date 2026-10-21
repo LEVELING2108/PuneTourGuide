@@ -50,6 +50,56 @@ def test_emergency_services_requires_longitude():
         assert res.status_code == 422
 
 
+def test_slow_mirrors_get_time_but_the_answer_comes_within_the_deadline(monkeypatch):
+    """A slow mirror is waited for, but never past the overall deadline: then an honest empty answer."""
+    import asyncio
+    import time
+
+    import httpx
+
+    timeouts = []
+
+    async def slow_post(url, data=None, timeout=None):
+        timeouts.append(timeout)
+        await asyncio.sleep(timeout)
+        raise httpx.ReadTimeout("slow mirror")
+
+    monkeypatch.setattr(main.http_client, "post", slow_post)
+    monkeypatch.setattr(main, "MIRROR_TIMEOUT_S", 0.6)
+    monkeypatch.setattr(main, "LIVE_DEADLINE_S", 3.0)
+    monkeypatch.setattr(main, "MIRROR_STATUS", {u: {"fails": 0, "last_error": None} for u in main.OVERPASS_ENDPOINTS})
+    with TestClient(main.app) as client:
+        started = time.monotonic()
+        res = client.get("/api/emergency-services", params={"lat": 17.0, "lng": 74.0})
+        took = time.monotonic() - started
+    assert res.json() == {"services": [], "status": "unavailable"}
+    assert took < 3.5
+    assert timeouts and max(timeouts) <= 0.6
+
+
+def test_a_mirror_that_answers_slowly_is_still_used(monkeypatch):
+    import asyncio
+
+    hospital = {"type": "node", "id": 1, "lat": 17.01, "lon": 74.0, "tags": {"amenity": "hospital", "name": "Civil Hospital", "emergency": "yes"}}
+
+    class Res:
+        status_code = 200
+
+        def json(self):
+            return {"elements": [hospital]}
+
+    async def slow_post(url, data=None, timeout=None):
+        await asyncio.sleep(0.3)
+        return Res()
+
+    monkeypatch.setattr(main.http_client, "post", slow_post)
+    with TestClient(main.app) as client:
+        res = client.get("/api/emergency-services", params={"lat": 17.0, "lng": 74.0})
+    body = res.json()
+    assert body["status"] == "ok"
+    assert body["services"][0]["name"] == "Civil Hospital"
+
+
 def test_publisher_location_reaches_watchers_cleaned():
     with TestClient(main.app) as client:
         sid, token = new_session(client)

@@ -1,6 +1,7 @@
 /**
- * Import Pune's hospitals, clinics, police and fire stations from OpenStreetMap and refresh
- * each place's nearest hospital. Safe to re-run; run nightly in production (cron / scheduled job).
+ * Import hospitals, clinics, police and fire stations in Pune district and along the highways
+ * out of it (help.service HELP_AREAS) from OpenStreetMap, and refresh each place's nearest
+ * hospital. Safe to re-run; run nightly in production (cron / scheduled job).
  *
  *   npm run refresh:help
  */

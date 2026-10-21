@@ -119,6 +119,11 @@ OVERPASS_ENDPOINTS = [
 ]
 MIRROR_STATUS = {url: {"fails": 0, "last_error": None} for url in OVERPASS_ENDPOINTS}
 
+# Public mirrors often take 10-20 s for a query in India. Give each mirror up to 20 s, but answer
+# within 25 s overall: past that the app shows the 112 button and the help points saved offline.
+MIRROR_TIMEOUT_S = 20.0
+LIVE_DEADLINE_S = 25.0
+
 def get_healthy_endpoint(preferred_idx: int) -> str:
     n = len(OVERPASS_ENDPOINTS)
     for i in range(n):
@@ -309,22 +314,27 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         except asyncio.CancelledError:
             pass
 
-async def fetch_with_failover(query: str, endpoint_idx: int, attempts: int = 3):
-    """Run one Overpass query, moving to the next mirror on failure. Returns (elements, ok)."""
+async def fetch_with_failover(query: str, endpoint_idx: int, deadline: float, attempts: int = 3):
+    """Run one Overpass query, moving to the next mirror on failure, until `deadline`
+    (event-loop time). Returns (elements, ok)."""
+    loop = asyncio.get_running_loop()
     for attempt in range(min(attempts, len(OVERPASS_ENDPOINTS))):
-        elements = await fetch_parallel(query, endpoint_idx + attempt)
+        left = deadline - loop.time()
+        if left < 2:
+            break
+        elements = await fetch_parallel(query, endpoint_idx + attempt, min(MIRROR_TIMEOUT_S, left))
         if elements is not None:
             return elements, True
     return [], False
 
 
-async def fetch_parallel(query: str, endpoint_idx: int):
+async def fetch_parallel(query: str, endpoint_idx: int, timeout: float = MIRROR_TIMEOUT_S):
     """One attempt against one mirror: the element list, or None if the mirror failed."""
     endpoint = get_healthy_endpoint(endpoint_idx)
 
     try:
         logger.info(f"Querying {endpoint}...")
-        response = await http_client.post(endpoint, data={"data": query}, timeout=8.0)
+        response = await http_client.post(endpoint, data={"data": query}, timeout=timeout)
         
         if response.status_code == 200:
             MIRROR_STATUS[endpoint]["fails"] = 0
@@ -341,7 +351,7 @@ async def fetch_parallel(query: str, endpoint_idx: int):
     except httpx.TimeoutException:
         MIRROR_STATUS[endpoint]["fails"] += 1
         MIRROR_STATUS[endpoint]["last_error"] = "Timeout"
-        logger.error(f"Error from {endpoint}: Request Timeout (8s)")
+        logger.error(f"Error from {endpoint}: Request Timeout ({timeout:.0f}s)")
         return None
     except httpx.ConnectError:
         MIRROR_STATUS[endpoint]["fails"] += 1
@@ -387,22 +397,26 @@ async def get_emergency_services(
     if cached_data:
         return {"services": json.loads(cached_data)}
 
+    # Overpass stops a query itself just before we would give up on it
+    ql_timeout = int(MIRROR_TIMEOUT_S) - 2
+    deadline = asyncio.get_running_loop().time() + LIVE_DEADLINE_S
+
     # UNIVERSALLY SUPPORTED UNION OVERPASS QUERIES
     queries = [
-        f'[out:json][timeout:10];(node(around:{radius},{lat},{lon})["amenity"~"hospital|clinic|doctors|pharmacy"];way(around:{radius},{lat},{lon})["amenity"~"hospital|clinic|doctors|pharmacy"];);out center;',
-        f'[out:json][timeout:10];(node(around:{radius},{lat},{lon})["amenity"~"police|fire_station"];way(around:{radius},{lat},{lon})["amenity"~"police|fire_station"];node(around:{radius},{lat},{lon})["emergency"~"police|fire_station"];);out center;',
-        f'[out:json][timeout:10];(node(around:{radius},{lat},{lon})["shop"~"car_repair|tyres|car|motorcycle"];way(around:{radius},{lat},{lon})["shop"~"car_repair|tyres|car|motorcycle"];node(around:{radius},{lat},{lon})["emergency"~"towing|technical_rescue"];);out center;'
+        f'[out:json][timeout:{ql_timeout}];(node(around:{radius},{lat},{lon})["amenity"~"hospital|clinic|doctors|pharmacy"];way(around:{radius},{lat},{lon})["amenity"~"hospital|clinic|doctors|pharmacy"];);out center;',
+        f'[out:json][timeout:{ql_timeout}];(node(around:{radius},{lat},{lon})["amenity"~"police|fire_station"];way(around:{radius},{lat},{lon})["amenity"~"police|fire_station"];node(around:{radius},{lat},{lon})["emergency"~"police|fire_station"];);out center;',
+        f'[out:json][timeout:{ql_timeout}];(node(around:{radius},{lat},{lon})["shop"~"car_repair|tyres|car|motorcycle"];way(around:{radius},{lat},{lon})["shop"~"car_repair|tyres|car|motorcycle"];node(around:{radius},{lat},{lon})["emergency"~"towing|technical_rescue"];);out center;'
     ]
 
-    tasks = [fetch_with_failover(q, i) for i, q in enumerate(queries)]
+    tasks = [fetch_with_failover(q, i, deadline) for i, q in enumerate(queries)]
     results_list = await asyncio.gather(*tasks)
     all_elements = [item for elements, _ in results_list for item in elements]
     complete = all(ok for _, ok in results_list)
     
     if not all_elements:
         logger.warning("No parallel results. Trying single robust union query.")
-        agg = f'[out:json][timeout:15];(node(around:{radius},{lat},{lon})["amenity"~"hospital|police|fire_station"];way(around:{radius},{lat},{lon})["amenity"~"hospital|police|fire_station"];);out center;'
-        all_elements, _ = await fetch_with_failover(agg, 0)
+        agg = f'[out:json][timeout:{ql_timeout}];(node(around:{radius},{lat},{lon})["amenity"~"hospital|police|fire_station"];way(around:{radius},{lat},{lon})["amenity"~"hospital|police|fire_station"];);out center;'
+        all_elements, _ = await fetch_with_failover(agg, 0, deadline)
         complete = False
 
     final_results = []

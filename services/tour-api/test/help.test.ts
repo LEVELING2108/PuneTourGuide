@@ -3,7 +3,7 @@ import { prisma } from '../src/lib/prisma';
 import { seedCatalogue } from '../src/seed/run';
 import { invalidateCache } from '../src/services/cacheService';
 import { helpRepo } from '../src/v1/help/help.repository';
-import { cleanPhone, dedupe, toHelpRow } from '../src/v1/help/help.service';
+import { cleanPhone, dedupe, inHelpArea, toHelpRow } from '../src/v1/help/help.service';
 import { api } from './helpers';
 
 describe('OSM → help rows', () => {
@@ -58,6 +58,25 @@ describe('OSM → help rows', () => {
     expect(cleanPhone('020-2612 6000')).toBe('02026126000');
     expect(cleanPhone('call reception')).toBeNull();
     expect(cleanPhone(undefined)).toBeNull();
+  });
+});
+
+describe('help areas imported nightly', () => {
+  it('cover Pune district and the highways out of it, not other cities', () => {
+    const covered = {
+      'Shaniwar Wada': [18.519, 73.855],
+      Lonavala: [18.75, 73.41],
+      Bhimashankar: [19.07, 73.54],
+      Mahabaleshwar: [17.92, 73.66],
+      Baramati: [18.15, 74.58],
+      'Panvel (Expressway)': [18.99, 73.11],
+      Satara: [17.68, 74.0],
+      'Sangamner (NH60)': [19.57, 74.21],
+      Nashik: [20.0, 73.79],
+    };
+    for (const [name, [lat, lng]] of Object.entries(covered)) expect(inHelpArea(lat, lng), name).toBe(true);
+    expect(inHelpArea(19.07, 72.87)).toBe(false); // Mumbai city
+    expect(inHelpArea(16.7, 74.24)).toBe(false); // Kolhapur
   });
 });
 

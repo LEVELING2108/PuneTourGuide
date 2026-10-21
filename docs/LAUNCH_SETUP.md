@@ -181,11 +181,12 @@ Postgres + PostGIS runs on the same server in Docker (no separate database servi
 
 ### ☐ 6. Help points (hospitals, police, fire) from OpenStreetMap
 **Needed by:** Help nearby, each place's nearest hospital, the SOS "nearest trauma care" line, and offline packs.
-- Run `npm run refresh:help` once after deploy, then **nightly** (a Render cron job, a GitHub Actions schedule, or system cron). If the download is broken or partial, the existing data is kept.
+- Run `npm run refresh:help` once after deploy, then **nightly** (`server-setup.sh` adds the cron line). If the download is broken or partial, the existing data is kept.
+- Area: all of Pune district plus the highways out of it (Expressway to Panvel, NH48 to Satara, NH60 to Nashik); `HELP_AREAS` in `services/tour-api/src/v1/help/help.service.ts`. Outside it, the app asks the safety service live, which waits up to 20 s per Overpass server and answers within 25 s.
 - The public Overpass servers are shared and often slow. For reliability, set `OVERPASS_ENDPOINTS` to a paid or self-hosted Overpass instance; the variable is read by both the import and the safety service.
 - **Verify:**
-  - The command prints about 1,300+ points, including roughly 650+ hospitals.
-  - `GET /api/v1/help?near=18.5195,73.8553` lists real hospitals, emergency ones first.
+  - The command prints about 1,800+ points, hospitals the largest group.
+  - `GET /api/v1/help?near=18.5195,73.8553` lists real hospitals, emergency ones first, and so do Lonavala (`18.75,73.41`) and Satara (`17.68,74.0`), each with `"covered":true`.
   - Spot-check 3 hospitals and their phone numbers against Google Maps or a phone call.
 
 ### ☐ 7. Map tiles provider
