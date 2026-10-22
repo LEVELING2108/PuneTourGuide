@@ -509,6 +509,18 @@ Since 2026-10-21 everything except SOS moves to Google Maps Platform (this step:
 - Rules from Google's terms: no Google content is stored or cached (responses are `no-store`; `/api/v1/google` is outside the offline cache; the query cache is memory only); Google data never appears on our non-Google map; "Google Maps" attribution on every Google row.
 - Cost: the server key is restricted to Places + Routes and sent in a header. Daily caps per call kind (`GOOGLE_DAILY_CAPS`, Redis, Pune day) are the hard limit because the console quotas can't be lowered; when reached, or when Google fails, endpoints return `{ available: false, reason }` and the app shows its own data. Plus a ₹1,000/month budget alert.
 
+### 9.14 Trip mode: Start Day N
+
+After planning, the Plan tab's **Start Day N** button (Continue Day N while it runs) opens `/trip`, which walks the traveller through the day.
+- **Run:** `DayRun` (user, day, `startedAt` / `endedAt`, `endReason`, `skipped` stop ids, frozen summary). One running per user (partial unique index), so two taps or two devices share one run; starting another day ends the old one (`replaced`).
+- **Endpoints (auth):** `POST /itinerary/days/:id/start` (start or carry on; 400 `DAY_EMPTY`), `GET /itinerary/run`, `POST /itinerary/runs/:id/skip {stopId, skipped}`, `POST /itinerary/runs/:id/end {reason}`. Visiting reuses the tick (`PATCH /itinerary/stops/:id`), which now also stores `doneAt` and the `xpAwarded` it earned, so the summary counts only what this run did (places, XP, km between visited places, time).
+- **Next stop:** the first stop in the *current* plan order that is neither done nor skipped, so reordering, Optimise, moving or deleting stops mid-trip is safe.
+- **Arrival:** while trip mode or its directions are on screen (paused in the background), the phone's GPS is watched. "You've arrived?" is asked only for the next stop, only with readings better than 50 m, after 30 s nearby, not above ~15 km/h, within 100 m (400 m for forts, hills, lakes, gardens), and once per stop. It never ticks by itself; "I'm here · mark visited" always works.
+- **No signal:** the run, a copy of the day's stops and a queue of ticks / skips / end live on the phone (`pe_trip`); actions apply at once and are sent in order when back online (repeats are harmless; refused ones are dropped). Ending offline shows a phone-side summary.
+- **Forgotten trips:** a run ends itself (`auto`) after 14 hours or once the trip day rolls over at 4 AM Pune time; the live share that Start Day turned on ends with the day.
+- **Live share, honestly:** starting the day offers to share the live trip with the emergency contacts. `GET /share-trip/:sessionId/delivery` reports each text as sent / failed / sending (`TripShare.smsLogIds`), and **Send the link yourself** opens the phone's share sheet with the follow link, so nobody is told "shared" when a text did not go.
+- **Google Maps hand-off:** per stop, and "Open the whole day" (remaining stops in order; Google's link takes 10, so a longer day opens the next 10).
+
 ## 10. Frontend architecture
 
 ### Routing

@@ -10,5 +10,8 @@ export const sosApi = {
 
   activeTrip: () => api<{ sessionId: string; startedAt: string } | null>('/share-trip'),
   startTrip: (sessionId: string) => api<{ sessionId: string; contactsNotified: number; sharedWith: string[] }>('/share-trip', { body: { sessionId } }),
+  /** Who really got the live-trip text (an SMS trial only reaches verified numbers). */
+  tripDelivery: (sessionId: string) =>
+    api<{ sessionId: string; contacts: { name: string; status: 'queued' | 'sent' | 'failed' }[] }>(`/share-trip/${sessionId}/delivery`),
   stopTrip: (sessionId: string) => api<{ stopped: boolean }>(`/share-trip/${sessionId}`, { method: 'DELETE', keepalive: true }),
 };

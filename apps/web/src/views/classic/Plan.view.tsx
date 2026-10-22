@@ -93,6 +93,19 @@ export default function PlanView({ v }: ViewProps) {
               </div>
             </>
           )}
+          {v.showStart && (
+            <>
+              <button className="rise d4 tap" onClick={v.startDay} aria-busy={v.startBusy} style={{ height: "60px", borderRadius: "30px", border: "none", background: "var(--primary)", color: "var(--surface)", fontFamily: "var(--font-body)", display: "flex", alignItems: "center", gap: "12px", padding: "0 20px 0 22px", cursor: "pointer", boxShadow: "0 16px 30px -18px var(--primary)" }}>
+                <span style={{ flex: "1", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "2px" }}>
+                  <span style={{ fontSize: "16px", fontWeight: "600" }}>{v.startLabel}</span>
+                  <span style={{ fontSize: "12.5px", opacity: "0.8" }}>{v.startMeta}</span>
+                </span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </button>
+            </>
+          )}
           <div className="rise d4" style={{ background: "var(--ink)", color: "var(--bg)", borderRadius: "22px", padding: "16px 18px", display: "flex", alignItems: "center", gap: "14px" }}>
             <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "3px" }}>
               <div style={{ fontSize: "14.5px", fontWeight: "600" }}>Share live trip</div>

@@ -2,12 +2,13 @@ import { randomUUID } from 'crypto';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Capture every SMS instead of sending it.
-vi.mock('../src/clients/sms', () => ({
+vi.mock('../src/clients/sms', async (orig) => ({
+  ...(await orig<typeof import('../src/clients/sms')>()),
   sendSms: vi.fn(async () => ({ provider: 'test', providerId: 'p1' })),
   smsProvider: () => 'test',
 }));
 
-import { sendSms, type Sms } from '../src/clients/sms';
+import { sendSms, SmsError, type Sms } from '../src/clients/sms';
 import { encrypt } from '../src/lib/crypto';
 import { prisma } from '../src/lib/prisma';
 import { invalidateCache } from '../src/services/cacheService';
@@ -209,6 +210,30 @@ describe('live trip sharing', () => {
     const stop = await api().delete(`/api/v1/share-trip/${sessionId}`).set(auth(u.token));
     expect(stop.body.data.stopped).toBe(true);
     expect((await api().get('/api/v1/share-trip').set(auth(u.token))).body.data).toBeNull();
+  });
+
+  it('says honestly who got the link and who did not', async () => {
+    const u = await signUp({ name: 'Sourav' });
+    await addContact(u.token, { name: 'Aai', relation: 'Parent', phone: '9876543210' });
+    await addContact(u.token, { name: 'Rahul', relation: 'Friend', phone: '9876500000' });
+    // e.g. an SMS trial account that only reaches verified numbers
+    sent.mockImplementation(async (sms: Sms) => {
+      if (sms.to.endsWith('500000')) throw new SmsError('Twilio 21608: unverified number', true);
+      return { provider: 'test', providerId: 'p1' };
+    });
+    const sessionId = randomUUID();
+    await api().post('/api/v1/share-trip').set(auth(u.token)).send({ sessionId });
+    const res = await api().get(`/api/v1/share-trip/${sessionId}/delivery`).set(auth(u.token));
+    expect(res.status).toBe(200);
+    expect(res.body.data.contacts).toEqual(
+      expect.arrayContaining([
+        { name: 'Aai', status: 'sent' },
+        { name: 'Rahul', status: 'failed' },
+      ])
+    );
+    const other = await signUp();
+    expect((await api().get(`/api/v1/share-trip/${sessionId}/delivery`).set(auth(other.token))).status).toBe(404);
+    sent.mockImplementation(async () => ({ provider: 'test', providerId: 'p1' }));
   });
 
   it('is for logged-in users only', async () => {

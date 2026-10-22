@@ -1,11 +1,17 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import type { Stop } from '../../api/itinerary';
+import { useConfirm } from '../../components/Confirm';
 import { Themed } from '../../components/Themed';
 import { useAccountRequired } from '../../features/account';
+import { useContacts } from '../../features/contacts';
 import { kmText, placeTone, usePlan } from '../../features/places';
 import { namesText } from '../../features/live';
 import { defaultDayId, useMoveStop, useOptimiseDay, useTickStop } from '../../features/plan';
 import { isNoContacts, useTripShare } from '../../features/trip';
+import { startButton } from '../../features/tripLogic';
+import { useStartDay, useTripRun, useTripStore } from '../../features/tripMode';
+import { useLiveStore } from '../../features/live';
 import { usePalette } from '../../lib/palette';
 import { useFlash } from '../../lib/useFlash';
 import { useIsLoggedIn } from '../../stores/auth';
@@ -33,6 +39,10 @@ export default function PlanScreen() {
   const move = useMoveStop();
   const toast = useFlash(3100);
   const share = useTripShare();
+  const startDay = useStartDay();
+  const contacts = useContacts();
+  const { ask, sheet } = useConfirm();
+  const [starting, setStarting] = useState(false);
   // The tab you last viewed or added to stays open when you come back from Explore
   const { dayId: remembered, setDay } = usePlanStore();
 
@@ -44,6 +54,9 @@ export default function PlanScreen() {
   const otherDay = days[idx === 0 ? 1 : 0];
   const list = day?.stops ?? [];
   const earned = list.filter((s) => s.done).reduce((n, s) => n + s.place.xp, 0);
+  const { run } = useTripRun(plan.data);
+  const start = startButton(day, run);
+  const runningHere = start.running;
   const left = list.filter((s) => !s.done).length;
 
   const stops = list.map((s, i) => {
@@ -142,6 +155,43 @@ export default function PlanScreen() {
           else toast.flash(err instanceof Error ? err.message : 'Could not start sharing');
         });
     },
+    // Trip mode (TECH_DESIGN §9.14): Start Day N → /trip
+    showStart: start.show,
+    startLabel: start.label,
+    startMeta: start.meta,
+    startBusy: starting ? 'true' : 'false',
+    startDay: async () => {
+      if (!day || starting) return;
+      if (runningHere) return navigate('/trip');
+      if (run && run.dayId !== day.id) {
+        const yes = await ask({ title: `End Day ${run.dayNumber} and start Day ${day.day}?`, detail: `Day ${run.dayNumber} is still under way.`, confirm: `Start Day ${day.day}` });
+        if (!yes) return;
+      }
+      setStarting(true);
+      try {
+        await startDay(day);
+        let notice: string | null = null;
+        const names = (contacts.data ?? []).map((c) => c.name);
+        if (names.length && !useLiveStore.getState().trip) {
+          const yes = await ask({
+            title: `Share your live trip with ${namesText(names)}?`,
+            detail: 'They get a link to follow you on a map until you end the day. You can stop any time.',
+            confirm: 'Share live trip',
+          });
+          if (yes) {
+            await share
+              .toggle()
+              .then((r) => useTripStore.getState().set({ shareSession: r.on ? useLiveStore.getState().trip?.sessionId ?? null : null }))
+              .catch(() => (notice = "Live sharing didn't start. Tap Share below to try again."));
+          }
+        }
+        navigate('/trip', { state: notice ? { notice } : null });
+      } catch (err) {
+        toast.flash(err instanceof Error ? err.message : 'Could not start the day');
+      } finally {
+        setStarting(false);
+      }
+    },
     optLabel: optimise.isPending ? 'Optimising…' : 'Optimise',
     optBusy: optimise.isPending ? 'true' : 'false',
     showToast: toast.show,
@@ -160,5 +210,10 @@ export default function PlanScreen() {
       });
     },
   };
-  return <Themed classic={PlanView} deccan={DeccanPlanView} v={v} />;
+  return (
+    <>
+      <Themed classic={PlanView} deccan={DeccanPlanView} v={v} />
+      {sheet}
+    </>
+  );
 }

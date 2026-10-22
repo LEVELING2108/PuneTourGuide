@@ -277,6 +277,15 @@ Postgres + PostGIS runs on the same server in Docker (no separate database servi
 - Settings (Tour API): `EMAIL_API_KEY`, `EMAIL_FROM="Pune Explorer <no-reply@your-domain>"`.
 - **Verify:** Log in → Forgot? → your email → the email arrives (check that it isn't in spam). The link opens `/reset`, you set a new password, other phones are signed out, and the old link no longer works.
 
+### ☐ 17c. Trip mode (Start Day N)
+**Needed by:** the Plan tab's Start Day button and the trip screen. Nothing new to set up: it uses the database (migration `20261022120000_trip_mode`, applied when the app starts), the SMS provider for the live-share texts (step 9), and the safety service for live location (step 5).
+- **Verify:**
+  - Add 2–3 places to Day 1, tap **Start Day 1**: the trip screen shows "Stop 1 of 3"; reload the page and it carries on.
+  - Walk to the first place and wait half a minute with the app open: "You've arrived?" appears; Mark visited → next stop, XP and stamp.
+  - Turn on aeroplane mode, tick a place: "saved, will sync"; turn it off: the plan shows it ticked within half a minute.
+  - Start sharing with a contact whose number your SMS account can't reach (e.g. not verified on a Twilio trial): the trip screen says **Couldn't text** and offers **Send the link yourself**.
+  - End day: the summary shows places, XP, km and time.
+
 ### ☐ 17b. Google Maps: photos, ratings and side quests
 **Needed by:** the real photo, "★ rating · Open now" line, Side quests and Food nearby on each place, and the side-quest pages. Without it, places show as before (no photo, our own food list).
 - Settings (Tour API): `GOOGLE_MAPS_SERVER_KEY`, and optionally `GOOGLE_DAILY_CAPS`. Google's own quotas can't be lowered on a trial account, so these caps (per day, Pune time, counted in Redis) are the hard limit; when one is reached the app hides Google extras until the next day. Defaults stay inside the India free amounts (7,000 a month each for details, nearby search and photos).

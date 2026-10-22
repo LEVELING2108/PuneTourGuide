@@ -102,6 +102,12 @@ Medical info is sensitive: store encrypted at rest, only return it to the owner,
 | ✅ Plan: Move to Day N | Moves a stop to the end of the other day, re-timed | EXISTS PATCH stop (EXTEND with `dayId`) |
 | ✅ Add to plan / route ticket: day picker | Sheet asks Day 1 or Day 2; starts on the Plan tab last viewed or added to | EXISTS `POST /itinerary/stops`, `from-route` (`dayId`) |
 | ✅ Plan: Optimise | Calls optimise, shows “saves N min” from response | EXISTS `/itinerary/optimize` (EXTEND to return time saved) |
+| ✅ Plan: Start Day N / Continue Day N | Starts the day (asks to share the live trip with contacts) → Trip mode | **NEW** `POST /itinerary/days/:id/start`, `GET /itinerary/run` |
+| ✅ Trip: next stop | Stop N of M, distance, "usually closed now", weak-signal note; Directions (back → Trip), Google Maps | current plan order; `googleDirectionsUrl` |
+| ✅ Trip: arrival / I'm here / Skip / Undo | Asks "You've arrived?" near the next stop (good GPS, 30 s, not driving past); tick → stamp + XP; skip and undo | EXISTS PATCH stop; **NEW** `POST /itinerary/runs/:id/skip` |
+| ✅ Trip: live share status | Each contact: Sent / Couldn't text / Sending; Send the link yourself (share sheet) | **NEW** `GET /share-trip/:sessionId/delivery` |
+| ✅ Trip: open the whole day in Google Maps | Remaining stops in order (next 10 on a long day) | — (URL hand-off) |
+| ✅ Trip: End day / Day summary | Places, XP, km, time; Start the next day; ends itself after the day; works offline (syncs later) | **NEW** `POST /itinerary/runs/:id/end` |
 | ✅ Plan: Share live trip toggle | Creates tracking session, shares link to contacts | RoadSoS `create-session` + **NEW** `POST /api/share-trip` (sends link by SMS/WhatsApp intent) |
 | ✅ Place: Save | Toggle save, toast | EXISTS |
 | ✅ Place: Add to plan / Directions / nearest hospital | | EXISTS / OSRM / emergency-services |

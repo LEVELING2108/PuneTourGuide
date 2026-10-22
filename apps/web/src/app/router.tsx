@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate, Outlet, useLocation } from 'react-router';
 import { useShakeToSos } from '../features/shake';
 import { useTripGuard } from '../features/trip';
+import { useTripSync } from '../features/tripMode';
 import { isOnboarded } from '../stores/onboarding';
 import HomeScreen from '../screens/home/HomeScreen';
 import SosScreen from '../screens/sos/SosScreen';
@@ -27,6 +28,7 @@ const PlaceScreen = lazy(() => import('../screens/place/PlaceScreen'));
 const ProfileTabScreen = lazy(() => import('../screens/settings/ProfileTabScreen'));
 const SettingsScreen = lazy(() => import('../screens/settings/SettingsScreen'));
 const VisitedScreen = lazy(() => import('../screens/settings/VisitedScreen'));
+const TripScreen = lazy(() => import('../screens/trip/TripScreen'));
 const SpotScreen = lazy(() => import('../screens/place/SpotScreen'));
 const EditProfileScreen = lazy(() => import('../screens/settings/EditProfileScreen'));
 const ContactsScreen = lazy(() => import('../screens/settings/ContactsScreen'));
@@ -47,6 +49,7 @@ function RootLayout() {
   const location = useLocation();
   useShakeToSos();
   useTripGuard();
+  useTripSync();
   const firstHit = !launched;
   launched = true;
   if (firstHit && location.pathname === '/' && !isOnboarded()) {
@@ -82,6 +85,7 @@ export const router = createBrowserRouter([
       { path: '/map', element: <MapScreen /> },
       { path: '/directions/:stopId?', element: <NavigationScreen /> },
       { path: '/plan', element: <PlanScreen /> },
+      { path: '/trip', element: <TripScreen /> },
       { path: '/place/:id?', element: <PlaceScreen /> },
       { path: '/sos', element: <SosScreen /> },
       { path: '/track/:sessionId', element: <TrackScreen /> },
