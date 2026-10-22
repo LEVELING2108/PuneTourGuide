@@ -1,7 +1,9 @@
 import { decrypt } from '../../lib/crypto';
 import { conflict, forbidden, notFound } from '../../lib/errors';
+import { maskPhone } from '../../lib/phone';
 import { helpRepo } from '../help/help.repository';
 import { safeSms, sosSms, trackUrl, tripSms } from '../notify/messages';
+import { notifyRepo } from '../notify/notify.repository';
 import { enqueueSms } from '../notify/sms.queue';
 import { sosRepo } from './sos.repository';
 
@@ -99,9 +101,24 @@ export const sosService = {
     } catch {
       throw conflict('SESSION_TAKEN', 'Start sharing again');
     }
-    await enqueueSms(userId, sender.contacts.map((c) => tripSms(c, sender.name, sessionId)));
-    await sosRepo.setTripNotified(trip.id, sender.contacts.length);
+    const logIds = await enqueueSms(userId, sender.contacts.map((c) => tripSms(c, sender.name, sessionId)));
+    await sosRepo.setTripNotified(trip.id, sender.contacts.length, logIds);
     return { sessionId, contactsNotified: sender.contacts.length, sharedWith: sender.contacts.map((c) => c.name) };
+  },
+
+  /**
+   * Who really got the live-trip link: each text's delivery status (queued / sent / failed), so the
+   * app never says "shared" when a text did not go (e.g. an SMS trial that only reaches verified numbers).
+   */
+  async tripDelivery(userId: number, sessionId: string) {
+    const trip = await sosRepo.tripBySession(userId, sessionId);
+    if (!trip) throw notFound('TRIP_NOT_FOUND', 'That live share was not found');
+    const [sender, logs] = await Promise.all([sosRepo.sender(userId), notifyRepo.deliveries(trip.smsLogIds)]);
+    const names = new Map((sender?.contacts ?? []).map((c) => [maskPhone(c.phone), c.name]));
+    return {
+      sessionId,
+      contacts: logs.map((l) => ({ name: names.get(l.toMasked) ?? l.toMasked, status: l.status as 'queued' | 'sent' | 'failed' })),
+    };
   },
 
   async stopTrip(userId: number, sessionId: string) {

@@ -1,10 +1,14 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useParams, useSearchParams } from 'react-router';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { routingApi, type RouteStep, type TravelMode } from '../../api/routing';
 import type { MapView } from '../../components/map/MapCanvas';
 import { destinationPin, mePin } from '../../components/map/pins';
 import { Themed } from '../../components/Themed';
+import { ArrivalSheet } from '../../components/TripArrival';
+import { useTripWatch } from '../../features/tripWatch';
+import { nextStop } from '../../features/tripLogic';
+import { useTripActions, useTripStore } from '../../features/tripMode';
 import { isMedical, useHelpNearby } from '../../features/help';
 import { namesText, useLiveStore } from '../../features/live';
 import { useCurrentPosition, useWatchPosition } from '../../features/location';
@@ -63,6 +67,15 @@ export default function NavigationScreen() {
     if (qLat && qLng) return { lat: qLat, lng: qLng, name: (params.get('name') ?? 'Destination').slice(0, 80) };
     return null;
   }, [place.data, qLat, qLng, params]);
+
+  // Directions opened from trip mode: back to the trip, and ask on arrival there too
+  const tripRun = useTripStore((st) => st.run);
+  const tripDay = useTripStore((st) => st.day);
+  const inTrip = params.get('trip') === '1' && !!tripRun;
+  const tripNext = inTrip && tripDay ? nextStop(tripDay.stops, tripRun.skipped) : null;
+  const tripWatch = useTripWatch(tripNext);
+  const tripActions = useTripActions();
+  const navigate = useNavigate();
 
   const [mode, setMode] = useState<TravelMode>(params.get('mode') === 'auto' ? 'auto' : 'walk');
   const watch = useWatchPosition();
@@ -225,6 +238,23 @@ export default function NavigationScreen() {
       .filter(Boolean)
       .join(' · '),
     infoDot: liveTrip ? '#2FA58A' : '#C8321C',
+    endHref: inTrip ? '/trip' : '/plan',
+    endLabel: inTrip ? 'Back to trip' : 'End directions',
   };
-  return <Themed classic={NavigationView} deccan={DeccanNavigationView} v={v} />;
+  const arrivedStop = tripWatch.arrived;
+  return (
+    <>
+      <Themed classic={NavigationView} deccan={DeccanNavigationView} v={v} />
+      {arrivedStop && (
+        <ArrivalSheet
+          stop={arrivedStop}
+          onVisit={() => {
+            tripWatch.dismiss();
+            void tripActions.visit(arrivedStop.id).then(() => navigate('/trip'));
+          }}
+          onLater={tripWatch.dismiss}
+        />
+      )}
+    </>
+  );
 }

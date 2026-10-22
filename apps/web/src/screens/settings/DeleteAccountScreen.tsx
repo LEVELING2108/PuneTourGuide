@@ -44,7 +44,7 @@ export default function DeleteAccountScreen() {
 
   return (
     <div className="scr" style={{ height: '100%', overflowY: 'auto', background: 'var(--bg)', color: 'var(--ink)', fontFamily: 'var(--font-body)' }}>
-      <main style={{ padding: '56px 24px 40px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <main style={{ padding: 'calc(var(--sb) + 12px) 24px 40px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         <Link to="/settings" style={{ alignSelf: 'flex-start', minHeight: 44, padding: '0 16px', borderRadius: 22, border: '1px solid var(--line)', background: 'var(--surface)', color: 'var(--ink)', display: 'flex', alignItems: 'center', textDecoration: 'none', fontSize: 15 }}>
           ← Back
         </Link>

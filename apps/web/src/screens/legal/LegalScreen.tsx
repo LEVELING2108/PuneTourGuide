@@ -11,7 +11,7 @@ export default function LegalScreen({ doc }: { doc: 'terms' | 'privacy' }) {
 
   return (
     <div className="scr" style={{ height: '100%', overflowY: 'auto', background: 'var(--bg)', color: 'var(--ink)', fontFamily: 'var(--font-body)' }}>
-      <main style={{ padding: '56px 24px 48px', maxWidth: 640, margin: '0 auto' }}>
+      <main style={{ padding: 'calc(var(--sb) + 12px) 24px 48px', maxWidth: 640, margin: '0 auto' }}>
         <button
           type="button"
           onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}

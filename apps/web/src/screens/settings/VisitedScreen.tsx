@@ -29,7 +29,7 @@ export default function VisitedScreen() {
     <div className={`scr scr-${theme}-Visited visited`} style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden', background: 'var(--bg)', fontFamily: 'var(--font-body)', color: 'var(--ink)' }}>
       <style href="visited" precedence="screens">{css}</style>
       <div data-scroll="" style={{ position: 'absolute', inset: 0, overflowY: 'auto', overflowX: 'hidden' }}>
-        <div style={{ padding: '56px 24px 40px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
+        <div style={{ padding: 'calc(var(--sb) + 12px) 24px 40px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
           <div className="rise" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <Link to="/profile" aria-label="Back" style={{ width: '44px', height: '44px', borderRadius: '22px', border: '1px solid var(--line)', background: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -67,21 +67,21 @@ export default function SpotScreen() {
     <div className={`scr scr-${theme}-Spot spot`} style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden', background: 'var(--bg)', fontFamily: 'var(--font-body)', color: 'var(--ink)' }}>
       <style href="spot" precedence="screens">{css}</style>
       <div data-scroll="" style={{ position: 'absolute', inset: 0, overflowY: 'auto', overflowX: 'hidden' }}>
-        <div style={{ height: '300px', position: 'relative', overflow: 'hidden', background: 'var(--primary)' }}>
+        <div style={{ height: 'calc(var(--sb) + 256px)', position: 'relative', overflow: 'hidden', background: 'var(--primary)' }}>
           {hero && (
             <>
               <img src={googlePhotoUrl(hero, 860)} alt="" decoding="async" onError={() => setFailed((f) => [...f, hero.name])} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
               <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 35%)' }} />
             </>
           )}
-          <Link to="/explore" onClick={back} className="tap" aria-label="Back" style={{ position: 'absolute', top: '54px', left: '20px', width: '44px', height: '44px', borderRadius: '22px', background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Link to="/explore" onClick={back} className="tap" aria-label="Back" style={{ position: 'absolute', top: 'calc(var(--sb) + 12px)', left: '20px', width: '44px', height: '44px', borderRadius: '22px', background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M15 5l-7 7 7 7" />
             </svg>
           </Link>
-          {hero && photoCredit(hero) && <div style={{ position: 'absolute', top: '108px', left: '20px', fontSize: '10.5px', color: 'rgba(255,255,255,0.9)', textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{photoCredit(hero)}</div>}
+          {hero && photoCredit(hero) && <div style={{ position: 'absolute', top: 'calc(var(--sb) + 64px)', left: '20px', fontSize: '10.5px', color: 'rgba(255,255,255,0.9)', textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{photoCredit(hero)}</div>}
           {toast.show && (
-            <div className="toast" role="status" style={{ position: 'absolute', top: '108px', right: '20px', padding: '10px 14px', borderRadius: '14px', background: 'var(--surface)', color: 'var(--ink)', fontSize: '13px', fontWeight: 600, boxShadow: '0 14px 28px -14px rgba(0,0,0,0.5)' }}>
+            <div className="toast" role="status" style={{ position: 'absolute', top: 'calc(var(--sb) + 64px)', right: '20px', padding: '10px 14px', borderRadius: '14px', background: 'var(--surface)', color: 'var(--ink)', fontSize: '13px', fontWeight: 600, boxShadow: '0 14px 28px -14px rgba(0,0,0,0.5)' }}>
               {toast.text}
             </div>
           )}

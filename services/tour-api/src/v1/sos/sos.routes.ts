@@ -60,6 +60,13 @@ router.post(
   handle(async (_req, res) => ok(res, await sosService.startTrip(userId(res), input<z.infer<typeof tripSchema>>(res).body.sessionId), undefined, 201))
 );
 
+router.get(
+  '/share-trip/:sessionId/delivery',
+  requireAuth,
+  validate({ params: z.object({ sessionId: uuid }) }),
+  handle(async (_req, res) => ok(res, await sosService.tripDelivery(userId(res), input<unknown, unknown, { sessionId: string }>(res).params.sessionId)))
+);
+
 router.delete(
   '/share-trip/:sessionId',
   requireAuth,

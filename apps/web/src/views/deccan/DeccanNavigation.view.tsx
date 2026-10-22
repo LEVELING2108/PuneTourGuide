@@ -93,7 +93,7 @@ export default function DeccanNavigationView({ v }: ViewProps) {
         )}
         <div style={{ display: "flex", gap: "10px" }}>
           <Link to="/sos" className="tap sos" aria-label="Emergency SOS" style={{ position: "relative", width: "56px", height: "56px", borderRadius: "28px", background: "#C8321C", color: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12.5px", fontWeight: "700", letterSpacing: "0.08em", textDecoration: "none", flexShrink: "0" }}>SOS</Link>
-          <Link to="/plan" className="tap" style={{ flex: "1", height: "56px", borderRadius: "28px", background: "var(--ink)", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>End directions</Link>
+          <Link to={v.endHref} className="tap" style={{ flex: "1", height: "56px", borderRadius: "28px", background: "var(--ink)", color: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>{v.endLabel}</Link>
         </div>
       </div>
     </div>

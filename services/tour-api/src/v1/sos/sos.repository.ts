@@ -36,7 +36,8 @@ export const sosRepo = {
   createTrip: (data: { userId: number; sessionId: string }) => prisma.tripShare.create({ data }),
   tripBySession: (userId: number, sessionId: string) => prisma.tripShare.findFirst({ where: { userId, sessionId } }),
   activeTrip: (userId: number) => prisma.tripShare.findFirst({ where: { userId, endedAt: null }, orderBy: { startedAt: 'desc' } }),
-  setTripNotified: (id: number, contactsNotified: number) => prisma.tripShare.update({ where: { id }, data: { contactsNotified } }),
+  setTripNotified: (id: number, contactsNotified: number, smsLogIds: number[]) =>
+    prisma.tripShare.update({ where: { id }, data: { contactsNotified, smsLogIds } }),
   endTrips: (userId: number, sessionId?: string) =>
     prisma.tripShare.updateMany({ where: { userId, endedAt: null, ...(sessionId ? { sessionId } : {}) }, data: { endedAt: new Date() } }),
 };

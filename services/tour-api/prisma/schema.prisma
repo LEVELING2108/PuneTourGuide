@@ -105,6 +105,7 @@ model User {
   passwordResets  PasswordReset[]
   sosEvents       SosEvent[]
   tripShares      TripShare[]
+  dayRuns         DayRun[]
   smsMessages     SmsMessage[]
   avatar          Avatar?
 }
@@ -128,6 +129,7 @@ model ItineraryDay {
   userId Int?
   user   User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
   stops  ItineraryStop[]
+  runs   DayRun[]
 }
 
 model ItineraryStop {
@@ -141,12 +143,40 @@ model ItineraryStop {
   itineraryDayId Int
   tags           Json
   done           Boolean      @default(false)
+  /// When it was ticked visited (null when not done): trip mode counts what a run achieved
+  doneAt         DateTime?
+  /// XP that ticking this stop earned (0 when the place's stamp was already collected)
+  xpAwarded      Int          @default(0)
   order          Int          @default(0)
   placeId        Int?
   itineraryDay   ItineraryDay @relation(fields: [itineraryDayId], references: [id], onDelete: Cascade)
   place          Place?       @relation(fields: [placeId], references: [id], onDelete: SetNull)
 
   @@index([itineraryDayId, order])
+}
+
+/// One "Start Day N" trip (trip mode). At most one running per user (partial unique index in the
+/// migration); ended by the user, on finishing the day, by starting another day, or automatically
+/// once stale. The summary is frozen at the end so trip history survives plan edits.
+model DayRun {
+  id            Int           @id @default(autoincrement())
+  userId        Int
+  dayId         Int?
+  /// Day number when started (kept if the day is later removed)
+  dayNumber     Int
+  startedAt     DateTime      @default(now())
+  endedAt       DateTime?
+  /// user | complete | replaced | auto
+  endReason     String?
+  /// Stop ids skipped during this run
+  skipped       Int[]         @default([])
+  placesVisited Int?
+  xpEarned      Int?
+  km            Float?
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  day           ItineraryDay? @relation(fields: [dayId], references: [id], onDelete: SetNull)
+
+  @@index([userId, endedAt])
 }
 
 /// Curated route (peth walk, fort trip) that can be copied into a day plan
@@ -287,6 +317,8 @@ model TripShare {
   userId           Int
   sessionId        String    @unique
   contactsNotified Int       @default(0)
+  /// Delivery-log rows of the texts sent for this share, so the app can say who really got the link
+  smsLogIds        Int[]     @default([])
   startedAt        DateTime  @default(now())
   endedAt          DateTime?
   user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -30,10 +30,13 @@ export function toStopDto(s: StopWithPlace) {
           weakSignal: p.weakSignal,
           xp: p.xp,
           visitMinutes: p.visitMinutes,
+          hours: p.hours || null,
+          opensAt: p.opensAt,
+          closesAt: p.closesAt,
           hospital: p.nearestHospitalName ? { name: p.nearestHospitalName, km: round1(p.nearestHospitalKm) } : null,
         }
       : // Legacy stop that never matched a catalogue place
-        { id: null, name: s.name, nameMr: s.name_mr, category: null, kind: null, area: null, lat: null, lng: null, weakSignal: false, xp: 30, visitMinutes: null, hospital: null },
+        { id: null, name: s.name, nameMr: s.name_mr, category: null, kind: null, area: null, lat: null, lng: null, weakSignal: false, xp: 30, visitMinutes: null, hours: null, opensAt: null, closesAt: null, hospital: null },
   };
 }
 

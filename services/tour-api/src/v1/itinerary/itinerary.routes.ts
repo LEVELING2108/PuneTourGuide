@@ -5,6 +5,7 @@ import { optimiseLimit } from '../../middleware/limits';
 import { requireAuth, userId } from '../../middleware/requireAuth';
 import { idParam, input, validate } from '../../middleware/validate';
 import { itineraryService } from './itinerary.service';
+import { runService } from './run.service';
 
 const router = Router();
 
@@ -21,7 +22,11 @@ const patchStopSchema = z
 
 const optimiseSchema = z.object({ dayId: z.number().int().positive().optional() }).strict();
 
-const fromRouteSchema = z.object({ dayId: z.number().int().positive().optional() }).strict();
+const skipSchema = z.object({ stopId: z.number().int().positive(), skipped: z.boolean().default(true) }).strict();
+
+const endSchema = z.object({ reason: z.enum(['user', 'complete']).default('user') }).strict();
+
+const fromRouteSchema =z.object({ dayId: z.number().int().positive().optional() }).strict();
 
 router.use(requireAuth);
 
@@ -61,6 +66,33 @@ router.post(
   handle(async (_req, res) => {
     const { params, body } = input<{ dayId?: number }, unknown, { id: number }>(res);
     return ok(res, await itineraryService.fromRoute(userId(res), params.id, body.dayId), undefined, 201);
+  })
+);
+
+// ── Trip mode: Start Day N ───────────────────────────────────────────
+router.post(
+  '/days/:id/start',
+  validate({ params: idParam }),
+  handle(async (_req, res) => ok(res, await runService.start(userId(res), input<unknown, unknown, { id: number }>(res).params.id)))
+);
+
+router.get('/run', handle(async (_req, res) => ok(res, await runService.current(userId(res)))));
+
+router.post(
+  '/runs/:id/skip',
+  validate({ params: idParam, body: skipSchema }),
+  handle(async (_req, res) => {
+    const { params, body } = input<{ stopId: number; skipped: boolean }, unknown, { id: number }>(res);
+    return ok(res, await runService.skip(userId(res), params.id, body.stopId, body.skipped));
+  })
+);
+
+router.post(
+  '/runs/:id/end',
+  validate({ params: idParam, body: endSchema }),
+  handle(async (_req, res) => {
+    const { params, body } = input<{ reason: 'user' | 'complete' }, unknown, { id: number }>(res);
+    return ok(res, await runService.end(userId(res), params.id, body.reason));
   })
 );
 
