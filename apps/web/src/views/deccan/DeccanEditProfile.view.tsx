@@ -33,7 +33,7 @@ export default function DeccanEditProfileView({ v }: ViewProps) {
   return (
     <div className="scr scr-deccan-DeccanEditProfile" style={{ width: "100%", height: "100%", boxSizing: "border-box", position: "relative", overflow: "hidden", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--ink)" }}>
       <style href="scr-deccan-DeccanEditProfile" precedence="screens">{css}</style>
-      <div data-scroll="" data-flex="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden", padding: "56px 24px 32px", display: "flex", flexDirection: "column", gap: "20px" }}>
+      <div data-scroll="" data-flex="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden", padding: "calc(var(--sb) + 12px) 24px 32px", display: "flex", flexDirection: "column", gap: "20px" }}>
         <svg width="390" height="10" viewBox="0 0 390 10" aria-hidden="true" style={{ position: "absolute", top: "0", left: "0", zIndex: "6", pointerEvents: "none" }}>
           <defs>
             <pattern id="zz" width="10" height="10" patternUnits="userSpaceOnUse">

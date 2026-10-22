@@ -41,7 +41,7 @@ export default function PhoneNameView({ v }: ViewProps) {
           <circle cx="220" cy="220" r="180" fill="none" stroke="var(--bg)" />
           <circle cx="220" cy="220" r="215" fill="none" stroke="var(--bg)" strokeDasharray="1 9" />
         </svg>
-        <div style={{ position: "absolute", top: "64px", left: "24px", right: "24px", display: "flex", flexDirection: "column", gap: "22px", color: "var(--bg)" }}>
+        <div style={{ position: "absolute", top: "calc(var(--sb) + 20px)", left: "24px", right: "24px", display: "flex", flexDirection: "column", gap: "22px", color: "var(--bg)" }}>
           <div className="badge" style={{ width: "52px", height: "52px", borderRadius: "26px", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
               <path className="tick" d="M5 12l5 5 9-10" />
@@ -58,7 +58,7 @@ export default function PhoneNameView({ v }: ViewProps) {
           </div>
         </div>
       </div>
-      <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "280px", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "30px 24px 28px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "calc(var(--sb) + 236px)", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "30px 24px 28px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "16px" }}>
         <label className="rise d3" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
           <span style={{ fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)" }}>WHAT SHOULD WE CALL YOU?</span>
           <span className="field" style={{ height: "50px", borderRadius: "14px", border: "1px solid #DDE1DD", background: "var(--surface)", display: "flex", alignItems: "center", padding: "0 16px" }}>

@@ -32,8 +32,8 @@ export default function DeccanHomeView({ v }: ViewProps) {
   return (
     <div className="scr scr-deccan-DeccanHome" style={{ width: "100%", height: "100%", boxSizing: "border-box", position: "relative", overflow: "hidden", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--ink)" }}>
       <style href="scr-deccan-DeccanHome" precedence="screens">{css}</style>
-      <div data-scroll="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden", paddingBottom: "112px" }}>
-        <div style={{ padding: "54px 22px 0", display: "flex", flexDirection: "column", gap: "18px" }}>
+      <div data-scroll="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden", paddingBottom: "calc(var(--sab) + 112px)" }}>
+        <div style={{ padding: "calc(var(--sb) + 12px) 22px 0", display: "flex", flexDirection: "column", gap: "18px" }}>
           <div className="rise d1" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
               <div style={{ fontSize: "14px", fontWeight: "500", color: "var(--muted)" }}>{v.greetingLine}</div>
@@ -144,8 +144,8 @@ export default function DeccanHomeView({ v }: ViewProps) {
           </div>
         </div>
       </div>
-      <Link to="/sos" className="tap sos" aria-label="Emergency SOS" style={{ position: "absolute", right: "22px", bottom: "100px", width: "60px", height: "60px", borderRadius: "30px", background: "#C8321C", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "700", letterSpacing: "0.1em", textDecoration: "none", boxShadow: "0 14px 30px -12px rgba(200,50,28,0.75)" }}>SOS</Link>
-      <nav className="rise d6" aria-label="Main" style={{ position: "absolute", left: "16px", right: "16px", bottom: "20px", height: "64px", borderRadius: "32px", background: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px", boxSizing: "border-box", boxShadow: "0 20px 40px -18px rgba(35,28,23,0.6)", borderTop: "2px solid var(--gold)" }}>
+      <Link to="/sos" className="tap sos" aria-label="Emergency SOS" style={{ position: "absolute", right: "22px", bottom: "calc(var(--sab) + 100px)", width: "60px", height: "60px", borderRadius: "30px", background: "#C8321C", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "700", letterSpacing: "0.1em", textDecoration: "none", boxShadow: "0 14px 30px -12px rgba(200,50,28,0.75)" }}>SOS</Link>
+      <nav className="rise d6" aria-label="Main" style={{ position: "absolute", left: "16px", right: "16px", bottom: "calc(var(--sab) + 20px)", height: "64px", borderRadius: "32px", background: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px", boxSizing: "border-box", boxShadow: "0 20px 40px -18px rgba(35,28,23,0.6)", borderTop: "2px solid var(--gold)" }}>
         <Link to="/" className="tap" style={{ height: "48px", padding: "0 18px", borderRadius: "24px", background: "var(--bg)", color: "var(--ink)", display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", fontWeight: "600", textDecoration: "none" }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />

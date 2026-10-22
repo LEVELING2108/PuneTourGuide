@@ -40,7 +40,7 @@ export default function DeccanMapView({ v }: ViewProps) {
     <div className="scr scr-deccan-DeccanMap" style={{ width: "100%", height: "100%", boxSizing: "border-box", position: "relative", overflow: "hidden", background: "#EDE3D0", fontFamily: "var(--font-body)", color: "var(--ink)" }}>
       <style href="scr-deccan-DeccanMap" precedence="screens">{css}</style>
       {v.mapNode}
-      <div data-scroll="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden", paddingBottom: "112px", pointerEvents: "none", zIndex: "3" }}>
+      <div data-scroll="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden", paddingBottom: "calc(var(--sab) + 112px)", pointerEvents: "none", zIndex: "3" }}>
         <svg width="390" height="10" viewBox="0 0 390 10" aria-hidden="true" style={{ position: "absolute", top: "0", left: "0", zIndex: "6", pointerEvents: "none" }}>
           <defs>
             <pattern id="zz" width="10" height="10" patternUnits="userSpaceOnUse">
@@ -50,7 +50,7 @@ export default function DeccanMapView({ v }: ViewProps) {
           </defs>
           <rect width="390" height="10" fill="url(#zz)" />
         </svg>
-        <div className="rise" style={{ position: "absolute", top: "60px", left: "20px", right: "20px", display: "flex", flexDirection: "column", gap: "10px", zIndex: "3", pointerEvents: "auto" }}>
+        <div className="rise" style={{ position: "absolute", top: "calc(var(--sb) + 16px)", left: "20px", right: "20px", display: "flex", flexDirection: "column", gap: "10px", zIndex: "3", pointerEvents: "auto" }}>
           <label style={{ display: "flex", alignItems: "center", gap: "12px", height: "52px", padding: "0 18px", borderRadius: "26px", background: "var(--surface)", boxShadow: "0 10px 30px -14px rgba(35,28,23,0.35)" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="7" />
@@ -68,7 +68,7 @@ export default function DeccanMapView({ v }: ViewProps) {
           </div>
         </div>
       </div>
-      <div className="sheet" style={{ position: "absolute", left: "0", right: "0", bottom: "0", background: "var(--surface)", borderRadius: "30px 30px 0 0", borderTop: "3px solid var(--gold)", boxShadow: "0 -20px 40px -24px rgba(35,28,23,0.35)", padding: "10px 24px 104px", zIndex: "3" }}>
+      <div className="sheet" style={{ position: "absolute", left: "0", right: "0", bottom: "0", background: "var(--surface)", borderRadius: "30px 30px 0 0", borderTop: "3px solid var(--gold)", boxShadow: "0 -20px 40px -24px rgba(35,28,23,0.35)", padding: "10px 24px calc(var(--sab) + 104px)", zIndex: "3" }}>
         <div style={{ width: "36px", height: "4px", borderRadius: "2px", background: "#D8C6A6", margin: "0 auto 14px" }} />
         {v.sheetPlaces && (
           <>
@@ -212,7 +212,7 @@ export default function DeccanMapView({ v }: ViewProps) {
           </>
         )}
       </div>
-      <nav className="rise" aria-label="Main" style={{ position: "absolute", left: "16px", right: "16px", bottom: "20px", height: "64px", borderRadius: "32px", background: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px", boxSizing: "border-box", boxShadow: "0 20px 40px -18px rgba(35,28,23,0.6)", zIndex: "4" }}>
+      <nav className="rise" aria-label="Main" style={{ position: "absolute", left: "16px", right: "16px", bottom: "calc(var(--sab) + 20px)", height: "64px", borderRadius: "32px", background: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px", boxSizing: "border-box", boxShadow: "0 20px 40px -18px rgba(35,28,23,0.6)", zIndex: "4" }}>
         <Link to="/" className="tap navi" aria-label="Home" style={{ width: "48px", height: "48px", borderRadius: "24px", color: "#B5A795", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />

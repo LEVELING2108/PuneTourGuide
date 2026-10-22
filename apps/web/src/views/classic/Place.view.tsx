@@ -34,7 +34,7 @@ export default function PlaceView({ v }: ViewProps) {
     <div className="scr scr-classic-Place" style={{ width: "100%", height: "100%", boxSizing: "border-box", position: "relative", overflow: "hidden", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--ink)" }}>
       <style href="scr-classic-Place" precedence="screens">{css}</style>
       <div data-scroll="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden" }}>
-        <div style={{ height: "400px", position: "relative", overflow: "hidden", background: "var(--primary)" }}>
+        <div style={{ height: "calc(var(--sb) + 356px)", position: "relative", overflow: "hidden", background: "var(--primary)" }}>
           <div className="zoom" style={{ position: "absolute", inset: "0", background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="420" height="420" viewBox="0 0 420 420" aria-hidden="true" style={{ position: "absolute", right: "-120px", top: "-80px", opacity: "0.16" }}>
               <circle cx="210" cy="210" r="90" fill="none" stroke="var(--bg)" />
@@ -49,20 +49,20 @@ export default function PlaceView({ v }: ViewProps) {
               </>
             )}
           </div>
-          <Link to="/explore" className="tap" aria-label="Back" onClick={v.back} style={{ position: "absolute", top: "56px", left: "20px", width: "44px", height: "44px", borderRadius: "22px", background: "rgba(246,246,243,0.16)", border: "1px solid rgba(246,246,243,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Link to="/explore" className="tap" aria-label="Back" onClick={v.back} style={{ position: "absolute", top: "calc(var(--sb) + 12px)", left: "20px", width: "44px", height: "44px", borderRadius: "22px", background: "rgba(246,246,243,0.16)", border: "1px solid rgba(246,246,243,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 5l-7 7 7 7" />
             </svg>
           </Link>
-          <button className="tap" onClick={v.toggleSave} aria-label={v.saveLabel} aria-pressed={v.savePressed} style={{ position: "absolute", top: "56px", right: "20px", width: "44px", height: "44px", borderRadius: "22px", background: v.saveBg, border: "1px solid rgba(246,246,243,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+          <button className="tap" onClick={v.toggleSave} aria-label={v.saveLabel} aria-pressed={v.savePressed} style={{ position: "absolute", top: "calc(var(--sb) + 12px)", right: "20px", width: "44px", height: "44px", borderRadius: "22px", background: v.saveBg, border: "1px solid rgba(246,246,243,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill={v.saveFill} stroke={v.saveStroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 3h12v18l-6-4-6 4z" />
             </svg>
           </button>
-          {v.heroCredit && <div style={{ position: "absolute", top: "108px", left: "20px", fontSize: "10.5px", color: "rgba(246,246,243,0.85)", textShadow: "0 1px 2px rgba(0,0,0,0.6)" }}>{v.heroCredit}</div>}
+          {v.heroCredit && <div style={{ position: "absolute", top: "calc(var(--sb) + 64px)", left: "20px", fontSize: "10.5px", color: "rgba(246,246,243,0.85)", textShadow: "0 1px 2px rgba(0,0,0,0.6)" }}>{v.heroCredit}</div>}
           {v.showToast && (
             <>
-              <div className="toast" role="status" style={{ position: "absolute", top: "112px", right: "20px", padding: "10px 14px", borderRadius: "14px", background: "var(--bg)", color: "var(--ink)", fontSize: "13px", fontWeight: "600", boxShadow: "0 14px 28px -14px rgba(0,0,0,0.5)" }}>{v.toastText}</div>
+              <div className="toast" role="status" style={{ position: "absolute", top: "calc(var(--sb) + 68px)", right: "20px", padding: "10px 14px", borderRadius: "14px", background: "var(--bg)", color: "var(--ink)", fontSize: "13px", fontWeight: "600", boxShadow: "0 14px 28px -14px rgba(0,0,0,0.5)" }}>{v.toastText}</div>
             </>
           )}
           <div className="rise d2" style={{ position: "absolute", left: "24px", right: "24px", bottom: "44px", color: "var(--bg)", display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -77,7 +77,7 @@ export default function PlaceView({ v }: ViewProps) {
           </div>
         </div>
       </div>
-      <div style={{ position: "absolute", top: "372px", left: "0", right: "0", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "28px 24px 28px", display: "flex", flexDirection: "column", gap: "20px", overflowY: "auto", boxSizing: "border-box" }}>
+      <div style={{ position: "absolute", top: "calc(var(--sb) + 328px)", left: "0", right: "0", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "28px 24px 28px", display: "flex", flexDirection: "column", gap: "20px", overflowY: "auto", boxSizing: "border-box" }}>
         <p className="rise d3" style={{ margin: "0", fontSize: "15px", lineHeight: "1.55", color: "#2C3431" }}>
           {v.description}
         </p>

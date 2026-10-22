@@ -42,7 +42,7 @@ export default function OnboardView({ v }: ViewProps) {
           <circle cx="220" cy="220" r="180" fill="none" stroke="var(--bg)" />
           <circle cx="220" cy="220" r="215" fill="none" stroke="var(--bg)" strokeDasharray="1 9" />
         </svg>
-        <div style={{ position: "absolute", top: "56px", left: "24px", right: "24px", display: "flex", flexDirection: "column", gap: "18px", color: "var(--bg)" }}>
+        <div style={{ position: "absolute", top: "calc(var(--sb) + 12px)", left: "24px", right: "24px", display: "flex", flexDirection: "column", gap: "18px", color: "var(--bg)" }}>
           <div className="rise d1" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ flex: "1", height: "3px", borderRadius: "2px", background: "rgba(246,246,243,0.2)", overflow: "hidden" }}>
               <div className="grow" style={{ height: "3px", background: "var(--bg)", borderRadius: "2px" }} />
@@ -60,7 +60,7 @@ export default function OnboardView({ v }: ViewProps) {
           </div>
         </div>
       </div>
-      <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "214px", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "24px 24px 22px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "13px" }}>
+      <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "calc(var(--sb) + 170px)", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "24px 24px 22px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "13px" }}>
         <button className="rise d3 tap pick" onClick={v.pickContact} style={{ height: "54px", flexShrink: "0", borderRadius: "27px", border: "1px solid #D5DAD6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", color: "var(--ink)", cursor: "pointer" }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <rect x="4" y="3" width="16" height="18" rx="2" />

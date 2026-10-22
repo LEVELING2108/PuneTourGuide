@@ -42,7 +42,7 @@ export default function OtpView({ v }: ViewProps) {
           <circle cx="220" cy="220" r="180" fill="none" stroke="var(--bg)" />
           <circle cx="220" cy="220" r="215" fill="none" stroke="var(--bg)" strokeDasharray="1 9" />
         </svg>
-        <div style={{ position: "absolute", top: "56px", left: "24px", right: "24px", display: "flex", flexDirection: "column", gap: "24px", color: "var(--bg)" }}>
+        <div style={{ position: "absolute", top: "calc(var(--sb) + 12px)", left: "24px", right: "24px", display: "flex", flexDirection: "column", gap: "24px", color: "var(--bg)" }}>
           <Link to="/login" className="rise d1 tap" aria-label="Back" style={{ width: "40px", height: "40px", borderRadius: "20px", border: "1px solid rgba(246,246,243,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 5l-7 7 7 7" />
@@ -61,7 +61,7 @@ export default function OtpView({ v }: ViewProps) {
           </div>
         </div>
       </div>
-      <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "268px", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "30px 24px 28px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "22px" }}>
+      <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "calc(var(--sb) + 224px)", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "30px 24px 28px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "22px" }}>
         <label className="rise d3" style={{ position: "relative", display: "block" }}>
           <span style={{ display: "block", fontSize: "11px", fontWeight: "600", letterSpacing: "0.14em", color: "var(--muted)", marginBottom: "10px" }}>ENTER CODE</span>
           <span style={{ position: "relative", display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", gap: "8px" }}>

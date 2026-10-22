@@ -45,7 +45,7 @@ export default function LoginView({ v }: ViewProps) {
           <circle cx="220" cy="220" r="180" fill="none" stroke="var(--bg)" />
           <circle cx="220" cy="220" r="215" fill="none" stroke="var(--bg)" strokeDasharray="1 9" />
         </svg>
-        <div style={{ position: "absolute", top: "60px", left: "24px", right: "24px", display: "flex", flexDirection: "column", gap: "26px", color: "var(--bg)" }}>
+        <div style={{ position: "absolute", top: "calc(var(--sb) + 16px)", left: "24px", right: "24px", display: "flex", flexDirection: "column", gap: "26px", color: "var(--bg)" }}>
           <div className="rise d1" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="9.5" />
@@ -63,7 +63,7 @@ export default function LoginView({ v }: ViewProps) {
           </div>
         </div>
       </div>
-      <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "252px", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "26px 24px 26px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "14px" }}>
+      <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "calc(var(--sb) + 208px)", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "26px 24px 26px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "14px" }}>
         <GoogleButton context="signin" className="rise d3" onToken={v.googleToken} onUnavailable={v.googleUnavailable}>
           <Link to="/" className="tap gbtn" style={{ height: "54px", boxSizing: "border-box", borderRadius: "27px", border: "1px solid #D5DAD6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>
             <GoogleG />

@@ -35,8 +35,8 @@ export default function DeccanExploreView({ v }: ViewProps) {
   return (
     <div className="scr scr-deccan-DeccanExplore" style={{ width: "100%", height: "100%", boxSizing: "border-box", position: "relative", overflow: "hidden", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--ink)" }}>
       <style href="scr-deccan-DeccanExplore" precedence="screens">{css}</style>
-      <div data-scroll="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden", paddingBottom: "112px" }}>
-        <div style={{ padding: "54px 22px 0", display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div data-scroll="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden", paddingBottom: "calc(var(--sab) + 112px)" }}>
+        <div style={{ padding: "calc(var(--sb) + 12px) 22px 0", display: "flex", flexDirection: "column", gap: "16px" }}>
           <div className="rise d1" style={{ display: "flex", flexDirection: "column", gap: "0" }}>
             <div style={{ fontFamily: "var(--font-accent)", fontSize: "20px", color: "#A4462B", lineHeight: "1.2" }}>शोधा</div>
             <h1 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "40px", fontWeight: "400", lineHeight: "1" }}>
@@ -139,12 +139,12 @@ export default function DeccanExploreView({ v }: ViewProps) {
         </div>
       </div>
       {v.showToast && (
-        <div className="toast" role="status" style={{ position: "absolute", left: "22px", right: "100px", bottom: "104px", padding: "13px 16px", borderRadius: "14px", background: "var(--ink)", color: "var(--bg)", fontSize: "13.5px", display: "flex", alignItems: "center", gap: "10px", boxShadow: "0 16px 30px -14px rgba(35,28,23,0.6)", borderLeft: "3px solid var(--gold)", zIndex: "3" }}>
+        <div className="toast" role="status" style={{ position: "absolute", left: "22px", right: "100px", bottom: "calc(var(--sab) + 104px)", padding: "13px 16px", borderRadius: "14px", background: "var(--ink)", color: "var(--bg)", fontSize: "13.5px", display: "flex", alignItems: "center", gap: "10px", boxShadow: "0 16px 30px -14px rgba(35,28,23,0.6)", borderLeft: "3px solid var(--gold)", zIndex: "3" }}>
           {v.toastText}
         </div>
       )}
-      <Link to="/sos" className="tap sos" aria-label="Emergency SOS" style={{ position: "absolute", right: "22px", bottom: "100px", width: "60px", height: "60px", borderRadius: "30px", background: "#C8321C", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "700", letterSpacing: "0.1em", textDecoration: "none", boxShadow: "0 14px 30px -12px rgba(200,50,28,0.75)" }}>SOS</Link>
-      <nav className="rise d6" aria-label="Main" style={{ position: "absolute", left: "16px", right: "16px", bottom: "20px", height: "64px", borderRadius: "32px", background: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px", boxSizing: "border-box", boxShadow: "0 20px 40px -18px rgba(35,28,23,0.6)", borderTop: "2px solid var(--gold)" }}>
+      <Link to="/sos" className="tap sos" aria-label="Emergency SOS" style={{ position: "absolute", right: "22px", bottom: "calc(var(--sab) + 100px)", width: "60px", height: "60px", borderRadius: "30px", background: "#C8321C", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "700", letterSpacing: "0.1em", textDecoration: "none", boxShadow: "0 14px 30px -12px rgba(200,50,28,0.75)" }}>SOS</Link>
+      <nav className="rise d6" aria-label="Main" style={{ position: "absolute", left: "16px", right: "16px", bottom: "calc(var(--sab) + 20px)", height: "64px", borderRadius: "32px", background: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px", boxSizing: "border-box", boxShadow: "0 20px 40px -18px rgba(35,28,23,0.6)", borderTop: "2px solid var(--gold)" }}>
         <Link to="/" className="tap navi" aria-label="Home" style={{ width: "48px", height: "48px", borderRadius: "24px", color: "#B5A795", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />

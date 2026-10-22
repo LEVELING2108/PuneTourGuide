@@ -51,12 +51,12 @@ export default function DeccanSignUpView({ v }: ViewProps) {
           </defs>
           <rect width="390" height="10" fill="url(#zz)" />
         </svg>
-        <div aria-hidden="true" style={{ position: "absolute", right: "54px", top: "56px", width: "58px", height: "58px", borderRadius: "29px", background: "#E2B95B", opacity: "0.85" }} />
-        <svg width="390" height="80" viewBox="0 0 390 96" preserveAspectRatio="none" aria-hidden="true" style={{ position: "absolute", left: "0", top: "134px", opacity: "0.9" }}>
+        <div aria-hidden="true" style={{ position: "absolute", right: "54px", top: "calc(var(--sb) + 12px)", width: "58px", height: "58px", borderRadius: "29px", background: "#E2B95B", opacity: "0.85" }} />
+        <svg width="390" height="80" viewBox="0 0 390 96" preserveAspectRatio="none" aria-hidden="true" style={{ position: "absolute", left: "0", top: "calc(var(--sb) + 90px)", opacity: "0.9" }}>
           <path d="M0 74 Q60 34 120 58 T240 44 T390 54 V96 H0 Z" fill="#6A1A44" />
           <path d="M0 96 V66 H30 V54 a14 14 0 0 1 28 0 V66 H110 V58 H118 V52 H126 V58 H134 V52 H142 V58 H150 V66 H170 V44 a22 22 0 0 1 44 0 V66 H260 V56 a12 12 0 0 1 24 0 V66 H330 V50 a16 16 0 0 1 32 0 V66 H390 V96 Z" fill="#4E0F30" />
         </svg>
-        <div style={{ position: "absolute", top: "56px", left: "24px", right: "24px", display: "flex", flexDirection: "column", gap: "20px", color: "var(--bg)" }}>
+        <div style={{ position: "absolute", top: "calc(var(--sb) + 12px)", left: "24px", right: "24px", display: "flex", flexDirection: "column", gap: "20px", color: "var(--bg)" }}>
           <div className="rise d1" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <Link to="/login" className="tap" aria-label="Back to log in" style={{ width: "40px", height: "40px", borderRadius: "20px", border: "1px solid rgba(255,251,243,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -75,7 +75,7 @@ export default function DeccanSignUpView({ v }: ViewProps) {
           </div>
         </div>
       </div>
-      <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "206px", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "24px 24px 24px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "13px" }}>
+      <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "calc(var(--sb) + 208px)", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "24px 24px 24px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "13px" }}>
         <GoogleButton context="signup" className="rise d3" onToken={v.googleToken} onUnavailable={v.googleUnavailable}>
           <Link to="/first-contact" className="tap gbtn" style={{ height: "54px", boxSizing: "border-box", flexShrink: "0", borderRadius: "27px", border: "1px solid #D8C6A6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>
             <GoogleG />
