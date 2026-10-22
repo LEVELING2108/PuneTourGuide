@@ -35,9 +35,9 @@ export default function DeccanPlaceView({ v }: ViewProps) {
     <div className="scr scr-deccan-DeccanPlace" style={{ width: "100%", height: "100%", boxSizing: "border-box", position: "relative", overflow: "hidden", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--ink)" }}>
       <style href="scr-deccan-DeccanPlace" precedence="screens">{css}</style>
       <div data-scroll="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden" }}>
-        <div style={{ height: "360px", position: "relative", overflow: "hidden", background: "#0E5B5E" }}>
+        <div style={{ height: "calc(var(--sb) + 316px)", position: "relative", overflow: "hidden", background: "#0E5B5E" }}>
           <div className="zoom" style={{ position: "absolute", inset: "0" }}>
-            <div style={{ position: "absolute", left: "60px", top: "90px", width: "70px", height: "70px", borderRadius: "35px", background: "#E2B95B", opacity: "0.85" }} />
+            <div style={{ position: "absolute", left: "60px", top: "calc(var(--sb) + 46px)", width: "70px", height: "70px", borderRadius: "35px", background: "#E2B95B", opacity: "0.85" }} />
             <svg width="390" height="170" viewBox="0 0 390 170" aria-hidden="true" style={{ position: "absolute", left: "0", bottom: "0" }}>
               <path d="M0 120 Q90 80 180 104 T390 92 V170 H0 Z" fill="#0A4A4C" />
               <path d="M30 170 V96 H360 V170 Z" fill="#073638" />
@@ -61,19 +61,19 @@ export default function DeccanPlaceView({ v }: ViewProps) {
             </defs>
             <rect width="390" height="12" fill="url(#zp)" />
           </svg>
-          <Link to="/explore" className="tap" aria-label="Back" onClick={v.back} style={{ position: "absolute", top: "54px", left: "20px", width: "44px", height: "44px", borderRadius: "22px", background: "rgba(255,251,243,0.18)", border: "1px solid rgba(255,251,243,0.35)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Link to="/explore" className="tap" aria-label="Back" onClick={v.back} style={{ position: "absolute", top: "calc(var(--sb) + 12px)", left: "20px", width: "44px", height: "44px", borderRadius: "22px", background: "rgba(255,251,243,0.18)", border: "1px solid rgba(255,251,243,0.35)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--surface)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 5l-7 7 7 7" />
             </svg>
           </Link>
-          <button className="tap" onClick={v.toggleSave} aria-label={v.saveLabel} aria-pressed={v.savePressed} style={{ position: "absolute", top: "54px", right: "20px", width: "44px", height: "44px", borderRadius: "22px", background: v.saveBg, border: "1px solid rgba(255,251,243,0.35)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+          <button className="tap" onClick={v.toggleSave} aria-label={v.saveLabel} aria-pressed={v.savePressed} style={{ position: "absolute", top: "calc(var(--sb) + 12px)", right: "20px", width: "44px", height: "44px", borderRadius: "22px", background: v.saveBg, border: "1px solid rgba(255,251,243,0.35)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill={v.saveFill} stroke={v.saveStroke} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 3h12v18l-6-4-6 4z" />
             </svg>
           </button>
-          {v.heroCredit && <div style={{ position: "absolute", top: "106px", left: "20px", fontSize: "10.5px", color: "rgba(255,251,243,0.9)", textShadow: "0 1px 2px rgba(0,0,0,0.6)" }}>{v.heroCredit}</div>}
+          {v.heroCredit && <div style={{ position: "absolute", top: "calc(var(--sb) + 62px)", left: "20px", fontSize: "10.5px", color: "rgba(255,251,243,0.9)", textShadow: "0 1px 2px rgba(0,0,0,0.6)" }}>{v.heroCredit}</div>}
           {v.showToast && (
-            <div className="toast" role="status" style={{ position: "absolute", top: "110px", right: "20px", padding: "10px 14px", borderRadius: "12px", background: "var(--surface)", color: "var(--ink)", fontSize: "13.5px", fontWeight: "600", boxShadow: "0 14px 28px -14px rgba(35,28,23,0.6)", borderLeft: "3px solid var(--gold)", zIndex: "3" }}>{v.toastText}</div>
+            <div className="toast" role="status" style={{ position: "absolute", top: "calc(var(--sb) + 66px)", right: "20px", padding: "10px 14px", borderRadius: "12px", background: "var(--surface)", color: "var(--ink)", fontSize: "13.5px", fontWeight: "600", boxShadow: "0 14px 28px -14px rgba(35,28,23,0.6)", borderLeft: "3px solid var(--gold)", zIndex: "3" }}>{v.toastText}</div>
           )}
         </div>
         <div className="rise d2" style={{ position: "relative", margin: "-60px 18px 0", background: "var(--surface)", borderRadius: "10px", padding: "22px 20px 18px", boxShadow: "0 24px 40px -24px rgba(35,28,23,0.55)", display: "flex", flexDirection: "column", gap: "12px" }}>

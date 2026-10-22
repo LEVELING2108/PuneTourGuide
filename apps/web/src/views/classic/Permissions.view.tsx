@@ -29,7 +29,7 @@ export default function PermissionsView({ v }: ViewProps) {
   return (
     <div className="scr scr-classic-Permissions" style={{ width: "100%", height: "100%", boxSizing: "border-box", position: "relative", overflow: "hidden", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--ink)" }}>
       <style href="scr-classic-Permissions" precedence="screens">{css}</style>
-      <div data-scroll="" data-flex="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden", padding: "64px 24px 32px", display: "flex", flexDirection: "column", gap: "22px" }}>
+      <div data-scroll="" data-flex="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden", padding: "calc(var(--sb) + 20px) 24px 32px", display: "flex", flexDirection: "column", gap: "22px" }}>
         <div className="rise d1" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <div style={{ fontSize: "11.5px", fontWeight: "600", letterSpacing: "0.16em", color: "var(--muted)" }}>BEFORE YOU START</div>
           <h1 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "44px", fontWeight: "400", lineHeight: "0.98" }}>

@@ -44,7 +44,7 @@ export default function DeccanIntroView({ v }: ViewProps) {
           </defs>
           <rect width="390" height="10" fill="url(#zz)" />
         </svg>
-        <div className="rise d1" style={{ position: "absolute", top: "56px", left: "24px", right: "24px", height: "44px", display: "flex", alignItems: "center", justifyContent: "space-between", zIndex: "2" }}>
+        <div className="rise d1" style={{ position: "absolute", top: "calc(var(--sb) + 12px)", left: "24px", right: "24px", height: "44px", display: "flex", alignItems: "center", justifyContent: "space-between", zIndex: "2" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="9.5" />
@@ -54,9 +54,9 @@ export default function DeccanIntroView({ v }: ViewProps) {
           </div>
           <Link to="/permissions" onClick={v.done} style={{ height: "44px", display: "flex", alignItems: "center", padding: "0 4px", fontSize: "14px", fontWeight: "600", color: "var(--muted)", textDecoration: "none" }}>Skip</Link>
         </div>
-        <div className="track" ref={v.trackRef} onScroll={v.onSlide} tabIndex={0} role="region" aria-label="Introduction" style={{ position: "absolute", top: "112px", left: "0", width: "100%", height: "560px", display: "flex" }}>
+        <div className="track" ref={v.trackRef} onScroll={v.onSlide} tabIndex={0} role="region" aria-label="Introduction" style={{ position: "absolute", top: "calc(var(--sb) + 68px)", left: "0", width: "100%", bottom: "calc(var(--sab) + 164px)", display: "flex" }}>
           <section aria-label="Discover" style={{ flex: "0 0 100%", boxSizing: "border-box", padding: "0 24px", display: "flex", flexDirection: "column", gap: "26px" }}>
-            <div style={{ height: "380px", borderRadius: "32px", background: "var(--primary)", position: "relative", overflow: "hidden" }}>
+            <div style={{ flex: "0 1 380px", minHeight: "220px", borderRadius: "32px", background: "var(--primary)", position: "relative", overflow: "hidden" }}>
               <svg width="390" height="10" viewBox="0 0 390 10" aria-hidden="true" style={{ position: "absolute", top: "0", left: "0", zIndex: "1", pointerEvents: "none" }}>
                 <defs>
                   <pattern id="zi" width="10" height="10" patternUnits="userSpaceOnUse">
@@ -120,7 +120,7 @@ export default function DeccanIntroView({ v }: ViewProps) {
             </div>
           </section>
           <section aria-label="Plan" style={{ flex: "0 0 100%", boxSizing: "border-box", padding: "0 24px", display: "flex", flexDirection: "column", gap: "26px" }}>
-            <div style={{ height: "380px", borderRadius: "32px", background: "#0E5B5E", position: "relative", overflow: "hidden" }}>
+            <div style={{ flex: "0 1 380px", minHeight: "220px", borderRadius: "32px", background: "#0E5B5E", position: "relative", overflow: "hidden" }}>
               <svg width="390" height="10" viewBox="0 0 390 10" aria-hidden="true" style={{ position: "absolute", top: "0", left: "0", zIndex: "1", pointerEvents: "none" }}>
                 <defs>
                   <pattern id="zi" width="10" height="10" patternUnits="userSpaceOnUse">
@@ -188,7 +188,7 @@ export default function DeccanIntroView({ v }: ViewProps) {
             </div>
           </section>
           <section aria-label="Stay safe" style={{ flex: "0 0 100%", boxSizing: "border-box", padding: "0 24px", display: "flex", flexDirection: "column", gap: "26px" }}>
-            <div style={{ height: "380px", borderRadius: "32px", background: "#8F1D12", position: "relative", overflow: "hidden" }}>
+            <div style={{ flex: "0 1 380px", minHeight: "220px", borderRadius: "32px", background: "#8F1D12", position: "relative", overflow: "hidden" }}>
               <svg width="390" height="10" viewBox="0 0 390 10" aria-hidden="true" style={{ position: "absolute", top: "0", left: "0", zIndex: "1", pointerEvents: "none" }}>
                 <defs>
                   <pattern id="zi" width="10" height="10" patternUnits="userSpaceOnUse">
@@ -231,7 +231,7 @@ export default function DeccanIntroView({ v }: ViewProps) {
           </section>
         </div>
       </div>
-      <div style={{ position: "absolute", left: "24px", right: "24px", bottom: "36px", display: "flex", flexDirection: "column", gap: "18px", alignItems: "center" }}>
+      <div style={{ position: "absolute", left: "24px", right: "24px", bottom: "calc(var(--sab) + 36px)", display: "flex", flexDirection: "column", gap: "18px", alignItems: "center" }}>
         <div aria-hidden="true" style={{ display: "flex", gap: "6px" }}>
           {((v.dots ?? []) as any[]).map((d: any, dIndex: number) => (
             <Fragment key={d?.key ?? dIndex}>

@@ -18,6 +18,14 @@ body {
   color: var(--ink);
 }
 
+/* The mockups were drawn inside a phone frame with a 44px status bar; real phones show their own
+   bar outside the page. Screens offset from these instead: 0 in a browser tab, the real status-bar
+   or gesture-bar height when the app draws under them (installed app, notch). */
+:root {
+  --sb: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+}
+
 /* Phone-width app frame; full screen on phones, centred column on larger screens */
 .app-frame {
   position: relative;

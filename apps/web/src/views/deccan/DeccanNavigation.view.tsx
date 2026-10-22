@@ -37,7 +37,7 @@ export default function DeccanNavigationView({ v }: ViewProps) {
           </defs>
           <rect width="390" height="10" fill="url(#zz)" />
         </svg>
-        <div className="down" role="status" aria-live="polite" style={{ position: "absolute", top: "56px", left: "16px", right: "16px", background: "var(--ink)", color: "var(--bg)", borderRadius: "24px", borderBottom: "3px solid var(--gold)", padding: "16px 18px", display: "flex", gap: "16px", alignItems: "center", boxShadow: "0 20px 40px -20px rgba(35,28,23,0.7)" }}>
+        <div className="down" role="status" aria-live="polite" style={{ position: "absolute", top: "calc(var(--sb) + 12px)", left: "16px", right: "16px", background: "var(--ink)", color: "var(--bg)", borderRadius: "24px", borderBottom: "3px solid var(--gold)", padding: "16px 18px", display: "flex", gap: "16px", alignItems: "center", boxShadow: "0 20px 40px -20px rgba(35,28,23,0.7)" }}>
           <div style={{ width: "52px", height: "52px", borderRadius: "16px", background: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0" }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               {((v.arrow ?? []) as string[]).map((d) => (
@@ -58,8 +58,8 @@ export default function DeccanNavigationView({ v }: ViewProps) {
             </div>
           </div>
         </div>
-        {v.hasThen && <div className="down" style={{ position: "absolute", top: "152px", left: "30px", padding: "8px 14px", borderRadius: "0 0 16px 16px", background: "#3A302A", color: "#E3D6C4", fontSize: "12.5px" }}>{v.thenText}</div>}
-        <button className="tap" onClick={v.recenter} aria-label="Re-centre map" style={{ pointerEvents: "auto", position: "absolute", right: "20px", top: "470px", width: "48px", height: "48px", borderRadius: "24px", border: "none", background: "var(--surface)", boxShadow: "0 10px 24px -12px rgba(35,28,23,0.5)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+        {v.hasThen && <div className="down" style={{ position: "absolute", top: "calc(var(--sb) + 108px)", left: "30px", padding: "8px 14px", borderRadius: "0 0 16px 16px", background: "#3A302A", color: "#E3D6C4", fontSize: "12.5px" }}>{v.thenText}</div>}
+        <button className="tap" onClick={v.recenter} aria-label="Re-centre map" style={{ pointerEvents: "auto", position: "absolute", right: "20px", top: "calc(var(--sb) + 426px)", width: "48px", height: "48px", borderRadius: "24px", border: "none", background: "var(--surface)", boxShadow: "0 10px 24px -12px rgba(35,28,23,0.5)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3" />
             <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />

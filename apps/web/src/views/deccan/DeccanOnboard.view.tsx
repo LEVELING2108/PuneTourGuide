@@ -45,12 +45,12 @@ export default function DeccanOnboardView({ v }: ViewProps) {
           </defs>
           <rect width="390" height="10" fill="url(#zz)" />
         </svg>
-        <div aria-hidden="true" style={{ position: "absolute", right: "54px", top: "64px", width: "58px", height: "58px", borderRadius: "29px", background: "#E2B95B", opacity: "0.85" }} />
-        <svg width="390" height="80" viewBox="0 0 390 96" preserveAspectRatio="none" aria-hidden="true" style={{ position: "absolute", left: "0", top: "142px", opacity: "0.9" }}>
+        <div aria-hidden="true" style={{ position: "absolute", right: "54px", top: "calc(var(--sb) + 20px)", width: "58px", height: "58px", borderRadius: "29px", background: "#E2B95B", opacity: "0.85" }} />
+        <svg width="390" height="80" viewBox="0 0 390 96" preserveAspectRatio="none" aria-hidden="true" style={{ position: "absolute", left: "0", top: "calc(var(--sb) + 98px)", opacity: "0.9" }}>
           <path d="M0 74 Q60 34 120 58 T240 44 T390 54 V96 H0 Z" fill="#6A1A44" />
           <path d="M0 96 V66 H30 V54 a14 14 0 0 1 28 0 V66 H110 V58 H118 V52 H126 V58 H134 V52 H142 V58 H150 V66 H170 V44 a22 22 0 0 1 44 0 V66 H260 V56 a12 12 0 0 1 24 0 V66 H330 V50 a16 16 0 0 1 32 0 V66 H390 V96 Z" fill="#4E0F30" />
         </svg>
-        <div style={{ position: "absolute", top: "56px", left: "24px", right: "24px", display: "flex", flexDirection: "column", gap: "18px", color: "var(--bg)" }}>
+        <div style={{ position: "absolute", top: "calc(var(--sb) + 12px)", left: "24px", right: "24px", display: "flex", flexDirection: "column", gap: "18px", color: "var(--bg)" }}>
           <div className="rise d1" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ flex: "1", height: "3px", borderRadius: "2px", background: "rgba(255,251,243,0.2)", overflow: "hidden" }}>
               <div className="grow" style={{ height: "3px", background: "var(--bg)", borderRadius: "2px" }} />
@@ -71,7 +71,7 @@ export default function DeccanOnboardView({ v }: ViewProps) {
           </div>
         </div>
       </div>
-      <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "214px", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "24px 24px 22px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "13px" }}>
+      <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "calc(var(--sb) + 170px)", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "24px 24px 22px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "13px" }}>
         <button className="rise d3 tap pick" onClick={v.pickContact} style={{ height: "54px", flexShrink: "0", borderRadius: "27px", border: "1px solid #D8C6A6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", color: "var(--ink)", cursor: "pointer" }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <rect x="4" y="3" width="16" height="18" rx="2" />

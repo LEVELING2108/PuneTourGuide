@@ -48,7 +48,7 @@ export default function SignUpView({ v }: ViewProps) {
           <circle cx="220" cy="220" r="180" fill="none" stroke="var(--bg)" />
           <circle cx="220" cy="220" r="215" fill="none" stroke="var(--bg)" strokeDasharray="1 9" />
         </svg>
-        <div style={{ position: "absolute", top: "56px", left: "24px", right: "24px", display: "flex", flexDirection: "column", gap: "20px", color: "var(--bg)" }}>
+        <div style={{ position: "absolute", top: "calc(var(--sb) + 12px)", left: "24px", right: "24px", display: "flex", flexDirection: "column", gap: "20px", color: "var(--bg)" }}>
           <div className="rise d1" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <Link to="/login" className="tap" aria-label="Back to log in" style={{ width: "40px", height: "40px", borderRadius: "20px", border: "1px solid rgba(246,246,243,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -64,7 +64,7 @@ export default function SignUpView({ v }: ViewProps) {
           </h1>
         </div>
       </div>
-      <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "206px", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "24px 24px 24px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "13px" }}>
+      <div className="up" style={{ position: "absolute", left: "0", right: "0", top: "calc(var(--sb) + 162px)", bottom: "0", background: "var(--bg)", borderRadius: "30px 30px 0 0", padding: "24px 24px 24px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: "13px" }}>
         <GoogleButton context="signup" className="rise d3" onToken={v.googleToken} onUnavailable={v.googleUnavailable}>
           <Link to="/first-contact" className="tap gbtn" style={{ height: "54px", boxSizing: "border-box", flexShrink: "0", borderRadius: "27px", border: "1px solid #D5DAD6", background: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", fontFamily: "var(--font-body)", fontSize: "15px", fontWeight: "600", color: "var(--ink)", textDecoration: "none" }}>
             <GoogleG />

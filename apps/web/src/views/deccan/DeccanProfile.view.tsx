@@ -34,8 +34,8 @@ export default function DeccanProfileView({ v }: ViewProps) {
   return (
     <div className="scr scr-deccan-DeccanProfile" style={{ width: "100%", height: "100%", boxSizing: "border-box", position: "relative", overflow: "hidden", background: "var(--bg)", fontFamily: "var(--font-body)", color: "var(--ink)" }}>
       <style href="scr-deccan-DeccanProfile" precedence="screens">{css}</style>
-      <div data-scroll="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden", paddingBottom: "112px" }}>
-        <div style={{ padding: "54px 22px 0", display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div data-scroll="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden", paddingBottom: "calc(var(--sab) + 112px)" }}>
+        <div style={{ padding: "calc(var(--sb) + 12px) 22px 0", display: "flex", flexDirection: "column", gap: "16px" }}>
           <div className="rise d1">
             <div style={{ fontFamily: "var(--font-accent)", fontSize: "20px", color: "#A4462B", lineHeight: "1.2" }}>माझा पासपोर्ट</div>
             <h1 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "38px", fontWeight: "400", lineHeight: "1" }}>
@@ -124,7 +124,7 @@ export default function DeccanProfileView({ v }: ViewProps) {
           </div>
         </div>
       </div>
-      <nav className="rise d6" aria-label="Main" style={{ position: "absolute", left: "16px", right: "16px", bottom: "20px", height: "64px", borderRadius: "32px", background: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px", boxSizing: "border-box", boxShadow: "0 20px 40px -18px rgba(35,28,23,0.6)", borderTop: "2px solid var(--gold)" }}>
+      <nav className="rise d6" aria-label="Main" style={{ position: "absolute", left: "16px", right: "16px", bottom: "calc(var(--sab) + 20px)", height: "64px", borderRadius: "32px", background: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 8px", boxSizing: "border-box", boxShadow: "0 20px 40px -18px rgba(35,28,23,0.6)", borderTop: "2px solid var(--gold)" }}>
         <Link to="/" className="tap navi" aria-label="Home" style={{ width: "48px", height: "48px", borderRadius: "24px", color: "#B5A795", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />

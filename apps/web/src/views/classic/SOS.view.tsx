@@ -29,7 +29,7 @@ export default function SOSView({ v }: ViewProps) {
   return (
     <div className="scr scr-classic-SOS" style={{ width: "100%", height: "100%", boxSizing: "border-box", position: "relative", overflow: "hidden", background: "#8F1D12", fontFamily: "var(--font-body)", color: "var(--surface)" }}>
       <style href="scr-classic-SOS" precedence="screens">{css}</style>
-      <div data-scroll="" data-flex="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden", padding: "68px 24px 32px", display: "flex", flexDirection: "column", gap: "28px" }}>
+      <div data-scroll="" data-flex="" style={{ position: "absolute", inset: "0", overflowY: "auto", overflowX: "hidden", padding: "calc(var(--sb) + 24px) 24px 32px", display: "flex", flexDirection: "column", gap: "28px" }}>
         <div className="rise d1" style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: "center", textAlign: "center" }}>
           <div style={{ fontSize: "11.5px", fontWeight: "600", letterSpacing: "0.2em", color: "#F6B8A9" }}>{v.kicker}</div>
           <h1 style={{ margin: "0", fontFamily: "var(--font-display)", fontSize: "40px", fontWeight: "400", lineHeight: "1" }}>{v.headline}</h1>
