@@ -13,6 +13,7 @@ services:
         VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
         VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
         VITE_CONTACT_EMAIL: ${VITE_CONTACT_EMAIL:-}
+        VITE_SERVER_SMS: ${VITE_SERVER_SMS:-false}
         VITE_RELEASE: ${RELEASE:-}
   safety:
     build: ../services/safety

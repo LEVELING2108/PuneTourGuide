@@ -6,6 +6,7 @@ import { Themed } from '../../components/Themed';
 import { useAccountRequired } from '../../features/account';
 import { useContacts } from '../../features/contacts';
 import { namesText } from '../../features/live';
+import { serverSms, smsHref, testText } from '../../features/phoneSms';
 import { toggleColors, usePalette } from '../../lib/palette';
 import { useFlash } from '../../lib/useFlash';
 import { useIsLoggedIn } from '../../stores/auth';
@@ -61,7 +62,7 @@ export default function ContactsScreen() {
     empty: contactsQ.isSuccess && list.length === 0,
     canAdd: list.length < MAX,
     countText: `${list.length} of ${MAX}`,
-    smsText: smsWhenOffline ? 'Location sent by text if there’s no data' : 'Off · alerts need mobile data',
+    smsText: smsWhenOffline ? 'After the 112 call, SOS opens a text to all of them' : 'Off · only the server texts them',
     smsPressed: sms.pressed,
     smsTrack: sms.track,
     smsKnob: sms.knob,
@@ -80,7 +81,10 @@ export default function ContactsScreen() {
     toastText: toast.text,
     sendTest: () => {
       if (!list.length) return toast.flash('Add an emergency contact first');
-      test.mutate();
+      if (serverSms()) return test.mutate();
+      // From this phone, like a real SOS: checks the numbers are right and the texts get through
+      setSent(true);
+      window.location.href = smsHref(list.map((c) => c.phone), testText());
     },
   };
   return <Themed classic={ContactsView} deccan={DeccanContactsView} v={v} />;

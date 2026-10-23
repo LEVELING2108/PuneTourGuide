@@ -9,7 +9,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { API_BASE, ApiError } from '../api/client';
+import { ApiError } from '../api/client';
 import { itineraryApi, type DayRun, type PlanDay } from '../api/itinerary';
 import { usersApi } from '../api/auth';
 import { useAuthStore, useIsLoggedIn } from '../stores/auth';
@@ -230,27 +230,7 @@ export function useStartDay() {
   );
 }
 
-/** Public link family can open to follow the trip (works from the Android app too). */
-export function trackLink(sessionId: string) {
-  const origin = /^https?:\/\//.test(API_BASE) ? new URL(API_BASE).origin : window.location.origin;
-  return `${origin}/track/${sessionId}`;
-}
-
-/** "Send the link yourself": the phone's share sheet (WhatsApp, SMS…), else copy to the clipboard. */
-export async function shareTrackLink(sessionId: string, name: string): Promise<'shared' | 'copied' | 'cancelled'> {
-  const url = trackLink(sessionId);
-  const text = `${name} is sharing their live location with you on Pune Explorer.`;
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: 'Follow my trip', text, url });
-      return 'shared';
-    } catch (err) {
-      if ((err as Error).name === 'AbortError') return 'cancelled';
-    }
-  }
-  await navigator.clipboard?.writeText(`${text} ${url}`).catch(() => undefined);
-  return 'copied';
-}
+export { trackLink } from './phoneSms';
 
 export type VisitResult = { synced: boolean; xp: number; stamp: boolean };
 

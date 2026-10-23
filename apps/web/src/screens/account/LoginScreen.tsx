@@ -7,6 +7,7 @@ import { afterSignIn, otpTarget, safeNext } from '../../features/signin';
 import LoginView from '../../views/classic/Login.view';
 import DeccanLoginView from '../../views/deccan/DeccanLogin.view';
 import { errorText, modeTabs } from './shared';
+import { serverSms } from '../../features/phoneSms';
 
 export default function LoginScreen() {
   const p = usePalette();
@@ -62,6 +63,8 @@ export default function LoginScreen() {
   };
 
   const v = {
+    // Login codes need server texts that reach every number (TECH_DESIGN §9.5); hidden until then
+    phoneLogin: serverSms(),
     ...modeTabs(p, mode, (m) => {
       setMode(m);
       setError('');

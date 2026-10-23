@@ -69,7 +69,7 @@ Medical info is sensitive: store encrypted at rest, only return it to the owner,
 | Control | Behaviour | Backend |
 |---|---|---|
 | ✅ Continue / Sign up with Google | Google Identity Services → ID token → server verifies → JWT. New user → Onboard | **NEW** `POST /api/auth/google` |
-| ✅ Email / Mobile number tabs | Switch form | — |
+| ✅ Email / Mobile number tabs | Switch form; the Mobile number tab shows only when `VITE_SERVER_SMS=true` (login codes need server texts that reach every number) | — |
 | ✅ Log in (email) | | EXISTS `/users/login` |
 | ✅ Create account (email) + password strength | Strength computed client-side; disabled until Terms ticked | EXISTS `/users/register` (EXTEND for interests/theme defaults) |
 | ✅ Send code (mobile) | Rate-limited; send 6-digit SMS | **NEW** `POST /api/auth/otp/send` (SMS provider e.g. MSG91/Twilio/Firebase Phone Auth) |
@@ -108,7 +108,7 @@ Medical info is sensitive: store encrypted at rest, only return it to the owner,
 | ✅ Trip: live share status | Each contact: Sent / Couldn't text / Sending; Send the link yourself (share sheet) | **NEW** `GET /share-trip/:sessionId/delivery` |
 | ✅ Trip: open the whole day in Google Maps | Remaining stops in order (next 10 on a long day) | — (URL hand-off) |
 | ✅ Trip: End day / Day summary | Places, XP, km, time; Start the next day; ends itself after the day; works offline (syncs later) | **NEW** `POST /itinerary/runs/:id/end` |
-| ✅ Plan: Share live trip toggle | Creates tracking session, shares link to contacts | RoadSoS `create-session` + **NEW** `POST /api/share-trip` (sends link by SMS/WhatsApp intent) |
+| ✅ Plan: Share live trip toggle | Creates tracking session; the phone's share menu sends the link (server texts to contacts only when `VITE_SERVER_SMS=true`) | RoadSoS `create-session` + **NEW** `POST /api/share-trip {sessionId, text}` |
 | ✅ Place: Save | Toggle save, toast | EXISTS |
 | ✅ Place: Add to plan / Directions / nearest hospital | | EXISTS / OSRM / emergency-services |
 | ✅ Place: Also nearby / Food nearby | Cards open the place, “+” adds to a chosen day, “See on map” opens Map at the place | **NEW** `GET /api/places/:id/nearby`; Map `?at=lat,lng` |
@@ -122,7 +122,7 @@ Medical info is sensitive: store encrypted at rest, only return it to the owner,
 | Control | Behaviour | Backend |
 |---|---|---|
 | ✅ SOS button / shake (15 g, if enabled) | 5-s countdown; haptics | port from RoadSoS frontend |
-| ✅ At 0 | `tel:112`; in parallel start tracking session, alert contacts with live link, share medical profile with session | RoadSoS `create-session` + **NEW** `POST /api/sos/alert` (SMS to contacts; offline fallback = `sms:` URI with prefilled text) |
+| ✅ At 0 | `tel:112`; in parallel start tracking session, alert contacts with live link, share medical profile with session | RoadSoS `create-session` + **NEW** `POST /api/sos/alert` (SMS to contacts as a backup); back from the call, `sms:` opens with every contact and the alert prefilled, sent from the phone (works with no data); “Text my contacts” button |
 | ✅ 108 / 100 / 1091 / Call 112 now | `tel:` links | — |
 | ✅ I'm safe, cancel | Cancels countdown; if already sent, sends “I'm safe” to contacts | **NEW** `POST /api/sos/cancel` |
 
@@ -132,8 +132,8 @@ Medical info is sensitive: store encrypted at rest, only return it to the owner,
 | ✅ Edit profile: photo sheet (camera / gallery / remove) | `<input type="file" accept="image/*" capture>`; upload | **NEW** `POST /api/users/me/avatar` (S3/Cloudinary) |
 | ✅ Edit profile: fields, interests, Save | | **NEW** `PATCH /api/users/me` |
 | ✅ Contacts: list, call, edit, add (max 5), primary | | **NEW** `GET/POST/PATCH/DELETE /api/contacts` |
-| ✅ Contacts: Send SMS when offline toggle | user setting | `PATCH /api/users/me` |
-| ✅ Contacts: Send test alert | SMS marked TEST | **NEW** `POST /api/contacts/test-alert` (rate-limited) |
+| ✅ Contacts: Text contacts from my phone toggle | user setting (`smsWhenOffline`) | `PATCH /api/users/me` |
+| ✅ Contacts: Send test alert | Text marked TEST, from the phone's messaging app (server SMS when `VITE_SERVER_SMS=true`) | **NEW** `POST /api/contacts/test-alert` (rate-limited) |
 | ✅ Medical: blood group, fields, lock-screen toggle, Save | | **NEW** `GET/PUT /api/medical` |
 | ✅ Offline packs: download / delete / undo / auto-download | Service worker caches map tiles for a bbox + places + hospitals + numbers; store size in IndexedDB | **NEW** `GET /api/offline-pack/:areaId` (JSON bundle) |
 | ✅ Language | i18next (move existing translations.js to i18next; reuse RoadSoS 22 locales) | `PATCH /api/users/me {language}` |

@@ -12,11 +12,11 @@ import { lastPosition } from '../../features/permissions';
 import { placeTone, usePlan } from '../../features/places';
 import { namesText, useLiveStore } from '../../features/live';
 import { closedNote, googleDayUrl, metres, nextStop, progress, stopNumber, travelGuess } from '../../features/tripLogic';
-import { shareTrackLink, useStartDay, useTripActions, useTripRun, useTripStore } from '../../features/tripMode';
+import { shareTrackLink } from '../../features/phoneSms';
+import { useStartDay, useTripActions, useTripRun, useTripStore } from '../../features/tripMode';
 import { isNoContacts, useTripShare } from '../../features/trip';
 import { googleDirectionsUrl } from '../../lib/googleMaps';
 import { useFlash } from '../../lib/useFlash';
-import { useUser } from '../../stores/auth';
 import { useTheme } from '../../stores/theme';
 
 const css = `
@@ -82,12 +82,21 @@ function Note({ tone, children }: { tone: 'warn' | 'info'; children: ReactNode }
 const statusText = { sent: 'Sent', failed: "Couldn't text", queued: 'Sending…' } as const;
 const statusColor = { sent: '#2FA58A', failed: 'var(--sos)', queued: 'var(--muted)' } as const;
 
+/** What to say after sharing started: who got texts, or what the phone's share menu did. */
+const sharedNote = (r: { texted?: boolean; sharedWith?: string[]; handed?: 'shared' | 'copied' | 'cancelled' }) =>
+  r.texted
+    ? `Sending your live link to ${namesText(r.sharedWith ?? [])}…`
+    : r.handed === 'copied'
+      ? 'Link copied · paste it in WhatsApp or a text'
+      : r.handed === 'cancelled'
+        ? 'Sharing is on · tap Share link to send it'
+        : null;
+
 /** Trip mode (TECH_DESIGN §9.14): the day's next stop, arrival, progress, live share and the day's summary. Both themes. */
 export default function TripScreen() {
   const theme = useTheme();
   const loggedIn = useAccountRequired();
   const navigate = useNavigate();
-  const user = useUser();
   const plan = usePlan(loggedIn);
   const { run, day, queued, loading } = useTripRun(plan.data);
   const finished = useTripStore((s) => s.finished);
@@ -124,7 +133,7 @@ export default function TripScreen() {
   const delivery = useQuery({
     queryKey: ['delivery', liveTrip?.sessionId],
     queryFn: () => sosApi.tripDelivery(liveTrip!.sessionId),
-    enabled: !!liveTrip,
+    enabled: !!liveTrip?.texted,
     refetchInterval: (q) => (q.state.data?.contacts.some((c) => c.status === 'queued') || !q.state.data ? 4000 : false),
   });
 
@@ -162,7 +171,8 @@ export default function TripScreen() {
       .toggle()
       .then((r) => {
         useTripStore.getState().set({ shareSession: r.on ? useLiveStore.getState().trip?.sessionId ?? null : null });
-        toast.flash(r.on ? `Sending your live link to ${namesText(r.sharedWith ?? [])}…` : 'Stopped sharing your location');
+        const note = r.on ? sharedNote(r) : 'Stopped sharing your location';
+        if (note) toast.flash(note);
       })
       .catch((err) => {
         if (isNoContacts(err)) navigate('/settings/contacts/new');
@@ -171,7 +181,7 @@ export default function TripScreen() {
 
   const sendYourself = async () => {
     if (!liveTrip) return;
-    const r = await shareTrackLink(liveTrip.sessionId, user?.name ?? 'Your friend');
+    const r = await shareTrackLink(liveTrip.sessionId);
     if (r === 'copied') toast.flash('Link copied · paste it in WhatsApp or a text');
   };
 
@@ -357,7 +367,7 @@ export default function TripScreen() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '3px' }}>
             <div style={{ fontSize: '14.5px', fontWeight: 600 }}>Live trip</div>
-            <div style={{ fontSize: '12.5px', opacity: 0.7 }}>{liveTrip ? 'Your contacts can follow you on a map' : 'Off · nobody can see your location'}</div>
+            <div style={{ fontSize: '12.5px', opacity: 0.7 }}>{liveTrip ? (liveTrip.texted ? 'Your contacts can follow you on a map' : 'Anyone with your link can follow you on a map') : 'Off · nobody can see your location'}</div>
           </div>
           <button onClick={toggleShare} disabled={share.busy} aria-pressed={liveTrip ? 'true' : 'false'} style={{ height: '36px', padding: '0 14px', borderRadius: '18px', border: '1px solid color-mix(in srgb, var(--bg) 30%, transparent)', background: 'transparent', color: 'var(--bg)', fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
             {share.busy ? '…' : liveTrip ? 'Stop' : 'Share'}
@@ -365,7 +375,7 @@ export default function TripScreen() {
         </div>
         {liveTrip && (
           <>
-            {(delivery.data?.contacts ?? liveTrip.sharedWith.map((name) => ({ name, status: 'queued' as const }))).map((c) => (
+            {liveTrip.texted && (delivery.data?.contacts ?? liveTrip.sharedWith.map((name) => ({ name, status: 'queued' as const }))).map((c) => (
               <div key={c.name} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
                 <span>{c.name}</span>
                 <span style={{ fontWeight: 600, color: statusColor[c.status] }}>{statusText[c.status]}</span>
@@ -376,7 +386,7 @@ export default function TripScreen() {
             )}
             <button className="tap" onClick={() => void sendYourself()} style={{ ...primaryBtn, height: '44px', background: 'var(--bg)', color: 'var(--ink)', fontSize: '14px' }}>
               <Icon d={ICON.share} size={16} />
-              Send the link yourself
+              {liveTrip.texted ? 'Send the link yourself' : 'Share link'}
             </button>
           </>
         )}

@@ -26,6 +26,7 @@ ARG VITE_GOOGLE_CLIENT_ID
 ARG VITE_SAFETY_URL
 ARG VITE_SENTRY_DSN
 ARG VITE_CONTACT_EMAIL
+ARG VITE_SERVER_SMS
 ARG VITE_SENTRY_ENVIRONMENT=production
 ARG VITE_RELEASE
 # CI passes the website settings as one base64 line (KEY=value per line inside): build-push-action

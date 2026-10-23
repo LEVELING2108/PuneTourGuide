@@ -9,6 +9,7 @@ import { useTheme } from '../../stores/theme';
 import SignUpView from '../../views/classic/SignUp.view';
 import DeccanSignUpView from '../../views/deccan/DeccanSignUp.view';
 import { agreeBox, errorText, modeTabs, passwordScore } from './shared';
+import { serverSms } from '../../features/phoneSms';
 
 const LABELS = ['', 'Too weak', 'Okay', 'Strong', 'Excellent'];
 
@@ -64,6 +65,8 @@ export default function SignUpScreen() {
   };
 
   const v = {
+    // Login codes need server texts that reach every number (TECH_DESIGN §9.5); hidden until then
+    phoneLogin: serverSms(),
     ...modeTabs(p, mode, (m) => {
       setMode(m);
       setError('');

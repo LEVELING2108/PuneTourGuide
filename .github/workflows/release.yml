@@ -54,10 +54,11 @@ jobs:
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
           VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
           VITE_CONTACT_EMAIL: ${{ vars.VITE_CONTACT_EMAIL }}
+          VITE_SERVER_SMS: ${{ vars.VITE_SERVER_SMS }}
           VITE_RELEASE: ${{ github.sha }}
         run: |
           file=""
-          for k in VITE_MAP_TILE_URL VITE_MAP_TILES_OFFLINE VITE_GOOGLE_CLIENT_ID VITE_SENTRY_DSN VITE_CONTACT_EMAIL VITE_RELEASE; do
+          for k in VITE_MAP_TILE_URL VITE_MAP_TILES_OFFLINE VITE_GOOGLE_CLIENT_ID VITE_SENTRY_DSN VITE_CONTACT_EMAIL VITE_SERVER_SMS VITE_RELEASE; do
             # Trim spaces and line breaks pasted around a value
             v="$(printf '%s' "${!k}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
             if [ -z "$v" ]; then echo "$k: not set"; continue; fi

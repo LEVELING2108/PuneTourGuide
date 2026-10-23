@@ -213,7 +213,9 @@ Postgres + PostGIS runs on the same server in Docker (no separate database servi
   - If routing is down, Optimise still works and shows "(estimate)".
 
 ### ☐ 9. SMS provider
-**Needed by:** SOS alerts to contacts, "I'm safe", Share live trip, and the contacts test alert (and OTP in Phase 7). **Without it, SOS alerts are only printed to the server log.**
+**Needed by:** server texts: SOS alerts to contacts, "I'm safe", Share live trip, the contacts test alert, and phone-number login (OTP).
+- **Until a provider reaches every Indian number, the phone does the texting** (the website setting `VITE_SERVER_SMS=false`, the default): after the 112 call SOS opens the messaging app with every contact and the alert filled in, trip shares use the phone's share menu, the test alert opens the messaging app, and phone-number login is hidden. Nothing to set up; the person taps Send. Server SOS texts still go as a backup (a trial or console provider is fine for that).
+- **Turning server texts on:** once MSG91 (DLT) or a paid Twilio sender is live, set the GitHub Variable `VITE_SERVER_SMS=true` (and in `.env.production` for local builds), then let Release rebuild and update the app. Phone login comes back and trip shares are texted by the server with delivery status.
 - **India (MSG91):** DLT registration is required by law and takes several days. Register your entity and a sender ID, then get one template approved per message type:
   - Login code / OTP (variable: otp). Keep the last line `@your-domain #code` so Android can fill the code in automatically
   - SOS alert (variables: name, link, map, hospital, medical)
@@ -225,7 +227,11 @@ Postgres + PostGIS runs on the same server in Docker (no separate database servi
   - Settings: `SMS_PROVIDER=msg91`, `SMS_API_KEY=<authkey>`, `MSG91_TEMPLATE_OTP`, `MSG91_TEMPLATE_SOS`, `MSG91_TEMPLATE_SAFE`, `MSG91_TEMPLATE_TRIP`, `MSG91_TEMPLATE_TEST`.
 - **“Call me” (voice code)** works with Twilio only. With MSG91 the app sends the SMS again and says so.
 - **International or testing (Twilio):** `SMS_PROVIDER=twilio`, `SMS_API_KEY=AccountSid:AuthToken`, `SMS_SENDER_ID=+1…`.
-- **Verify:**
+- **Verify (phone texting, the default):**
+  - Settings → Emergency contacts → Send: the messaging app opens with every contact and the TEST text; send it and check it arrives.
+  - SOS drill with a friend who knows it is a drill (hang up the 112 call before it connects): back in the app, the messaging app opens with the alert, the live link and a map pin; send it and they can open the live map.
+  - Plan → Share live trip: the share menu opens with the live link.
+- **Verify (server texts, after `VITE_SERVER_SMS=true`):**
   - Log in → Mobile with your own number: the code arrives within seconds and Android offers to fill it in.
   - Settings → Emergency contacts → Send a test alert: your contact's phone receives the TEST message, and the `SmsMessage` table shows `sent`.
   - Then do one real SOS drill with a friend who knows it is a drill (you can hang up the 112 call before it connects): they receive the alert with the live link and the hospital line; tap "I'm safe" and they receive the follow-up.

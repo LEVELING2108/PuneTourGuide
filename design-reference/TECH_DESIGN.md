@@ -464,17 +464,19 @@ Each feature below follows the same path: **what the user does → what the app 
    - `window.location.href = 'tel:112'` — dialled by the phone itself, works offline.
    - Safety service `POST /api/create-session` → start publishing location every 3 s over `WS /ws/track/{id}`.
    - Tour API `POST /sos/alert {sessionId, lat, lng}` with an `Idempotency-Key`. Server records an `SosEvent`, then queues one BullMQ job per contact: SMS with name, tracking link, nearest hospital, and medical summary if the user allowed it. Jobs retry 3 times with backoff.
-   - **Offline or API failed:** app opens `sms:` with the primary contact's number and a pre-filled message containing the raw coordinates.
+   - **Text from the phone (setting “Text contacts from my phone”, stored as `smsWhenOffline`, on by default):** when the person comes back from the 112 call, the app opens `sms:` with **every** contact and the same alert pre-filled (live link if a session started, a Google Maps pin from GPS, nearest hospital, medical summary under the same rule as the server). The person taps Send: it goes from their own SIM, reaches any number, needs signal but no data, and needs no SMS provider or DLT registration. It opens by itself once per SOS; a “Text my contacts” button opens it again. Several recipients: `sms:a,b?&body=` (Android), `sms://open?addresses=a,b&body=` (iOS). Server texts stay as a backup.
 4. **Cancel after sending:** `POST /sos/cancel` sends “I'm safe” to the same contacts and closes the session.
-5. **Guest users:** 112 call and live session work; alerts need saved contacts, so guests get the `sms:` fallback only if they typed a number.
+5. **Guest users:** 112 call and live session work; the server texts nobody, but the phone text goes to the contacts saved on this device.
+
+**Server SMS switch (`VITE_SERVER_SMS`, build time, default false):** server texts reach every Indian number only with a paid, DLT-registered sender. Until then phone-number login (OTP) is hidden, trip shares and the test alert go from the phone, and SOS server texts are a backup only. The OTP and SMS endpoints stay in place for when it's turned on.
 
 ### 9.6 Live trip sharing
 
-Toggle on in Plan → `POST /share-trip` creates a safety-service session and texts the link to contacts → app publishes location while the toggle is on (and only while the app is open on the web; Capacitor can keep it going longer) → toggle off closes the session.
+Toggle on in Plan → `POST /share-trip {sessionId, text}` records the share for a safety-service session → the link goes out → app publishes location while the toggle is on (and only while the app is open on the web; Capacitor can keep it going longer) → toggle off closes the session. With `VITE_SERVER_SMS` off the app sends `text: false` (no server texts, no contacts needed) and opens the phone's share menu (WhatsApp, SMS…; clipboard as fallback); with it on, the server texts the contacts and Trip mode shows each text's delivery status.
 
 ### 9.7 Emergency contacts and test alert
 
-CRUD on `/contacts` with max 5 and exactly one primary (setting a new primary clears the old one in the same transaction). “Pick from phone contacts” uses the Contact Picker API on Android Chrome or the Capacitor Contacts plugin, then fills the form. Test alert queues SMS marked “TEST — no action needed”, limited to 3 per day.
+CRUD on `/contacts` with max 5 and exactly one primary (setting a new primary clears the old one in the same transaction). “Pick from phone contacts” uses the Contact Picker API on Android Chrome or the Capacitor Contacts plugin, then fills the form. Test alert queues SMS marked “TEST — no action needed”, limited to 3 per day; with `VITE_SERVER_SMS` off it opens the phone's messaging app with the test text to every contact instead.
 
 ### 9.8 Medical info
 

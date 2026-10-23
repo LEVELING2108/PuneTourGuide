@@ -81,7 +81,8 @@ export class LivePublisher {
 
 type LiveState = {
   /** Plan → Share live trip */
-  trip: { sessionId: string; sharedWith: string[] } | null;
+  /** texted: the server texted the link to the contacts; otherwise the phone handed it over. */
+  trip: { sessionId: string; sharedWith: string[]; texted: boolean } | null;
   status: LiveStatus | null;
   set: (patch: Partial<Omit<LiveState, 'set'>>) => void;
 };

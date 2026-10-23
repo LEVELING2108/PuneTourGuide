@@ -9,7 +9,9 @@ export const sosApi = {
   cancel: (key: string) => api<{ cancelled: boolean; contactsTold: number }>('/sos/cancel', { body: {}, headers: { 'Idempotency-Key': key }, keepalive: true }),
 
   activeTrip: () => api<{ sessionId: string; startedAt: string } | null>('/share-trip'),
-  startTrip: (sessionId: string) => api<{ sessionId: string; contactsNotified: number; sharedWith: string[] }>('/share-trip', { body: { sessionId } }),
+  /** text: false = the phone hands the link over itself (no server texts, no contacts needed). */
+  startTrip: (sessionId: string, text = true) =>
+    api<{ sessionId: string; contactsNotified: number; sharedWith: string[] }>('/share-trip', { body: { sessionId, text } }),
   /** Who really got the live-trip text (an SMS trial only reaches verified numbers). */
   tripDelivery: (sessionId: string) =>
     api<{ sessionId: string; contacts: { name: string; status: 'queued' | 'sent' | 'failed' }[] }>(`/share-trip/${sessionId}/delivery`),

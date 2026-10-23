@@ -10,6 +10,7 @@ import { cachedContacts, useContacts } from '../../features/contacts';
 import { isMedical, useHelpNearby } from '../../features/help';
 import { LivePublisher } from '../../features/live';
 import { useCurrentPosition } from '../../features/location';
+import { medicalSummary, smsHref, sosText, trackLink } from '../../features/phoneSms';
 import { getPosition, lastPosition, rememberPosition } from '../../features/permissions';
 import { kmText } from '../../features/places';
 import { metres } from '../../lib/geo';
@@ -22,7 +23,15 @@ const COUNTDOWN = 5;
 const ACTIVE_KEY = 'pe_sos_active';
 
 /** The SOS in progress on this tab. Survives a reload so 112 is never dialled twice by accident. */
-type Active = { key: string; startedAt: number; session: TrackingSession | null; alert: 'sending' | 'sent' | 'failed'; alerted: number };
+type Active = {
+  key: string;
+  startedAt: number;
+  session: TrackingSession | null;
+  alert: 'sending' | 'sent' | 'failed';
+  alerted: number;
+  /** The messaging app was opened for this SOS (only once by itself; the button can open it again). */
+  texted?: boolean;
+};
 
 const loadActive = (): Active | null => {
   try {
@@ -65,24 +74,15 @@ const vibrate = (p: number | number[]) => {
   }
 };
 
-/** Text for the primary contact when the alert could not reach the server (works with no data). */
-function smsFallback(primary: { phone: string } | undefined, fix: { lat: number; lng: number } | null) {
-  if (!primary) return null;
-  const where = fix ? `I'm at https://maps.google.com/?q=${fix.lat.toFixed(5)},${fix.lng.toFixed(5)}` : 'I could not get my location.';
-  const body = `SOS: I need help. ${where} Please call me or 112.`;
-  // "?&body=" works on both Android and iOS
-  return `sms:${primary.phone}?&body=${encodeURIComponent(body)}`;
-}
-
 export default function SosScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [params] = useSearchParams();
   const loggedIn = useIsLoggedIn();
-  const smsWhenOffline = useSettingsStore((s) => s.smsWhenOffline);
+  // "Text contacts from my phone" (stored under its first name, smsWhenOffline)
+  const textFromPhone = useSettingsStore((s) => s.smsWhenOffline);
   const contactsQ = useContacts();
   const contacts = loggedIn && contactsQ.data ? contactsQ.data : cachedContacts();
-  const primary = contacts.find((c) => c.isPrimary) ?? contacts[0];
   const pos = useCurrentPosition();
   const helpQ = useHelpNearby(pos.known ? pos : null);
   const medicalQ = useQuery({ queryKey: ['medical'], queryFn: medicalApi.get, enabled: loggedIn, staleTime: 10 * 60_000 });
@@ -91,6 +91,15 @@ export default function SosScreen() {
   const [count, setCount] = useState(active ? 0 : COUNTDOWN);
   const [fix, setFix] = useState<{ lat: number; lng: number } | null>(null);
   const fired = useRef(!!active);
+  // Left the page (the 112 call) since this SOS fired: coming back opens the messaging app
+  const wentAway = useRef(!!active);
+  useEffect(() => {
+    const onHide = () => {
+      if (document.visibilityState === 'hidden' && fired.current) wentAway.current = true;
+    };
+    document.addEventListener('visibilitychange', onHide);
+    return () => document.removeEventListener('visibilitychange', onHide);
+  }, []);
 
   const setActive = useCallback((a: Active | null) => {
     saveActive(a);
@@ -156,20 +165,6 @@ export default function SosScreen() {
     if (count === 0 && !active) fire();
   }, [count, active, fire]);
 
-  // No data? After the call, open a text to the primary contact with the coordinates.
-  const smsHref = active?.alert === 'failed' && smsWhenOffline ? smsFallback(primary, fix) : null;
-  useEffect(() => {
-    if (!smsHref) return;
-    const onBack = () => {
-      if (document.visibilityState === 'visible') {
-        window.location.href = smsHref;
-        document.removeEventListener('visibilitychange', onBack);
-      }
-    };
-    document.addEventListener('visibilitychange', onBack);
-    return () => document.removeEventListener('visibilitychange', onBack);
-  }, [smsHref]);
-
   const cancel = async (e: React.MouseEvent) => {
     e.preventDefault();
     vibrate(60);
@@ -187,20 +182,6 @@ export default function SosScreen() {
     navigate('/', { replace: true });
   };
 
-  // ── Lines under the countdown (translated: this screen must be understood in a crisis) ──
-  const names = contacts.map((c) => c.name);
-  const namesText =
-    names.length <= 2 ? names.join(t('and')) : `${names.slice(0, 2).join(', ')}${t('more', { count: names.length - 2 })}`;
-  let line1: { pre: string; bold: string; post: string; href?: string | null };
-  if (!contacts.length) line1 = { pre: t('sos.noContacts'), bold: '112', post: active ? t('sos.isBeingCalled') : t('sos.willBeCalled') };
-  else if (active?.alert === 'failed')
-    line1 = smsHref
-      ? { pre: t('sos.serverDown'), bold: t('sos.textPrimary', { name: primary!.name }), post: '', href: smsHref }
-      : { pre: t('sos.alertFailed'), bold: t('sos.callThemAfter'), post: '' };
-  else if (active?.alert === 'sent' && active.alerted > 0) line1 = { pre: '', bold: namesText, post: t('sos.alerted') };
-  else if (active?.alert === 'sent') line1 = { pre: t('sos.loginToAlert'), bold: '112', post: t('sos.isBeingCalled') };
-  else line1 = { pre: t('sos.liveTo'), bold: namesText, post: '' };
-
   const med = medicalQ.data;
   const medicalText = med?.saved ? (med.bloodGroup ? t('sos.medical', { group: med.bloodGroup }) : med.showOnLockScreen ? t('sos.medicalNoGroup') : '') : '';
 
@@ -209,6 +190,53 @@ export default function SosScreen() {
     .filter(isMedical)
     .filter((h) => h.category === 'hospital')
     .map((h) => ({ ...h, km: here ? Math.round((metres(here, h) / 1000) * 10) / 10 : h.km }))[0];
+
+  // After the call: the messaging app with every contact and the alert filled in, sent from this
+  // phone's own SIM (reaches any number, needs signal but no data). The server's texts are a backup.
+  const textHref =
+    active && active.alert !== 'sending' && contacts.length
+      ? smsHref(
+          contacts.map((c) => c.phone),
+          sosText({
+            link: active.session ? trackLink(active.session.session_id) : null,
+            at: here,
+            hospital: hospital ? { name: hospital.name, km: hospital.km } : null,
+            medical: medicalSummary(med?.saved ? med : null),
+          })
+        )
+      : null;
+  const openText = useCallback(() => {
+    if (!textHref || !active) return;
+    if (!active.texted) setActive({ ...active, texted: true });
+    window.location.href = textHref;
+  }, [textHref, active, setActive]);
+  useEffect(() => {
+    if (!textFromPhone || !textHref || active?.texted) return;
+    if (wentAway.current && document.visibilityState === 'visible') {
+      openText();
+      return;
+    }
+    const onBack = () => {
+      if (document.visibilityState === 'visible' && wentAway.current) openText();
+    };
+    document.addEventListener('visibilitychange', onBack);
+    return () => document.removeEventListener('visibilitychange', onBack);
+  }, [textFromPhone, textHref, active?.texted, openText]);
+
+  // ── Lines under the countdown (translated: this screen must be understood in a crisis) ──
+  const names = contacts.map((c) => c.name);
+  const namesText =
+    names.length <= 2 ? names.join(t('and')) : `${names.slice(0, 2).join(', ')}${t('more', { count: names.length - 2 })}`;
+  let line1: { pre: string; bold: string; post: string; href?: string | null };
+  if (!contacts.length) line1 = { pre: t('sos.noContacts'), bold: '112', post: active ? t('sos.isBeingCalled') : t('sos.willBeCalled') };
+  else if (active?.alert === 'failed')
+    line1 = textHref
+      ? { pre: t('sos.serverDown'), bold: t('sos.textContacts'), post: '', href: textHref }
+      : { pre: t('sos.alertFailed'), bold: t('sos.callThemAfter'), post: '' };
+  else if (active?.alert === 'sent' && active.alerted > 0) line1 = { pre: '', bold: namesText, post: t('sos.alerted') };
+  else if (active?.alert === 'sent' && textHref) line1 = { pre: t('sos.textTo'), bold: namesText, post: '', href: textHref };
+  else if (active?.alert === 'sent') line1 = { pre: t('sos.loginToAlert'), bold: '112', post: t('sos.isBeingCalled') };
+  else line1 = { pre: t('sos.liveTo'), bold: namesText, post: '' };
 
   const v = {
     count,
@@ -229,6 +257,12 @@ export default function SosScreen() {
     womenLabel: t('sos.womenLabel'),
     callNowLabel: t('sos.callNow'),
     cancelLabel: t('sos.cancel'),
+    textHref,
+    textLabel: t('sos.textButton'),
+    openText: (e: React.MouseEvent) => {
+      e.preventDefault();
+      openText();
+    },
     callNow: (e: React.MouseEvent) => {
       if (active) return; // already fired: let the link dial again
       e.preventDefault();

@@ -236,6 +236,18 @@ describe('live trip sharing', () => {
     sent.mockImplementation(async () => ({ provider: 'test', providerId: 'p1' }));
   });
 
+  it('can leave the texting to the phone: no texts, no contacts needed', async () => {
+    const u = await signUp({ name: 'Sourav' });
+    const before = texts().length;
+    const sessionId = randomUUID();
+    const r = await api().post('/api/v1/share-trip').set(auth(u.token)).send({ sessionId, text: false });
+    expect(r.status).toBe(201);
+    expect(r.body.data).toMatchObject({ sessionId, contactsNotified: 0, sharedWith: [] });
+    expect(texts()).toHaveLength(before);
+    expect((await api().get('/api/v1/share-trip').set(auth(u.token))).body.data.sessionId).toBe(sessionId);
+    expect((await api().get(`/api/v1/share-trip/${sessionId}/delivery`).set(auth(u.token))).body.data.contacts).toEqual([]);
+  });
+
   it('is for logged-in users only', async () => {
     expect((await api().post('/api/v1/share-trip').send({ sessionId: randomUUID() })).status).toBe(401);
   });
