@@ -29,7 +29,7 @@ const EnvSchema = z.object({
   // Google Maps Platform, server side only (Places API (New) + Routes API). Unset = Google features off.
   GOOGLE_MAPS_SERVER_KEY: z.string().optional(),
   // Most Google calls per kind per day (Pune time), across all instances. Keeps spend inside the free monthly amounts.
-  GOOGLE_DAILY_CAPS: z.string().default('details=230,nearby=230,photo=300'),
+  GOOGLE_DAILY_CAPS: z.string().default('details=230,nearby=230,photo=150,thumb=250'),
   SMS_PROVIDER: z.enum(['console', 'msg91', 'twilio']).default('console'),
   SMS_API_KEY: z.string().optional(),
   SMS_SENDER_ID: z.string().optional(),

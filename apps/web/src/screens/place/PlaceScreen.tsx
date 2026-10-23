@@ -125,6 +125,8 @@ export default function PlaceScreen() {
       });
     },
     heroPhoto: heroPhoto && heroFailed !== heroPhoto ? heroPhoto : null,
+    // Once Google has answered (or failed) and there's still no photo to show
+    heroNote: !google.isPending && !(heroPhoto && heroFailed !== heroPhoto) ? 'Photo not available right now' : null,
     heroPhotoFailed: () => setHeroFailed(heroPhoto),
     heroCredit: heroPhoto && heroFailed !== heroPhoto ? photoCredit(g?.photo ?? null) : null,
     ratingLine: g ? [ratingText(g.rating, g.ratingCount), liveStatus].filter(Boolean).join(' · ') || null : null,

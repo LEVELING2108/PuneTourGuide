@@ -1,7 +1,7 @@
 import { GoogleApiError, googleConfigured, googlePlaces, type GooglePlace } from '../../clients/googlePlaces';
 import { notFound } from '../../lib/errors';
 import { haversineKm } from '../../lib/geo';
-import { takeGoogleBudget, type GoogleKind } from '../../lib/googleBudget';
+import { photoKind, takeGoogleBudget, type GoogleKind } from '../../lib/googleBudget';
 import { logger } from '../../lib/logger';
 import { sharedRedis } from '../../services/cacheService';
 import { googleRepo } from './google.repository';
@@ -137,7 +137,7 @@ export const googleService = {
 
   /** Short-lived image URL for a Google photo; the app is redirected to it. */
   async photoUrl(name: string, width: number) {
-    const uri = await guarded('photo', () => googlePlaces.photoUri(name, width));
+    const uri = await guarded(photoKind(width), () => googlePlaces.photoUri(name, width));
     return isOff(uri) ? null : uri;
   },
 

@@ -507,7 +507,7 @@ Since 2026-10-21 everything except SOS moves to Google Maps Platform (this step:
 - Side quest page `/spot/:googleId`: `GET /google/spots/:googleId` (details + 3 photos); "Been here?" `POST /google/spots/:googleId/visit` gives +10 XP once (`SpotVisit`, only the Google id is stored; only spots the server has shown can be claimed).
 - Photos: `GET /google/photo?name&w` redirects to Google's short-lived image URL (the key stays on the server; photo authors are credited).
 - Rules from Google's terms: no Google content is stored or cached (responses are `no-store`; `/api/v1/google` is outside the offline cache; the query cache is memory only); Google data never appears on our non-Google map; "Google Maps" attribution on every Google row.
-- Cost: the server key is restricted to Places + Routes and sent in a header. Daily caps per call kind (`GOOGLE_DAILY_CAPS`, Redis, Pune day) are the hard limit because the console quotas can't be lowered; when reached, or when Google fails, endpoints return `{ available: false, reason }` and the app shows its own data. Plus a ₹1,000/month budget alert.
+- Cost: the server key is restricted to Places + Routes and sent in a header. Daily caps per call kind (`GOOGLE_DAILY_CAPS`, Redis, Pune day) are the hard limit because the console quotas can't be lowered. Photos are split: `photo` for the big photo at the top of a page and `thumb` for row thumbnails (≤ 480 px), so scrolling side quests can't use up the main photos; row cards fetch their photo only once on screen (IntersectionObserver), since Google photos can't be stored or cached; when reached, or when Google fails, endpoints return `{ available: false, reason }` and the app shows its own data. Plus a ₹1,000/month budget alert.
 
 ### 9.14 Trip mode: Start Day N
 
