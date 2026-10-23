@@ -8,6 +8,7 @@ import { useContacts } from '../../features/contacts';
 import { kmText, placeTone, usePlan } from '../../features/places';
 import { namesText } from '../../features/live';
 import { defaultDayId, useMoveStop, useOptimiseDay, useTickStop } from '../../features/plan';
+import { serverSms } from '../../features/phoneSms';
 import { isNoContacts, useTripShare } from '../../features/trip';
 import { startButton } from '../../features/tripLogic';
 import { useStartDay, useTripRun, useTripStore } from '../../features/tripMode';
@@ -144,12 +145,17 @@ export default function PlanScreen() {
       : share.on
         ? share.status === 'reconnecting'
           ? 'Reconnecting · your last location stays visible'
-          : `${namesText(share.sharedWith)} can follow your route`
+          : share.texted
+            ? `${namesText(share.sharedWith)} can follow your route`
+            : 'Anyone with your link can follow your route'
         : 'Off · nobody can see your location',
     toggleShare: () => {
       share
         .toggle()
-        .then((r) => toast.flash(r.on ? `Live trip shared with ${namesText(r.sharedWith ?? [])}` : 'Stopped sharing your location'))
+        .then((r) => {
+          const note = !r.on ? 'Stopped sharing your location' : r.texted ? `Live trip shared with ${namesText(r.sharedWith ?? [])}` : r.handed === 'copied' ? 'Link copied · paste it in WhatsApp or a text' : null;
+          if (note) toast.flash(note);
+        })
         .catch((err) => {
           if (isNoContacts(err)) navigate('/settings/contacts/new');
           else toast.flash(err instanceof Error ? err.message : 'Could not start sharing');
@@ -172,16 +178,23 @@ export default function PlanScreen() {
         await startDay(day);
         let notice: string | null = null;
         const names = (contacts.data ?? []).map((c) => c.name);
-        if (names.length && !useLiveStore.getState().trip) {
+        // Server texts go to the saved contacts; from the phone, the person picks who gets the link
+        const texts = serverSms();
+        if ((names.length || !texts) && !useLiveStore.getState().trip) {
           const yes = await ask({
-            title: `Share your live trip with ${namesText(names)}?`,
-            detail: 'They get a link to follow you on a map until you end the day. You can stop any time.',
+            title: texts ? `Share your live trip with ${namesText(names)}?` : 'Share your live trip?',
+            detail: texts
+              ? 'They get a link to follow you on a map until you end the day. You can stop any time.'
+              : 'Send a link with WhatsApp, SMS or any app. They can follow you on a map until you end the day. You can stop any time.',
             confirm: 'Share live trip',
           });
           if (yes) {
             await share
               .toggle()
-              .then((r) => useTripStore.getState().set({ shareSession: r.on ? useLiveStore.getState().trip?.sessionId ?? null : null }))
+              .then((r) => {
+                useTripStore.getState().set({ shareSession: r.on ? useLiveStore.getState().trip?.sessionId ?? null : null });
+                if (r.handed === 'copied') notice = 'Link copied · paste it in WhatsApp or a text';
+              })
               .catch(() => (notice = "Live sharing didn't start. Tap Share below to try again."));
           }
         }

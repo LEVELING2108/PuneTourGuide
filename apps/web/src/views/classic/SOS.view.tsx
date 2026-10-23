@@ -119,6 +119,14 @@ export default function SOSView({ v }: ViewProps) {
           </a>
         </div>
         <div className="rise d5" style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "10px" }}>
+          {v.textHref && (
+            <a className="tap" href={v.textHref} onClick={v.openText} style={{ height: "56px", borderRadius: "28px", border: "1px solid rgba(255,255,255,0.4)", color: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontSize: "15px", fontWeight: "600", textDecoration: "none" }}>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M4 5h16v11H9l-5 4z" />
+              </svg>
+              {v.textLabel}
+            </a>
+          )}
           <a className="tap" href="tel:112" onClick={v.callNow} style={{ height: "60px", borderRadius: "30px", background: "var(--surface)", color: "#8F1D12", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", fontSize: "16px", fontWeight: "700", textDecoration: "none" }}>
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" />

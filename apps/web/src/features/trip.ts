@@ -6,6 +6,7 @@ import { useIsLoggedIn } from '../stores/auth';
 import { getTripPublisher, LivePublisher, setTripPublisher, useLiveStore } from './live';
 import { lastPosition } from './permissions';
 import { autoDownloadPacks } from './offline';
+import { serverSms, shareTrackLink } from './phoneSms';
 import { useSettingsStore } from '../stores/settings';
 
 /** Stop the live share (toggle off, sign-out, or the page closing). */
@@ -19,8 +20,9 @@ export async function stopTripShare() {
 }
 
 /**
- * Plan → Share live trip (TECH_DESIGN §9.6): new tracking session → server texts the link to
- * contacts → this phone publishes its location while the toggle is on and the app is open.
+ * Plan → Share live trip (TECH_DESIGN §9.6): new tracking session → the link goes out (the phone's
+ * share menu, or server texts to the contacts when server SMS is on) → this phone publishes its
+ * location while the toggle is on and the app is open.
  */
 export function useTripShare() {
   const trip = useLiveStore((s) => s.trip);
@@ -29,21 +31,23 @@ export function useTripShare() {
 
   const start = async () => {
     const session = await trackingApi.create();
+    const texted = serverSms();
     try {
-      const r = await sosApi.startTrip(session.session_id);
+      const r = await sosApi.startTrip(session.session_id, texted);
       const pub = new LivePublisher(session, (s) => useLiveStore.getState().set({ status: s }));
       setTripPublisher(pub);
-      useLiveStore.getState().set({ trip: { sessionId: session.session_id, sharedWith: r.sharedWith } });
+      useLiveStore.getState().set({ trip: { sessionId: session.session_id, sharedWith: r.sharedWith, texted } });
       const last = lastPosition();
       pub.start(last.known ? last : undefined);
-      return r;
+      return { ...r, texted };
     } catch (err) {
       void trackingApi.close(session);
       throw err;
     }
   };
 
-  const toggle = async (): Promise<{ on: boolean; sharedWith?: string[] }> => {
+  /** handed: what happened to the phone's share menu when the phone hands the link over. */
+  const toggle = async (): Promise<{ on: boolean; sharedWith?: string[]; texted?: boolean; handed?: 'shared' | 'copied' | 'cancelled' }> => {
     if (busy) return { on: !!trip };
     setBusy(true);
     try {
@@ -52,13 +56,14 @@ export function useTripShare() {
         return { on: false };
       }
       const r = await start();
-      return { on: true, sharedWith: r.sharedWith };
+      const handed = r.texted ? undefined : await shareTrackLink(r.sessionId);
+      return { on: true, sharedWith: r.sharedWith, texted: r.texted, handed };
     } finally {
       setBusy(false);
     }
   };
 
-  return { on: !!trip, sharedWith: trip?.sharedWith ?? [], status, busy, toggle };
+  return { on: !!trip, sharedWith: trip?.sharedWith ?? [], texted: trip?.texted ?? false, status, busy, toggle };
 }
 
 export const isNoContacts = (err: unknown) => err instanceof ApiError && err.code === 'NO_CONTACTS';

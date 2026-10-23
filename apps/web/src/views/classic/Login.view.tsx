@@ -75,11 +75,13 @@ export default function LoginView({ v }: ViewProps) {
           or
           <span style={{ flex: "1", height: "1px", background: "#DDE1DD" }} />
         </div>
-        <div className="rise d4" role="tablist" aria-label="Log in with" style={{ position: "relative", height: "44px", borderRadius: "22px", background: "#E9EBE7", padding: "4px", boxSizing: "border-box", display: "flex" }}>
-          <div className="seg" style={{ position: "absolute", top: "4px", left: "4px", width: "calc(50% - 4px)", height: "36px", borderRadius: "18px", background: "var(--surface)", boxShadow: "0 2px 8px -2px rgba(17,22,20,0.2)", transform: `translateX(${v.segX})` }} />
-          <button className="segtxt" role="tab" aria-selected={v.emailSel} onClick={v.pickEmail} style={{ position: "relative", flex: "1", border: "none", background: "transparent", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "600", color: v.emailColor, cursor: "pointer" }}>Email</button>
-          <button className="segtxt" role="tab" aria-selected={v.phoneSel} onClick={v.pickPhone} style={{ position: "relative", flex: "1", border: "none", background: "transparent", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "600", color: v.phoneColor, cursor: "pointer" }}>Mobile number</button>
-        </div>
+        {v.phoneLogin && (
+          <div className="rise d4" role="tablist" aria-label="Log in with" style={{ position: "relative", height: "44px", borderRadius: "22px", background: "#E9EBE7", padding: "4px", boxSizing: "border-box", display: "flex" }}>
+            <div className="seg" style={{ position: "absolute", top: "4px", left: "4px", width: "calc(50% - 4px)", height: "36px", borderRadius: "18px", background: "var(--surface)", boxShadow: "0 2px 8px -2px rgba(17,22,20,0.2)", transform: `translateX(${v.segX})` }} />
+            <button className="segtxt" role="tab" aria-selected={v.emailSel} onClick={v.pickEmail} style={{ position: "relative", flex: "1", border: "none", background: "transparent", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "600", color: v.emailColor, cursor: "pointer" }}>Email</button>
+            <button className="segtxt" role="tab" aria-selected={v.phoneSel} onClick={v.pickPhone} style={{ position: "relative", flex: "1", border: "none", background: "transparent", fontFamily: "var(--font-body)", fontSize: "13.5px", fontWeight: "600", color: v.phoneColor, cursor: "pointer" }}>Mobile number</button>
+          </div>
+        )}
         {v.isEmail && (
           <>
             <div className="swap" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>

@@ -89,11 +89,13 @@ export const sosService = {
   },
 
   // ── Live trip sharing (TECH_DESIGN §9.6) ───────────────────────
-  async startTrip(userId: number, sessionId: string) {
+  /** Live trip share. `text` = the server texts the link to every contact; otherwise the phone hands it over. */
+  async startTrip(userId: number, sessionId: string, text = true) {
     const sender = await sosRepo.sender(userId);
-    if (!sender?.contacts.length) throw conflict('NO_CONTACTS', 'Add an emergency contact to share your trip');
+    const contacts = sender?.contacts ?? [];
+    if (text && !contacts.length) throw conflict('NO_CONTACTS', 'Add an emergency contact to share your trip');
     const existing = await sosRepo.tripBySession(userId, sessionId);
-    if (existing) return { sessionId, contactsNotified: existing.contactsNotified, sharedWith: sender.contacts.map((c) => c.name) };
+    if (existing) return { sessionId, contactsNotified: existing.contactsNotified, sharedWith: contacts.map((c) => c.name) };
     await sosRepo.endTrips(userId); // one live share at a time
     let trip;
     try {
@@ -101,9 +103,10 @@ export const sosService = {
     } catch {
       throw conflict('SESSION_TAKEN', 'Start sharing again');
     }
-    const logIds = await enqueueSms(userId, sender.contacts.map((c) => tripSms(c, sender.name, sessionId)));
-    await sosRepo.setTripNotified(trip.id, sender.contacts.length, logIds);
-    return { sessionId, contactsNotified: sender.contacts.length, sharedWith: sender.contacts.map((c) => c.name) };
+    if (!text || !sender) return { sessionId, contactsNotified: 0, sharedWith: contacts.map((c) => c.name) };
+    const logIds = await enqueueSms(userId, contacts.map((c) => tripSms(c, sender.name, sessionId)));
+    await sosRepo.setTripNotified(trip.id, contacts.length, logIds);
+    return { sessionId, contactsNotified: contacts.length, sharedWith: contacts.map((c) => c.name) };
   },
 
   /**

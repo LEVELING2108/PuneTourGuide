@@ -102,10 +102,10 @@ export default function DeccanContactsView({ v }: ViewProps) {
         <div className="rise d4" style={{ display: "flex", flexDirection: "column", borderTop: "1px solid var(--line)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 0", borderBottom: "1px solid var(--line)" }}>
             <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "2px" }}>
-              <div style={{ fontSize: "14.5px", fontWeight: "600" }}>Send SMS when offline</div>
+              <div style={{ fontSize: "14.5px", fontWeight: "600" }}>Text contacts from my phone</div>
               <div style={{ fontSize: "12.5px", color: "var(--muted)" }}>{v.smsText}</div>
             </div>
-            <button onClick={v.toggleSms} aria-label="Send SMS when offline" aria-pressed={v.smsPressed} style={{ position: "relative", width: "52px", height: "32px", border: "none", padding: "0", background: "transparent", cursor: "pointer", flexShrink: "0" }}>
+            <button onClick={v.toggleSms} aria-label="Text contacts from my phone" aria-pressed={v.smsPressed} style={{ position: "relative", width: "52px", height: "32px", border: "none", padding: "0", background: "transparent", cursor: "pointer", flexShrink: "0" }}>
               <span className="track" style={{ position: "absolute", inset: "0", borderRadius: "16px", background: v.smsTrack }} />
               <span className="knob" style={{ position: "absolute", top: "4px", left: v.smsKnob, width: "24px", height: "24px", borderRadius: "12px", background: "var(--surface)", boxShadow: "0 2px 6px rgba(0,0,0,0.25)" }} />
             </button>

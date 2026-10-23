@@ -20,7 +20,8 @@ const alertSchema = z
   .strict()
   .refine((b) => (b.lat === undefined) === (b.lng === undefined), 'Send both lat and lng, or neither');
 const cancelSchema = z.object({}).strict();
-const tripSchema = z.object({ sessionId: uuid }).strict();
+// text: false = the app hands the link over from the phone itself (no server texts, no contacts needed)
+const tripSchema = z.object({ sessionId: uuid, text: z.boolean().default(true) }).strict();
 
 /** Idempotency-Key header (a UUID the phone generates once per SOS). */
 const idemKey = (h: string | undefined) => {
@@ -57,7 +58,10 @@ router.post(
   requireAuth,
   tripShareLimit,
   validate({ body: tripSchema }),
-  handle(async (_req, res) => ok(res, await sosService.startTrip(userId(res), input<z.infer<typeof tripSchema>>(res).body.sessionId), undefined, 201))
+  handle(async (_req, res) => {
+    const { sessionId, text } = input<z.infer<typeof tripSchema>>(res).body;
+    return ok(res, await sosService.startTrip(userId(res), sessionId, text), undefined, 201);
+  })
 );
 
 router.get(
