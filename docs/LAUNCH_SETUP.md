@@ -274,7 +274,7 @@ Postgres + PostGIS runs on the same server in Docker (no separate database servi
 - **Verify:** search "FC Road" on the Map: it moves to FC Road.
 
 ### ☐ 13. Verify the place data
-**Needed by:** Explore, Place, Plan and routes. The 26 curated places live in `services/tour-api/src/seed/catalogue.ts`. In production, load them with `node dist/seed.js --force` (Part 5).
+**Needed by:** Explore, Place, Plan and routes. The 52 curated places live in `services/tour-api/src/seed/catalogue.ts`. In production, load them with `node dist/seed.js --force` (Part 5); after adding places, run it again, then `node dist/scripts/link-google-places.js` so the new ones get photos and side quests.
 - **Pins:** checked on 2026-10-11 against OpenStreetMap with `npm run check:places -w services/tour-api`. 25 of 26 are confirmed, and 7 were corrected (Empress Garden, Goodluck Cafe, Mahatma Phule Museum, Vetal Tekdi, Pashan Lake, Vishrambaug Wada, Vaishali). **Bedekar Misal** is not in OpenStreetMap: confirm its pin on the spot.
 - **Hours:** filled in from current public listings where they were blank. Where sources disagree, or a place has a weekly closed day or a lunch break, only the text is shown, and the app doesn't claim "open now".
 - **Still to confirm at the counter or by phone** (public sources disagree):
