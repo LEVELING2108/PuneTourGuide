@@ -6,10 +6,10 @@ import { sharedRedis } from '../services/cacheService';
  * account, so every server call takes a unit here first. Counted in Redis (shared by all
  * instances) per Pune day; if Redis is down, each instance counts in memory instead.
  */
-export type GoogleKind = 'details' | 'nearby' | 'photo';
+export type GoogleKind = 'details' | 'nearby' | 'photo' | 'thumb';
 
 export function parseCaps(spec: string): Record<GoogleKind, number> {
-  const caps: Record<GoogleKind, number> = { details: 0, nearby: 0, photo: 0 };
+  const caps: Record<GoogleKind, number> = { details: 0, nearby: 0, photo: 0, thumb: 0 };
   for (const part of spec.split(',')) {
     const [k, v] = part.split('=').map((x) => x.trim());
     if (k in caps && /^\d+$/.test(v ?? '')) caps[k as GoogleKind] = Number(v);
@@ -18,6 +18,15 @@ export function parseCaps(spec: string): Record<GoogleKind, number> {
 }
 
 const caps = parseCaps(env.GOOGLE_DAILY_CAPS);
+
+/** Widths up to this are row thumbnails; wider ones are the big photo at the top of a page. */
+export const THUMB_MAX_W = 480;
+
+/**
+ * Thumbnails take their own share ("thumb") so a long scroll through side quests can never use up
+ * the main photos. With no thumb share set (thumb=0 or left out), they count against "photo".
+ */
+export const photoKind = (width: number, c = caps): GoogleKind => (width <= THUMB_MAX_W && c.thumb > 0 ? 'thumb' : 'photo');
 
 /** "2026-10-21" in Pune time. */
 export const puneDay = (now = new Date()) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(now);

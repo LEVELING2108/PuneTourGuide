@@ -41,7 +41,12 @@ export default function PlaceView({ v }: ViewProps) {
               <circle cx="210" cy="210" r="140" fill="none" stroke="var(--bg)" />
               <circle cx="210" cy="210" r="190" fill="none" stroke="var(--bg)" />
             </svg>
-            {!v.heroPhoto && <div style={{ fontSize: "12px", letterSpacing: "0.14em", color: "#A9CFC6", border: "1px dashed #5F8F86", borderRadius: "12px", padding: "8px 14px", marginTop: "-40px" }}>PLACE PHOTO</div>}
+            {v.heroNote && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", marginTop: "-40px", fontSize: "12.5px", color: "rgba(246,246,243,0.72)" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
+                {v.heroNote}
+              </div>
+            )}
             {v.heroPhoto && (
               <>
                 <img src={v.heroPhoto} alt="" decoding="async" onError={v.heroPhotoFailed} style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover" }} />

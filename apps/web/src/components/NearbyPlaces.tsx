@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 
 export type NearbyCard = {
@@ -12,7 +12,7 @@ export type NearbyCard = {
   status: string | null;
   closed: boolean;
   href: string;
-  /** Google photo (lazy-loaded); the tone bar shows instead when missing or failing. */
+  /** Google photo, fetched only once the card is on screen; the tone bar shows instead when missing or failing. */
   photoUrl?: string | null;
   /** "★ 4.6 · 1,200 reviews" */
   rating?: string | null;
@@ -56,13 +56,40 @@ const css = `
 
 const heading = { margin: 0, fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 400, lineHeight: 1.1 } as const;
 
+/**
+ * True once the element has been on screen. Every Google photo is a paid call and can't be kept,
+ * and a browser's own lazy loading fetches a whole sideways row at once, so cards wait until seen.
+ */
+function useSeen<T extends Element>(enabled: boolean) {
+  const ref = useRef<T>(null);
+  const [seen, setSeen] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!enabled || seen || !el) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      setSeen(true);
+      return;
+    }
+    // The row's own scroll box clips cards to its right, so only the ones in view count
+    const io = new IntersectionObserver((entries) => entries.some((e) => e.isIntersecting) && setSeen(true), { rootMargin: '200px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [enabled, seen]);
+  return [ref, seen] as const;
+}
+
 function Card({ c }: { c: NearbyCard }) {
   const [photoFailed, setPhotoFailed] = useState(false);
   const photo = c.photoUrl && !photoFailed;
+  const [ref, seen] = useSeen<HTMLLIElement>(!!photo);
   return (
-    <li className="nearby-card" style={{ position: 'relative', flex: '0 0 168px', listStyle: 'none', borderRadius: '18px', background: 'var(--surface)', border: '1px solid var(--line)', overflow: 'hidden' }}>
+    <li ref={ref} className="nearby-card" style={{ position: 'relative', flex: '0 0 168px', listStyle: 'none', borderRadius: '18px', background: 'var(--surface)', border: '1px solid var(--line)', overflow: 'hidden' }}>
       {photo ? (
-        <img src={c.photoUrl!} alt="" loading="lazy" decoding="async" onError={() => setPhotoFailed(true)} style={{ display: 'block', width: '100%', height: '92px', objectFit: 'cover', background: c.tone }} />
+        seen ? (
+          <img src={c.photoUrl!} alt="" decoding="async" onError={() => setPhotoFailed(true)} style={{ display: 'block', width: '100%', height: '92px', objectFit: 'cover', background: c.tone }} />
+        ) : (
+          <span aria-hidden="true" style={{ display: 'block', height: '92px', background: 'var(--line)' }} />
+        )
       ) : (
         <span aria-hidden="true" style={{ display: 'block', height: '6px', background: c.tone }} />
       )}

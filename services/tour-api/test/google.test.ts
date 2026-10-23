@@ -1,6 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { googleConfigured, googlePlaces, GoogleApiError, type GooglePlace } from '../src/clients/googlePlaces';
-import { parseCaps, takeGoogleBudget } from '../src/lib/googleBudget';
+import { parseCaps, photoKind, takeGoogleBudget } from '../src/lib/googleBudget';
 import { prisma } from '../src/lib/prisma';
 import { seedCatalogue } from '../src/seed/run';
 import { resetKnownSpots, searchRadiusM } from '../src/v1/google/google.service';
@@ -124,6 +124,11 @@ describe('google places', () => {
     expect(res.headers.location).toBe('https://lh3.googleusercontent.com/photo-abc');
     expect(res.headers['cache-control']).toBe('no-store');
     expect(g.photoUri).toHaveBeenCalledWith(name, 400);
+    // A row thumbnail and the big photo draw on separate daily shares
+    expect(budget).toHaveBeenLastCalledWith('thumb');
+    g.photoUri.mockResolvedValueOnce('https://lh3.googleusercontent.com/photo-big');
+    expect((await api().get('/api/v1/google/photo').query({ name, w: 860 })).status).toBe(302);
+    expect(budget).toHaveBeenLastCalledWith('photo');
 
     budget.mockResolvedValueOnce(false);
     expect((await api().get('/api/v1/google/photo').query({ name })).status).toBe(404);
@@ -134,6 +139,15 @@ describe('google places', () => {
 
 describe('google daily budget', () => {
   it('reads caps from config', () => {
-    expect(parseCaps('details=230, nearby=10,photo=0,bogus=5,details2=x')).toEqual({ details: 230, nearby: 10, photo: 0 });
+    expect(parseCaps('details=230, nearby=10,photo=0,bogus=5,details2=x')).toEqual({ details: 230, nearby: 10, photo: 0, thumb: 0 });
+  });
+
+  it('gives thumbnails their own share, or the photo share when none is set', () => {
+    const split = parseCaps('photo=150,thumb=250');
+    expect(photoKind(336, split)).toBe('thumb');
+    expect(photoKind(480, split)).toBe('thumb');
+    expect(photoKind(860, split)).toBe('photo');
+    // An older config with photo only: thumbnails keep counting against it, never on top of it
+    expect(photoKind(336, parseCaps('photo=300'))).toBe('photo');
   });
 });

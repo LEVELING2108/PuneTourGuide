@@ -68,6 +68,12 @@ export default function SpotScreen() {
       <style href="spot" precedence="screens">{css}</style>
       <div data-scroll="" style={{ position: 'absolute', inset: 0, overflowY: 'auto', overflowX: 'hidden' }}>
         <div style={{ height: 'calc(var(--sb) + 256px)', position: 'relative', overflow: 'hidden', background: 'var(--primary)' }}>
+          {!hero && s && (
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '12.5px', color: 'rgba(255,255,255,0.75)' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
+              Photo not available right now
+            </div>
+          )}
           {hero && (
             <>
               <img src={googlePhotoUrl(hero, 860)} alt="" decoding="async" onError={() => setFailed((f) => [...f, hero.name])} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />

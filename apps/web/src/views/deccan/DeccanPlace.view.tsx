@@ -45,6 +45,12 @@ export default function DeccanPlaceView({ v }: ViewProps) {
               <path d="M150 86 V66 H240 V86 Z M170 66 a25 18 0 0 1 50 0 Z" fill="#073638" />
               <path d="M48 170 V130 a14 14 0 0 1 28 0 V170 Z M92 170 V130 a14 14 0 0 1 28 0 V170 Z M136 170 V130 a14 14 0 0 1 28 0 V170 Z M180 170 V124 a15 15 0 0 1 30 0 V170 Z M226 170 V130 a14 14 0 0 1 28 0 V170 Z M270 170 V130 a14 14 0 0 1 28 0 V170 Z M314 170 V130 a14 14 0 0 1 28 0 V170 Z" fill="#0E5B5E" />
             </svg>
+            {v.heroNote && (
+              <div style={{ position: "absolute", right: "22px", top: "calc(var(--sb) + 72px)", display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "rgba(246,246,243,0.75)" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
+                {v.heroNote}
+              </div>
+            )}
             {v.heroPhoto && (
               <>
                 <img src={v.heroPhoto} alt="" decoding="async" onError={v.heroPhotoFailed} style={{ position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover" }} />

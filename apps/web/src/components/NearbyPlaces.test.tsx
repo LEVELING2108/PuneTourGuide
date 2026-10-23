@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 import { shortKmText, travelText } from '../features/places';
@@ -80,5 +80,34 @@ describe('NearbyPlaces', () => {
     expect(queryByRole('button')).toBeNull();
     expect(queryByRole('link', { name: 'See on map' })).toBeNull();
     expect(getByText('Places, ratings and photos: Google Maps')).toBeInTheDocument();
+  });
+
+  it('fetches a photo only once its card is on screen', () => {
+    let show: (seen: boolean) => void = () => undefined;
+    const observe = vi.fn();
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(cb: (e: { isIntersecting: boolean }[]) => void) {
+          show = (seen) => cb([{ isIntersecting: seen }]);
+        }
+        observe = observe;
+        disconnect = vi.fn();
+      }
+    );
+    try {
+      const { container } = renderRows({
+        sections: [{ key: 'quests', title: 'Side quests', items: [card({ key: 'ChIJ-far', photoUrl: '/api/v1/google/photo?name=far', toggle: undefined })] }],
+        mapHref: undefined,
+      });
+      expect(observe).toHaveBeenCalled();
+      expect(container.querySelector('img')).toBeNull();
+      act(() => show(false));
+      expect(container.querySelector('img')).toBeNull();
+      act(() => show(true));
+      expect(container.querySelector('img')).toHaveAttribute('src', '/api/v1/google/photo?name=far');
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
