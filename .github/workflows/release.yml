@@ -111,7 +111,8 @@ jobs:
   deploy:
     needs: images
     runs-on: ubuntu-latest
-    # Only once the server exists: set the repository Variable DEPLOY_ENABLED=true (and the DEPLOY_* secrets)
+    # Only once the server exists: set the repository Variable DEPLOY_ENABLED=true (and the DEPLOY_* secrets).
+    # Setup and rollback: docs/LAUNCH_SETUP.md Part 7.
     if: ${{ vars.DEPLOY_ENABLED == 'true' }}
     steps:
       - name: Update the server
@@ -120,20 +121,29 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
+          # The server must prove it is ours before the key is used (ssh-keygen -lf on its host key)
+          fingerprint: ${{ secrets.DEPLOY_HOST_FINGERPRINT }}
           script: |
             set -e
             cd /opt/pune-explorer
-            # Run exactly the images this workflow just built (research or main)
-            sed -i "s/^RELEASE=.*/RELEASE=${{ github.sha }}/" .env.production
-            sed -i -E "s#^APP_IMAGE=([^:]+):.*#APP_IMAGE=\1:${{ github.sha }}#; s#^SAFETY_IMAGE=([^:]+):.*#SAFETY_IMAGE=\1:${{ github.sha }}#" .env.production
-            docker compose --env-file .env.production pull
-            docker compose --env-file .env.production up -d --remove-orphans
+            # Run exactly the images this workflow just built (research or main). They go in a small
+            # file of their own, so the deploy user never edits .env.production (the secrets).
+            app=$(grep -E '^APP_IMAGE=' .env.production | cut -d= -f2- | tr -d "\"'" | sed -E 's/:[^:/]+$//')
+            safety=$(grep -E '^SAFETY_IMAGE=' .env.production | cut -d= -f2- | tr -d "\"'" | sed -E 's/:[^:/]+$//')
+            {
+              echo "APP_IMAGE=$app:${{ github.sha }}"
+              echo "SAFETY_IMAGE=$safety:${{ github.sha }}"
+              echo "RELEASE=${{ github.sha }}"
+            } > .env.release
+            dc() { docker compose --env-file .env.production --env-file .env.release "$@"; }
+            dc pull
+            dc up -d --remove-orphans
             docker image prune -f
             # Wait for the new version to answer (asked inside the container: port 80 only redirects to HTTPS)
             for i in $(seq 1 30); do
-              docker compose --env-file .env.production exec -T app node -e "fetch('http://127.0.0.1:3001/api/v1/health/ready').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))" && exit 0
+              dc exec -T app node -e "fetch('http://127.0.0.1:3001/api/v1/health/ready').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))" && exit 0
               sleep 5
             done
             echo "The app did not become ready" >&2
-            docker compose --env-file .env.production logs --tail 50 app
+            dc logs --tail 50 app
             exit 1
