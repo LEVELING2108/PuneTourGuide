@@ -58,7 +58,7 @@ npm run setup
 
 It checks the tools, then:
 - **Settings:** creates the `.env` files, with random development secrets.
-- **Database:** starts this project's own **PostgreSQL + PostGIS (port 5440)** and **Redis (port 6390)** in Docker, applies the migrations and loads the 26 curated places.
+- **Database:** starts this project's own **PostgreSQL + PostGIS (port 5440)** and **Redis (port 6390)** in Docker, applies the migrations and loads the 52 curated places.
 - **Safety service:** builds its Python environment.
 - **Help points:** imports Pune's real hospitals, clinics, police and fire stations from OpenStreetMap, which takes a few minutes.
 
