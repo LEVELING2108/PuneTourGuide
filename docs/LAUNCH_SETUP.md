@@ -91,10 +91,32 @@ Postgres + PostGIS runs on the same server in Docker (no separate database servi
 - **Check each one** using the **Verify** line of its step below: 7 (map), 19 (Sentry), 9 (SMS), 16 (email), 17 (Google), 17b (Google Maps), 18 (Terms and Privacy).
 
 **Part 7: automatic deploys and monitoring**
-1. **Automatic deploys:** in GitHub → *Settings → Secrets and variables → Actions*:
-   - **Secrets:** `DEPLOY_HOST` (server IP), `DEPLOY_USER` (your user name on the server: the part before `@pune-explorer` in the SSH window), `DEPLOY_SSH_KEY` (the whole text of a private key whose public half you added under *Compute Engine → VM instances → pune-explorer → Edit → SSH keys*).
-   - **Variable:** `DEPLOY_ENABLED=true`.
-   - From then on, every merge into `research` (and later `main`) updates the server by itself.
+1. **Automatic deploys:** every merge into `research` (and later `main`) updates the server by itself, through a separate `deploy` user that can only run Docker.
+   - **On the server** (SSH window), create the user and let it use Docker and write the small version file `.env.release`:
+     ```
+     sudo adduser --disabled-password --gecos "" deploy
+     sudo usermod -aG docker deploy
+     sudo chgrp deploy /opt/pune-explorer && sudo chmod g+rwx /opt/pune-explorer
+     sudo chgrp deploy /opt/pune-explorer/.env.production && sudo chmod 640 /opt/pune-explorer/.env.production
+     ```
+     (Being in the `docker` group is close to admin rights on that machine; it is still separate from your own account and has no `sudo`.)
+   - **On your computer**, make a key used only for deploys, with no passphrase: `ssh-keygen -t ed25519 -N "" -C deploy -f pune-deploy`. It creates `pune-deploy` (private) and `pune-deploy.pub` (public).
+   - **On the server**, add the public half (paste the one line from `pune-deploy.pub`):
+     ```
+     sudo -u deploy mkdir -p -m 700 /home/deploy/.ssh
+     echo 'ssh-ed25519 AAAA... deploy' | sudo -u deploy tee /home/deploy/.ssh/authorized_keys
+     sudo chmod 600 /home/deploy/.ssh/authorized_keys
+     ```
+   - **The server's fingerprint** (so GitHub only talks to your server): `ssh-keygen -lf /etc/ssh/ssh_host_ecdsa_key.pub`. Copy the `SHA256:...` part.
+   - **Firewall:** *VPC network → Firewall* must have a rule allowing TCP 22 from `0.0.0.0/0` (Google Cloud's `default-allow-ssh`). GitHub's machines have changing addresses.
+   - **GitHub → Settings → Secrets and variables → Actions:**
+     - Secrets: `DEPLOY_HOST` (server IP), `DEPLOY_USER` (`deploy`), `DEPLOY_SSH_KEY` (the whole text of the private file `pune-deploy`, including the BEGIN/END lines), `DEPLOY_HOST_FINGERPRINT` (`SHA256:...`).
+     - Variable: `DEPLOY_ENABLED=true`.
+     - Then delete `pune-deploy` from your computer, or keep it in a password manager. Never share it.
+   - **How it runs:** the Release workflow builds the images, then writes the exact version into `/opt/pune-explorer/.env.release` and runs `docker compose --env-file .env.production --env-file .env.release pull && up -d`, then waits for `/api/v1/health/ready`. Red run = the last 50 app log lines are in the run.
+   - **If the fingerprint is refused** ("ssh: handshake failed"), the server offered a different key type: use `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` instead.
+   - **Roll back:** GitHub → *Actions → Release* → open an older green run → *Re-run all jobs*. It redeploys that exact version.
+   - **By hand** (e.g. GitHub is down): `cd /opt/pune-explorer && docker compose --env-file .env.production --env-file .env.release pull && docker compose --env-file .env.production --env-file .env.release up -d`. Leaving out `--env-file .env.release` runs the newest `research` (or `latest`) images instead.
 2. **Uptime alerts:** a free [UptimeRobot](https://uptimerobot.com) monitor on `https://your-domain/api/v1/health/ready`, alerting your email or phone (step 21).
 - **Check:** push any small change; within about 10 minutes the *Release* run is green and the site shows it.
 
