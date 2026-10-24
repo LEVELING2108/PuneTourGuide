@@ -361,13 +361,29 @@ One server with Docker serves the app and API from one domain and keeps SOS work
 5. Nightly help import (step 6): add a cron line on the server:
    `30 21 * * * cd /opt/pune-explorer && docker compose --env-file .env.production --profile jobs run --rm refresh-help` (`server-setup.sh` adds it for you)
 6. More traffic: `... up -d --scale app=3`. Caddy spreads requests, and Redis keeps rate limits and live tracking shared.
-7. Backups: use a managed Postgres, or schedule `pg_dump` off the server. Keep `MEDICAL_ENC_KEY` separately (step 4).
+7. Backups: step 20b (nightly copy to Cloud Storage plus a restore drill), or a managed Postgres. Keep `MEDICAL_ENC_KEY` separately (step 4).
 
 - **Verify:**
   - `https://your-domain/api/v1/health/ready` returns `{"status":"ready","db":true,"redis":true}`.
   - `curl -I https://your-domain/` shows `Strict-Transport-Security`, `Content-Security-Policy` and `X-Request-Id`.
   - Open the site on a phone, sign up, reload: still signed in.
   - The browser console shows no "Content Security Policy" errors on Home, Map and Log in.
+
+### ☐ 20b. Database backups
+**Needed by:** getting your data back after a broken disk, a bad migration or a mistake. The disk's daily snapshot is not enough on its own: it restores the whole server, can lose up to a day, and lives in the same project.
+- **What runs:** `deploy/backup-db.sh` every night at 02:00 IST (20:30 UTC). It dumps the database (`pg_dump -Fc`, compressed), checks the dump can be read back and has the key tables, and uploads it to a private Cloud Storage bucket as `db/YYYY-MM-DD_HHMM.dump`. The server's account can add and read backups but **not delete or overwrite** them, so a break-in can't wipe them; the bucket deletes copies after 30 days.
+- **Not in the backup:** `MEDICAL_ENC_KEY` and the rest of `.env.production`. Keep both in a password manager: without the key, medical details in any restore can never be read.
+- **Set up once (Google Cloud console, project `pune-tour-guide`):**
+  1. *Cloud Storage → Buckets → Create*: a unique name (e.g. `pune-explorer-backups-<random>`), region `asia-south1`, class *Standard*, **Enforce public access prevention**, access control *Uniform*. Keep soft delete on (7 days). Then *Lifecycle → Add a rule → Delete object*, age **30** days.
+  2. *IAM → Service accounts → Create*: `pune-explorer-vm`. No project roles. Then on the bucket's *Permissions → Grant access*: that account gets **Storage Object Creator** and **Storage Object Viewer** (not Admin).
+  3. Late at night: *Compute Engine → VM instances → pune-explorer → Stop* (the site is down for about two minutes; SOS still dials 112 and texts from the phone). *Edit → Service account* = `pune-explorer-vm`, *Access scopes* = **Allow full access to all Cloud APIs** (the account's roles are the real limit). Save, then *Start*. The IP stays the same.
+  4. On the server: add `BACKUP_BUCKET=<bucket name>` (and optionally `BACKUP_PING_URL` from a free [Healthchecks.io](https://healthchecks.io) check set to daily) to `.env.production`, copy `backup-db.sh` and `restore-test.sh` from `deploy/` into `/opt/pune-explorer` (`server-setup.sh` does this), and add the cron line: `30 20 * * * /opt/pune-explorer/backup-db.sh >> /opt/pune-explorer/backup.log 2>&1` (`server-setup.sh` adds it when `BACKUP_BUCKET` is set).
+- **Restore drill** (after setup, then every few months): `cd /opt/pune-explorer && ./restore-test.sh`. It restores the newest backup into a temporary database, prints row counts next to the live ones, and deletes the copy. The live database is never written to.
+- **Real restore** (disaster): stop the app (`docker compose --env-file .env.production --env-file .env.release stop app safety`), download a backup (`gcloud storage cp gs://<bucket>/db/<file>.dump /tmp/r.dump`), then `docker compose --env-file .env.production exec -T postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --no-owner' < /tmp/r.dump`, put the same `MEDICAL_ENC_KEY` back, and start the app again. On a new server: run `server-setup.sh` first, restore, then start.
+- **Verify:**
+  - `./backup-db.sh` prints `backup ok: gs://…` and the file shows in the bucket.
+  - `./restore-test.sh` ends with `RESTORE TEST PASSED`.
+  - Next morning `tail backup.log` shows the night's backup (and Healthchecks.io shows a green ping).
 
 ### ☐ 21. Logs and uptime
 - Logs are JSON on standard output: your host's log viewer (`docker compose logs app`) is enough to start. Search by `reqId` to follow one request. Set `LOG_LEVEL=info` (or `warn` to reduce volume).
