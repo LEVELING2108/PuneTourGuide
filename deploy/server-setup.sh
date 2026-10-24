@@ -62,6 +62,9 @@ sudo chown "$USER":"$USER" "$DIR"
 cd "$DIR"
 curl -fsSL "$RAW/docker-compose.prod.yml" -o compose.yaml
 curl -fsSL "$RAW/Caddyfile" -o Caddyfile
+curl -fsSL "$RAW/backup-db.sh" -o backup-db.sh
+curl -fsSL "$RAW/restore-test.sh" -o restore-test.sh
+chmod +x backup-db.sh restore-test.sh
 
 if [ ! -f .env.production ]; then
   curl -fsSL "$RAW/.env.production.example" -o .env.production
@@ -107,6 +110,13 @@ say "Nightly help-point import at 03:00 IST (21:30 UTC)"
 CRON="30 21 * * * cd $DIR && docker compose --env-file .env.production --profile jobs run --rm refresh-help >> $DIR/refresh-help.log 2>&1"
 # A new server has no crontab yet: "crontab -l" fails, which must not stop the script (set -e / pipefail)
 ( { crontab -l 2>/dev/null || true; } | { grep -v 'refresh-help' || true; } ; echo "$CRON" ) | crontab -
+
+# Nightly database backup (step 20b), once a backup bucket is set
+if grep -qE '^BACKUP_BUCKET=.+' .env.production; then
+  say "Nightly database backup at 02:00 IST (20:30 UTC)"
+  BACKUP_CRON="30 20 * * * $DIR/backup-db.sh >> $DIR/backup.log 2>&1"
+  ( { crontab -l 2>/dev/null || true; } | { grep -v 'backup-db.sh' || true; } ; echo "$BACKUP_CRON" ) | crontab -
+fi
 
 say "Done"
 cat <<EOF
