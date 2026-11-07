@@ -249,6 +249,8 @@ Postgres + PostGIS runs on the same server in Docker (no separate database servi
   - Settings: `SMS_PROVIDER=msg91`, `SMS_API_KEY=<authkey>`, `MSG91_TEMPLATE_OTP`, `MSG91_TEMPLATE_SOS`, `MSG91_TEMPLATE_SAFE`, `MSG91_TEMPLATE_TRIP`, `MSG91_TEMPLATE_TEST`.
 - **“Call me” (voice code)** works with Twilio only. With MSG91 the app sends the SMS again and says so.
 - **International or testing (Twilio):** `SMS_PROVIDER=twilio`, `SMS_API_KEY=AccountSid:AuthToken`, `SMS_SENDER_ID=+1…`.
+- **Local runs never send real texts** (`NODE_ENV` other than `production`), even with live keys in `.env`: texts only go to the API log. To test one real text locally, set `SMS_DEV_SEND=true`, send it, then set it back. Production ignores this setting.
+  - Verify: run the API locally with Twilio keys in `.env`, send a test alert, and check the log shows `sms (console)` and no text arrives.
 - **Verify (phone texting, the default):**
   - Settings → Emergency contacts → Send: the messaging app opens with every contact and the TEST text; send it and check it arrives.
   - SOS drill with a friend who knows it is a drill (hang up the 112 call before it connects): back in the app, the messaging app opens with the alert, the live link and a map pin; send it and they can open the live map.
