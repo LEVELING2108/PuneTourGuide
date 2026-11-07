@@ -379,3 +379,12 @@ model Avatar {
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+/// Landing-page Android waitlist. One launch email, then the row is deleted 30 days after
+/// notifiedAt (privacy policy). The email is stored lower-cased and never logged.
+model WaitlistEntry {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
+  createdAt  DateTime  @default(now())
+  notifiedAt DateTime?
+}

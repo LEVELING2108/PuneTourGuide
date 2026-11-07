@@ -62,6 +62,9 @@ export const googleReadLimit = make('google-read', 10 * 60_000, 300, (req, res) 
 /** "Mark as visited" from the Place screen, per account (XP is awarded once per place anyway). */
 export const visitLimit = make('visit', 60 * 60_000, 60, (req, res) => `u:${res.locals.userId ?? ipKey(req)}`);
 
+/** Landing-page waitlist sign-ups per IP: stops scripted floods; a shared carrier IP still fits a crowd. */
+export const waitlistLimit = make('waitlist', 60 * 60_000, 20);
+
 /** Avatar uploads are CPU work (image re-encode). */
 export const avatarLimit = make('avatar', 60 * 60_000, 20);
 

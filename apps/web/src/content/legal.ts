@@ -5,7 +5,7 @@
  *
  * The contact address comes from VITE_CONTACT_EMAIL (build setting), so it is never hard-coded.
  */
-export const LAST_UPDATED = '11 October 2026';
+export const LAST_UPDATED = '8 November 2026';
 
 export const CONTACT_EMAIL = (import.meta.env.VITE_CONTACT_EMAIL as string | undefined) || '';
 
@@ -29,6 +29,7 @@ export const privacy = (): LegalDoc => ({
         'Medical information (optional): blood group, allergies, medicines and notes. It is encrypted on our server and included only in the SOS text sent to your emergency contacts.',
         'Profile photo (optional): re-encoded on upload, which removes location and camera details from the file.',
         'Plans, saved places, stamps and XP: to provide those features.',
+        'Android waitlist (on our website, no account needed): only your email address, to send you one email when the Android app launches. Nothing else is sent to it.',
         'Technical logs: time, request id, page path and result of each request, kept 14 to 30 days for security and fixing faults. They never contain passwords, codes, tokens, medical information or message text, and phone numbers are masked.',
       ],
     },
@@ -44,7 +45,7 @@ export const privacy = (): LegalDoc => ({
       body: [
         'We do not sell personal data or use it for advertising. We share only what each service needs to do its job:',
         'SMS provider (Twilio or MSG91): your contacts’ numbers and the message text, to deliver SOS and other messages, and your number to send login codes.',
-        'Email provider (Resend): your email address, to send password-reset emails.',
+        'Email provider (Resend): your email address, to send password-reset emails and the one Android launch email if you joined the waitlist.',
         'Google: only if you choose “Continue with Google”.',
         'Google Maps: place photos, ratings, opening hours and side quests come from Google Maps. Our server asks Google about a place without your identity; your device loads the photos directly from Google, so Google sees your IP address. Google’s Privacy Policy (policies.google.com/privacy) applies to that.',
         'Map tile provider: your device loads map images directly from it, so it sees your IP address and the map area on screen.',
@@ -60,6 +61,7 @@ export const privacy = (): LegalDoc => ({
       body: [
         'Account data, contacts, medical information and plans: until you delete them or your account.',
         'Live location: at most 24 hours. SOS records: until you delete your account. Message delivery records: kept with masked numbers only.',
+        'Android waitlist: deleted 30 days after the launch email is sent. To be removed sooner, write to us.',
         'Logs: 14 to 30 days. Backups roll over within 30 days.',
       ],
     },

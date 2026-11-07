@@ -14,6 +14,7 @@ import placesRoutes from './places/places.routes';
 import routesRoutes from './routes.routes';
 import usersRoutes, { avatarRouter } from './users/users.routes';
 import googleRoutes from './google/google.routes';
+import waitlistRoutes from './waitlist/waitlist.routes';
 
 /** /api/v1: { data, meta } envelopes, Zod-validated inputs, typed errors. */
 const v1 = Router();
@@ -31,6 +32,7 @@ v1.use('/contacts', contactsRoutes);
 v1.use('/medical', medicalRoutes);
 v1.use('/offline-packs', offlineRoutes);
 v1.use('/avatars', avatarRouter);
+v1.use('/waitlist', waitlistRoutes);
 v1.use('/', sosRoutes);
 v1.use('/', routingRoutes);
 v1.use('/', miscRoutes);
