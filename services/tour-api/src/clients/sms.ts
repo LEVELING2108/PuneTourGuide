@@ -94,8 +94,19 @@ async function sendMsg91(sms: Sms): Promise<SendResult> {
   return { provider: 'msg91', providerId: data?.request_id ?? data?.message ?? null };
 }
 
-/** Console unless a real provider and its key are configured. */
-export const smsProvider = () => (env.SMS_PROVIDER !== 'console' && env.SMS_API_KEY ? env.SMS_PROVIDER : 'console');
+type SmsSettings = Pick<typeof env, 'SMS_PROVIDER' | 'SMS_API_KEY' | 'SMS_DEV_SEND' | 'isProd'>;
+
+/**
+ * Console unless a real provider and its key are configured. Outside production a real provider
+ * also needs SMS_DEV_SEND=true, so a local .env holding live keys cannot text real people.
+ */
+export function pickSmsProvider(s: SmsSettings): SmsSettings['SMS_PROVIDER'] {
+  if (s.SMS_PROVIDER === 'console' || !s.SMS_API_KEY) return 'console';
+  if (!s.isProd && !s.SMS_DEV_SEND) return 'console';
+  return s.SMS_PROVIDER;
+}
+
+export const smsProvider = () => pickSmsProvider(env);
 
 export function sendSms(sms: Sms): Promise<SendResult> {
   switch (smsProvider()) {

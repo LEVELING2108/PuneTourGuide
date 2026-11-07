@@ -33,6 +33,11 @@ const EnvSchema = z.object({
   SMS_PROVIDER: z.enum(['console', 'msg91', 'twilio']).default('console'),
   SMS_API_KEY: z.string().optional(),
   SMS_SENDER_ID: z.string().optional(),
+  // Outside production, texts only reach the log unless this is true (sends real, paid SMS)
+  SMS_DEV_SEND: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
   EMAIL_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default('Pune Explorer <no-reply@pune-explorer.app>'),
   CLOUDINARY_URL: z.string().optional(),
