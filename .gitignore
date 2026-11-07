@@ -51,3 +51,6 @@ playwright-report/
 .env.*
 !.env.example
 !.env.*.example
+
+# Landing kit walkthrough video (18 MB, kept locally only)
+design-reference/landing-signboard/motion/
