@@ -307,6 +307,12 @@ Postgres + PostGIS runs on the same server in Docker (no separate database servi
 - Settings (Tour API): `EMAIL_API_KEY`, `EMAIL_FROM="Pune Explorer <no-reply@your-domain>"`.
 - **Verify:** Log in → Forgot? → your email → the email arrives (check that it isn't in spam). The link opens `/reset`, you set a new password, other phones are signed out, and the old link no longer works.
 
+### ☐ 16b. Android waitlist (landing page)
+**Needed by:** the "Android waitlist" form on the landing page (`POST /api/v1/waitlist`, same origin, no login). Only the email is stored, lower-cased; a repeat sign-up changes nothing and gets the same answer. 20 sign-ups per hour per IP.
+- Nothing to set up: the table comes with the `20261108120000_waitlist` migration on deploy.
+- **Launch day:** on the server, `docker compose --env-file .env.production run --rm app node dist/scripts/waitlist-export.js > waitlist.txt` prints the emails not yet sent to. Send the one launch email (Resend, step 16) to exactly that list, then run the same command with `--mark-notified <id>` using the id it printed. Delete `waitlist.txt` afterwards. Rows must be deleted 30 days after that (privacy policy): the nightly cleanup job does it once it lands (next PR); until then nobody is notified, so nothing is due.
+- **Verify:** on the landing page, join with your email → "You're on the list"; join again with capitals → same message; on the server the export prints your email once.
+
 ### ☐ 17c. Trip mode (Start Day N)
 **Needed by:** the Plan tab's Start Day button and the trip screen. Nothing new to set up: it uses the database (migration `20261022120000_trip_mode`, applied when the app starts), the SMS provider for the live-share texts (step 9), and the safety service for live location (step 5).
 - **Verify:**
