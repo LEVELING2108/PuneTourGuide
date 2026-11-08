@@ -24,10 +24,13 @@ fail() { echo "$(date -u +%FT%TZ) backup FAILED: $*" >&2; ping /fail; exit 1; }
 ping /start
 
 tmp="$(mktemp --suffix=.dump)"
-trap 'rm -f "$tmp"' EXIT
+err="$(mktemp)"
+trap 'rm -f "$tmp" "$err"' EXIT
+# The last line a tool printed to stderr, so the log says why a step failed (no secrets are printed)
+why() { tail -n 1 "$err" | tr -d '\r' | cut -c1-300; }
 
 # Custom format: compressed, and restorable table by table
-dc exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' > "$tmp" 2>/dev/null || fail "pg_dump failed"
+dc exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' > "$tmp" 2>"$err" || fail "pg_dump failed: $(why)"
 size=$(stat -c %s "$tmp")
 [ "$size" -gt 10000 ] || fail "dump is only $size bytes"
 # A dump pg_restore can read back, with the tables we can't lose
@@ -37,7 +40,7 @@ for t in User Place EmergencyContact MedicalProfile SosEvent; do
 done
 
 name="db/$(date -u +%Y-%m-%d_%H%M).dump"
-gcloud storage cp --quiet "$tmp" "gs://$BUCKET/$name" >/dev/null 2>&1 || fail "upload to gs://$BUCKET failed"
+gcloud storage cp --quiet "$tmp" "gs://$BUCKET/$name" >/dev/null 2>"$err" || fail "upload to gs://$BUCKET failed: $(why)"
 
 echo "$(date -u +%FT%TZ) backup ok: gs://$BUCKET/$name ($((size / 1024)) KB)"
 ping ""
