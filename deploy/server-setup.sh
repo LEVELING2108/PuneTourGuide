@@ -111,6 +111,10 @@ CRON="30 21 * * * cd $DIR && docker compose --env-file .env.production --profile
 # A new server has no crontab yet: "crontab -l" fails, which must not stop the script (set -e / pipefail)
 ( { crontab -l 2>/dev/null || true; } | { grep -v 'refresh-help' || true; } ; echo "$CRON" ) | crontab -
 
+say "Nightly cleanup of expired data at 03:30 IST (22:00 UTC)"
+CLEANUP_CRON="0 22 * * * cd $DIR && docker compose --env-file .env.production --profile jobs run --rm cleanup >> $DIR/cleanup.log 2>&1"
+( { crontab -l 2>/dev/null || true; } | { grep -v 'run --rm cleanup' || true; } ; echo "$CLEANUP_CRON" ) | crontab -
+
 # Nightly database backup (step 20b), once a backup bucket is set
 if grep -qE '^BACKUP_BUCKET=.+' .env.production; then
   say "Nightly database backup at 02:00 IST (20:30 UTC)"

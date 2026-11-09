@@ -46,6 +46,8 @@ const EnvSchema = z.object({
   GEMINI_API_KEY: z.string().optional(),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).optional(),
   SENTRY_DSN: z.string().url().optional().or(z.literal('')),
+  // Healthchecks.io ping URL for the nightly cleanup job (optional): emails you when a night fails or is missed
+  CLEANUP_PING_URL: z.string().url().optional(),
   SENTRY_ENVIRONMENT: z.string().optional(),
   // Release tag for error reports: set by CI, or Render's commit variable
   SENTRY_RELEASE: z.string().optional(),

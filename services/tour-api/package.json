@@ -18,7 +18,8 @@
     "worker:prod": "node dist/worker.js",
     "check:places": "tsx src/scripts/check-places.ts",
     "google:link": "tsx src/scripts/link-google-places.ts",
-    "waitlist:export": "tsx src/scripts/waitlist-export.ts"
+    "waitlist:export": "tsx src/scripts/waitlist-export.ts",
+    "cleanup": "tsx src/scripts/cleanup.ts"
   },
   "author": "",
   "license": "ISC",
