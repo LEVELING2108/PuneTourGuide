@@ -5,7 +5,7 @@
  *
  * The contact address comes from VITE_CONTACT_EMAIL (build setting), so it is never hard-coded.
  */
-export const LAST_UPDATED = '8 November 2026';
+export const LAST_UPDATED = '10 November 2026';
 
 export const CONTACT_EMAIL = (import.meta.env.VITE_CONTACT_EMAIL as string | undefined) || '';
 
@@ -60,7 +60,8 @@ export const privacy = (): LegalDoc => ({
       heading: 'How long we keep it',
       body: [
         'Account data, contacts, medical information and plans: until you delete them or your account.',
-        'Live location: at most 24 hours. SOS records: until you delete your account. Message delivery records: kept with masked numbers only.',
+        'Live location: at most 24 hours. SOS records: until you delete your account. Message delivery records: 90 days, with masked numbers only. Records of shared trips: 30 days after the trip.',
+        'Login codes and password-reset links: deleted within a day of expiring. Signed-out or expired sessions: 30 days.',
         'Android waitlist: deleted 30 days after the launch email is sent. To be removed sooner, write to us.',
         'Logs: 14 to 30 days. Backups roll over within 30 days.',
       ],

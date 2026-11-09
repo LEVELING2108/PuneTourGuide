@@ -395,6 +395,21 @@ One server with Docker serves the app and API from one domain and keeps SOS work
   - `./restore-test.sh` ends with `RESTORE TEST PASSED`.
   - Next morning `tail backup.log` shows the night's backup (and Healthchecks.io shows a green ping).
 
+### ☐ 20c. Nightly cleanup (data retention)
+**Needed by:** the privacy policy's "How long we keep it". Without it, old rows pile up forever.
+- **What runs:** `node dist/scripts/cleanup.js` every night at 03:30 IST (22:00 UTC), after the backup (02:00) and the help import (03:00). It deletes, and logs only counts:
+  - login codes and password-reset links a day after they expire (or are used)
+  - sessions 30 days after they expire or are signed out
+  - trip shares 30 days after they end (or 30 days after starting, if never ended)
+  - text delivery records after 90 days
+  - waitlist emails 30 days after the launch email (`notifiedAt`)
+  - **never** SOS events: they stay until the account is deleted.
+- **Set up once on the server:**
+  1. Optional, recommended: a second [Healthchecks.io](https://healthchecks.io) check `pune-explorer cleanup` (period 1 day, grace 2 hours); add `CLEANUP_PING_URL=https://hc-ping.com/…` to `.env.production`.
+  2. Preview first (deletes nothing): `cd /opt/pune-explorer && docker compose --env-file .env.production --profile jobs run --rm cleanup node dist/scripts/cleanup.js --dry-run`
+  3. Add the cron line (`server-setup.sh` adds it for you): `0 22 * * * cd /opt/pune-explorer && docker compose --env-file .env.production --profile jobs run --rm cleanup >> /opt/pune-explorer/cleanup.log 2>&1`
+- **Verify:** the next morning `tail -n 8 /opt/pune-explorer/cleanup.log` shows six `[cleanup] …: deleted N` lines and no `FAILED`; the Healthchecks check is green.
+
 ### ☐ 21. Logs and uptime
 - Logs are JSON on standard output: your host's log viewer (`docker compose logs app`) is enough to start. Search by `reqId` to follow one request. Set `LOG_LEVEL=info` (or `warn` to reduce volume).
 - Add a free uptime monitor (UptimeRobot, Better Stack) on `https://your-domain/api/v1/health/ready` and `https://your-domain/safety/health`, alerting your phone.

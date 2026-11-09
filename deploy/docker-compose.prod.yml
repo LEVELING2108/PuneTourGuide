@@ -8,7 +8,7 @@
 # Optional parts, switched on with COMPOSE_PROFILES in .env.production (comma-separated):
 #   db      Postgres + PostGIS on this server (leave off with a managed database)
 #   worker  a separate SMS worker process (then set RUN_WORKERS=false)
-#   jobs    the nightly help-point import (run by cron, see LAUNCH_SETUP step 6)
+#   jobs    the nightly help-point import and cleanup (run by cron, see LAUNCH_SETUP steps 6 and 20c)
 name: pune-explorer
 
 x-app: &app
@@ -129,6 +129,16 @@ services:
       NODE_ENV: production
       NODE_OPTIONS: ${NODE_OPTIONS:-}
     command: ["node", "dist/scripts/refresh-help.js"]
+
+  # Nightly cleanup of data past its retention period (LAUNCH_SETUP step 20c)
+  cleanup:
+    <<: *app
+    profiles: ["jobs"]
+    restart: "no"
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: ${NODE_OPTIONS:-}
+    command: ["node", "dist/scripts/cleanup.js"]
 
 volumes:
   caddy_data:
