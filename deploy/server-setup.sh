@@ -106,13 +106,15 @@ if [ ! -f .env.production ]; then
   echo "!! Copy MEDICAL_ENC_KEY from it into your password manager now: without it, saved medical info can never be read again."
 fi
 
+# Jobs run the image the last deploy pulled (.env.release, written by the deploy workflow); the bare
+# APP_IMAGE tag in .env.production is never re-pulled, so it would run an old copy of the app.
 say "Nightly help-point import at 03:00 IST (21:30 UTC)"
-CRON="30 21 * * * cd $DIR && docker compose --env-file .env.production --profile jobs run --rm refresh-help >> $DIR/refresh-help.log 2>&1"
+CRON="30 21 * * * cd $DIR && docker compose --env-file .env.production --env-file .env.release --profile jobs run --rm refresh-help >> $DIR/refresh-help.log 2>&1"
 # A new server has no crontab yet: "crontab -l" fails, which must not stop the script (set -e / pipefail)
 ( { crontab -l 2>/dev/null || true; } | { grep -v 'refresh-help' || true; } ; echo "$CRON" ) | crontab -
 
 say "Nightly cleanup of expired data at 03:30 IST (22:00 UTC)"
-CLEANUP_CRON="0 22 * * * cd $DIR && docker compose --env-file .env.production --profile jobs run --rm cleanup >> $DIR/cleanup.log 2>&1"
+CLEANUP_CRON="0 22 * * * cd $DIR && docker compose --env-file .env.production --env-file .env.release --profile jobs run --rm cleanup >> $DIR/cleanup.log 2>&1"
 ( { crontab -l 2>/dev/null || true; } | { grep -v 'run --rm cleanup' || true; } ; echo "$CLEANUP_CRON" ) | crontab -
 
 # Nightly database backup (step 20b), once a backup bucket is set

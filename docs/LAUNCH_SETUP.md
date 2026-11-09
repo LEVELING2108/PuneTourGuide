@@ -367,7 +367,7 @@ One server with Docker serves the app and API from one domain and keeps SOS work
 3. Ready-made images: `docker compose --env-file .env.production pull && docker compose --env-file .env.production up -d`. To build on the server instead (2 GB+ RAM, whole repository): `docker compose -f deploy/docker-compose.prod.yml -f deploy/docker-compose.build.yml --env-file deploy/.env.production up -d --build`.
 4. Caddy fetches the HTTPS certificate by itself. The app, the safety service (under `/safety`) and Redis (password-protected, persistent) start, and migrations run automatically. `COMPOSE_PROFILES=db` adds Postgres + PostGIS on the server; `worker` adds a separate SMS worker (then set `RUN_WORKERS=false`).
 5. Nightly help import (step 6): add a cron line on the server:
-   `30 21 * * * cd /opt/pune-explorer && docker compose --env-file .env.production --profile jobs run --rm refresh-help` (`server-setup.sh` adds it for you)
+   `30 21 * * * cd /opt/pune-explorer && docker compose --env-file .env.production --env-file .env.release --profile jobs run --rm refresh-help` (`server-setup.sh` adds it for you)
 6. More traffic: `... up -d --scale app=3`. Caddy spreads requests, and Redis keeps rate limits and live tracking shared.
 7. Backups: step 20b (nightly copy to Cloud Storage plus a restore drill), or a managed Postgres. Keep `MEDICAL_ENC_KEY` separately (step 4).
 
@@ -406,8 +406,8 @@ One server with Docker serves the app and API from one domain and keeps SOS work
   - **never** SOS events: they stay until the account is deleted.
 - **Set up once on the server:**
   1. Optional, recommended: a second [Healthchecks.io](https://healthchecks.io) check `pune-explorer cleanup` (period 1 day, grace 2 hours); add `CLEANUP_PING_URL=https://hc-ping.com/…` to `.env.production`.
-  2. Preview first (deletes nothing): `cd /opt/pune-explorer && docker compose --env-file .env.production --profile jobs run --rm cleanup node dist/scripts/cleanup.js --dry-run`
-  3. Add the cron line (`server-setup.sh` adds it for you): `0 22 * * * cd /opt/pune-explorer && docker compose --env-file .env.production --profile jobs run --rm cleanup >> /opt/pune-explorer/cleanup.log 2>&1`
+  2. Preview first (deletes nothing): `cd /opt/pune-explorer && docker compose --env-file .env.production --env-file .env.release --profile jobs run --rm cleanup node dist/scripts/cleanup.js --dry-run`
+  3. Add the cron line (`server-setup.sh` adds it for you): `0 22 * * * cd /opt/pune-explorer && docker compose --env-file .env.production --env-file .env.release --profile jobs run --rm cleanup >> /opt/pune-explorer/cleanup.log 2>&1` Jobs use `.env.release` (written by each deploy) so they run the deployed version of the app, not an old copy.
 - **Verify:** the next morning `tail -n 8 /opt/pune-explorer/cleanup.log` shows six `[cleanup] …: deleted N` lines and no `FAILED`; the Healthchecks check is green.
 
 ### ☐ 21. Logs and uptime
