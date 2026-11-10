@@ -27,7 +27,7 @@ h1{line-height:.86 !important}
 .rail .bus::after{content:'';position:absolute;left:3px;right:3px;bottom:3px;height:3px;background:#111}
 @keyframes busRun{from{top:0}to{top:calc(100% - 32px)}}
 @supports not (animation-timeline: view()){.rail{display:none}}
-@media (max-width: 900px){.rail{display:none}}
+@media (max-width: 1290px){.rail{display:none}}
 body{margin:0;background:var(--pe-paper)}
 a{color:var(--pe-link)}a:hover{color:var(--pe-accent-hover)}
 h1,h2,p,li{text-wrap:pretty}
@@ -94,3 +94,39 @@ h2{animation:wipe linear both;animation-timeline:view();animation-range:entry 5%
 .sos-count text{font-family:'DM Serif Display',Georgia,serif;font-size:170px;fill:#FFF8EE;text-anchor:middle;transform-box:fill-box;transform-origin:center}
 .sos-arc{stroke-dasharray:879.6 879.6;animation:sosArc 5s linear infinite}
 @keyframes sosArc{to{stroke-dashoffset:879.6}}
+
+/* ── Phones and tablets (the design kit covers 1440 and 390; these keep the same look in between) ── */
+/* Touch-size links: 44 px tall without changing how they look */
+.nav-section,.foot-links a,.tap{display:inline-flex;align-items:center;min-height:44px}
+/* Tablets: headline next to the phone, and the three feature phones in one row */
+@media (min-width: 601px) and (max-width: 900px){
+  .hero-text{flex-basis:360px !important}
+  .hero-phone .ph{width:240px !important}
+  .hero-phone img{height:400px !important}
+  .trip-grid{grid-template-columns:repeat(3,1fr) !important;gap:24px !important}
+}
+/* The QR code is for opening the app on a phone from a computer */
+@media (max-width: 900px){.qr{display:none !important}}
+/* Phones: one-row header (the page is one scroll; the button is what people need) */
+@media (max-width: 600px){
+  .nav-section{display:none !important}
+  .via{display:none !important}
+  .nav-cta{padding:0 16px !important}
+  /* Nearby diagram: readable ring labels, names over their distance, spread so none overlap */
+  .radar svg text{font-size:24px}
+  .radar .drop>span{display:flex;flex-direction:column;line-height:1.15;font-size:12px !important}
+  .radar .drop>span>span{font-size:11px}
+  .radar .r-good{left:3% !important;top:14% !important}
+  .radar .r-kasba{left:64% !important;top:35% !important}
+  .radar .r-lal{left:57% !important;top:47% !important}
+  .radar .r-bed{left:5% !important;top:68% !important}
+  .radar .r-dag{left:50% !important;top:72% !important}
+  .radar .r-parv{left:20% !important;top:88% !important}
+}
+@media (max-width: 380px){
+  nav[aria-label="Main"]{padding:16px !important;gap:10px !important}
+  .logo span:first-child{font-size:24px !important}
+  .logo span:last-child{font-size:17px !important}
+  .radar .r-kasba{left:60% !important}
+  .radar .r-bed{top:72% !important}
+}
