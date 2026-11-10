@@ -5,6 +5,23 @@ on:
   pull_request:
 
 jobs:
+  # main only ever takes research (CLAUDE.md, "Branches and deploys"). Required on main by the
+  # GitHub ruleset; branch names arrive through env, never pasted into the script.
+  main-from-research:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull requests into main come from research
+        env:
+          BASE: ${{ github.base_ref }}
+          HEAD: ${{ github.head_ref }}
+        run: |
+          if [ "$BASE" = main ] && [ "$HEAD" != research ]; then
+            echo "::error::Pull requests into main must come from research (this one is from $HEAD). Merge it into research first."
+            exit 1
+          fi
+          echo "ok: $HEAD -> $BASE"
+
   node:
     runs-on: ubuntu-latest
     services:
