@@ -11,6 +11,7 @@ import './styles/fonts';
 import './styles/base.css';
 import { initMonitoring } from './lib/monitoring';
 import { isNative, startNativeShell } from './lib/nativeShell';
+import { startInstallCapture } from './features/install';
 
 initMonitoring();
 
@@ -20,6 +21,7 @@ window.addEventListener('keydown', (e) => e.key === 'Tab' && (root.dataset.input
 window.addEventListener('pointerdown', () => (root.dataset.input = 'pointer'), true);
 startLanguageSync();
 if (isNative()) startNativeShell();
+else startInstallCapture();
 
 // Offline support (production builds only; the dev server never registers it)
 if (import.meta.env.PROD && 'serviceWorker' in navigator && !isNative()) {

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pune Explorer: emergency</title>
+<style>
+  :root { --bg: #FFFFFF; --text: #111111; --muted: #444444; --line: #D0D0D0; --sos: #C8321C; --on-sos: #FFFFFF; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #111111; --text: #F2F2F2; --muted: #CFCFCF; --line: #444444; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font: 17px/1.45 system-ui, sans-serif; }
+  main { max-width: 460px; margin: 0 auto; padding: 28px 16px 40px; }
+  h1 { font-size: 26px; margin: 0 0 6px; }
+  p { margin: 0 0 18px; color: var(--muted); }
+  .btn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 72px; margin: 0 0 14px; border-radius: 16px; font-size: 22px; font-weight: 700; text-decoration: none; }
+  .call { background: var(--sos); color: var(--on-sos); }
+  .text { border: 3px solid var(--sos); color: var(--text); }
+  .note { border-top: 1px solid var(--line); padding-top: 16px; font-size: 15px; }
+  [hidden] { display: none; }
+</style>
+<script src="/sos-offline.js" defer></script>
+</head>
+<body>
+<main>
+  <h1>Emergency</h1>
+  <p>You're offline. You can still call for help and text your emergency contacts.</p>
+  <a class="btn call" href="tel:112">Call 112</a>
+  <a class="btn text" id="text" href="#" hidden>Text my contacts</a>
+  <p id="where" hidden></p>
+  <p class="note">Pune Explorer has moved to <strong>app.puneexplorer.dev</strong>. When you're back online, open it and install the app again, so SOS works offline with all its features.</p>
+</main>
+</body>
+</html>

@@ -7,6 +7,7 @@ import { isOnboarded } from '../stores/onboarding';
 import HomeScreen from '../screens/home/HomeScreen';
 import SosScreen from '../screens/sos/SosScreen';
 import AppErrorScreen from '../screens/AppErrorScreen';
+import { InstallPrompt } from '../components/InstallPrompt';
 
 // SOS and Home are eager (must open instantly, also offline); the rest load on demand.
 const SplashScreen = lazy(() => import('../screens/onboarding/SplashScreen'));
@@ -60,6 +61,7 @@ function RootLayout() {
       <Suspense fallback={<div className="scr" style={{ height: '100%', background: 'var(--bg)' }} />}>
         <Outlet />
       </Suspense>
+      <InstallPrompt />
     </div>
   );
 }

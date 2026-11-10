@@ -22,6 +22,11 @@ const EnvSchema = z.object({
   CORS_ORIGINS: z.string().optional(),
   COOKIE_SAMESITE: z.enum(['lax', 'strict', 'none']).default('lax'),
   APP_URL: z.string().url().default('http://localhost:5050'),
+  // Host that shows the landing page (e.g. puneexplorer.dev) while the app lives at APP_URL. Unset = app only.
+  LANDING_HOST: z
+    .string()
+    .regex(/^[a-z0-9.-]+$/i, 'LANDING_HOST is a host name only, e.g. puneexplorer.dev')
+    .optional(),
   SAFETY_SERVICE_URL: z.string().url().default('http://localhost:8010'),
   OSRM_URL: z.string().url().default('https://router.project-osrm.org'),
   OSRM_FOOT_URL: z.string().url().default('https://routing.openstreetmap.de/routed-foot'),

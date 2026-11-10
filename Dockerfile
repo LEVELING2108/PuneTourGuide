@@ -46,6 +46,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-cert
 COPY --from=build --chown=node:node /repo/package.json /repo/package-lock.json ./
 COPY --from=build --chown=node:node /repo/node_modules node_modules
 COPY --from=build --chown=node:node /repo/apps/web/dist apps/web/dist
+# Landing page, served on LANDING_HOST when that is set (static files, no build step)
+COPY --chown=node:node apps/landing apps/landing
 # The API folder: compiled dist/, prisma/ (schema + migrations) and any non-hoisted packages
 COPY --from=build --chown=node:node /repo/services/tour-api services/tour-api
 
