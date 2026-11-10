@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer — Edit profile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0F4C42}a:hover{color:#0A3730}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.rise{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.05s}.d2{animation-delay:.12s}.d3{animation-delay:.19s}.d4{animation-delay:.26s}.d5{animation-delay:.33s}.d6{animation-delay:.4s}
+.tap{transition:transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .3s,background-color .3s,color .3s,border-color .3s}
+.tap:active{transform:scale(.96)}
+.field{transition:border-color .3s,box-shadow .3s}
+.field:focus-within{border-color:#0F4C42;box-shadow:0 0 0 3px rgba(15,76,66,.12)}
+.cta{transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
+.cta:hover{transform:translateY(-2px);box-shadow:0 16px 30px -14px rgba(15,76,66,.7)}
+.cta:active{transform:scale(.97)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes sheetup{from{transform:translateY(100%)}to{transform:none}}
+.scrim{animation:fade .35s ease both}
+.sheetup{animation:sheetup .45s cubic-bezier(.2,.8,.2,1) both}
+.opt:hover{background-color:#F6F6F3}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F6F6F3; font-family: 'Hanken Grotesk', sans-serif; color: #111614; padding: 56px 24px 32px; display: flex; flex-direction: column; gap: 20px">
+
+  <div class="rise d1" style="display: flex; align-items: center; justify-content: space-between">
+    <a class="tap" href="Profile.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #E1E4E0; background: #FFFFFF; display: flex; align-items: center; justify-content: center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111614" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a>
+    <h1 style="margin: 0; font-family: 'Instrument Serif', serif; font-size: 26px; font-weight: 400">Edit profile</h1>
+    <div style="width: 44px"></div>
+  </div>
+
+  <div class="rise d2" style="display: flex; flex-direction: column; align-items: center; gap: 10px">
+    <div style="position: relative; width: 96px; height: 96px; border-radius: 48px; background: {{avatarBg}}; color: #F6F6F3; display: flex; align-items: center; justify-content: center; font-family: 'Instrument Serif', serif; font-size: {{avatarSize}}; letter-spacing: {{avatarTrack}}">{{avatarText}}
+      <button class="tap" onClick="{{openPhoto}}" aria-label="Change photo" style="position: absolute; right: -2px; bottom: -2px; width: 36px; height: 36px; border-radius: 18px; border: 3px solid #F6F6F3; background: #111614; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#F6F6F3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></button>
+    </div>
+  </div>
+
+  <div class="rise d3" style="display: flex; flex-direction: column; gap: 14px">
+    <label style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #5E6763">FULL NAME</span>
+      <span class="field" style="height: 50px; border-radius: 14px; border: 1px solid #DDE1DD; background: #FFFFFF; display: flex; align-items: center; padding: 0 16px"><input value="Sourav Suman" style="border: none; outline: none; flex: 1; font-family: 'Hanken Grotesk', sans-serif; font-size: 15px; background: transparent; color: #111614"></span>
+    </label>
+    <label style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #5E6763">EMAIL</span>
+      <span class="field" style="height: 50px; border-radius: 14px; border: 1px solid #DDE1DD; background: #FFFFFF; display: flex; align-items: center; padding: 0 16px"><input value="sourav@example.com" style="border: none; outline: none; flex: 1; font-family: 'Hanken Grotesk', sans-serif; font-size: 15px; background: transparent; color: #111614"></span>
+    </label>
+    <label style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #5E6763">PHONE</span>
+      <span class="field" style="height: 50px; border-radius: 14px; border: 1px solid #DDE1DD; background: #FFFFFF; display: flex; align-items: center; gap: 10px; padding: 0 16px"><span style="font-size: 15px; color: #5E6763">+91</span><input placeholder="98XXX XXXXX" style="border: none; outline: none; flex: 1; font-family: 'Hanken Grotesk', sans-serif; font-size: 15px; background: transparent; color: #111614"></span>
+    </label>
+  </div>
+
+  <div class="rise d4" style="display: flex; flex-direction: column; gap: 10px">
+    <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #5E6763">I LIKE · SHAPES YOUR SUGGESTIONS</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px">
+      <sc-for list="{{tastes}}" as="t" hint-placeholder-count="6">
+        <button class="tap" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}" style="height: 38px; padding: 0 16px; border-radius: 19px; border: 1px solid {{t.bd}}; background: {{t.bg}}; color: {{t.fg}}; font-family: 'Hanken Grotesk', sans-serif; font-size: 13.5px; font-weight: 600; cursor: pointer">{{t.label}}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <a class="rise d5 cta" href="Profile.dc.html" style="margin-top: auto; height: 56px; border-radius: 28px; background: #0F4C42; color: #F6F6F3; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; text-decoration: none">Save changes</a>
+
+  <sc-if value="{{photoOpen}}" hint-placeholder-val="{{ false }}">
+    <button class="scrim" onClick="{{closePhoto}}" aria-label="Close" style="position: absolute; inset: 0; border: none; padding: 0; background: rgba(17,22,20,0.5); cursor: pointer"></button>
+    <div class="sheetup" role="dialog" aria-label="Profile photo" style="position: absolute; left: 0; right: 0; bottom: 0; background: #FFFFFF; border-radius: 30px 30px 0 0; padding: 12px 24px 32px; display: flex; flex-direction: column; gap: 6px">
+      <div style="width: 36px; height: 4px; border-radius: 2px; background: #D5DAD6; align-self: center; margin-bottom: 10px"></div>
+      <h2 style="margin: 0 0 6px; font-family: 'Instrument Serif', serif; font-size: 26px; font-weight: 400">Profile photo</h2>
+      <button class="tap opt" onClick="{{takePhoto}}" style="display: flex; align-items: center; gap: 14px; height: 54px; padding: 0 8px; border: none; border-radius: 14px; background: transparent; font-family: 'Hanken Grotesk', sans-serif; font-size: 15px; font-weight: 600; color: #111614; text-align: left; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F4C42" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>Take a photo</button>
+      <button class="tap opt" onClick="{{pickGallery}}" style="display: flex; align-items: center; gap: 14px; height: 54px; padding: 0 8px; border: none; border-radius: 14px; background: transparent; font-family: 'Hanken Grotesk', sans-serif; font-size: 15px; font-weight: 600; color: #111614; text-align: left; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F4C42" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="M21 16l-5-5-9 9"></path></svg>Choose from gallery</button>
+      <button class="tap opt" onClick="{{removePhoto}}" style="display: flex; align-items: center; gap: 14px; height: 54px; padding: 0 8px; border: none; border-radius: 14px; background: transparent; font-family: 'Hanken Grotesk', sans-serif; font-size: 15px; font-weight: 600; color: #A3281A; text-align: left; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg>Remove photo</button>
+      <div style="font-size: 12px; color: #5E6763; padding: 6px 8px 0">Your phone's camera or gallery opens next.</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { on: { Heritage: true, Treks: true, Food: true }, photoOpen: false, hasPhoto: false };
+  }
+  renderVals() {
+    const on = this.state.on;
+    const tastes = ['Heritage', 'Treks', 'Temples', 'Food', 'Museums', 'Nature'].map((label) => {
+      const sel = !!on[label];
+      return {
+        label,
+        pressed: sel ? 'true' : 'false',
+        bg: sel ? '#111614' : '#FFFFFF',
+        fg: sel ? '#F6F6F3' : '#111614',
+        bd: sel ? '#111614' : '#E1E4E0',
+        pick: () => this.setState({ on: { ...on, [label]: !sel } })
+      };
+    });
+    const has = this.state.hasPhoto;
+    return {
+      tastes,
+      photoOpen: this.state.photoOpen,
+      avatarBg: has ? '#26303B' : '#0F4C42',
+      avatarText: has ? 'PHOTO' : 'SS',
+      avatarSize: has ? '12px' : '38px',
+      avatarTrack: has ? '0.16em' : '0',
+      openPhoto: () => this.setState({ photoOpen: true }),
+      closePhoto: () => this.setState({ photoOpen: false }),
+      takePhoto: () => this.setState({ photoOpen: false, hasPhoto: true }),
+      pickGallery: () => this.setState({ photoOpen: false, hasPhoto: true }),
+      removePhoto: () => this.setState({ photoOpen: false, hasPhoto: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

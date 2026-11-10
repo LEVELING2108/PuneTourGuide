@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer — Intro</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Mukta:wght@500&amp;family=Mukta+Vaani:wght@500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0F4C42}a:hover{color:#0A3730}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes ripple{from{transform:scale(.8);opacity:.5}to{transform:scale(1.9);opacity:0}}
+.rise{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.05s}.d2{animation-delay:.15s}.d3{animation-delay:.3s}
+.bob{animation:bob 5s ease-in-out infinite}
+.b2{animation-delay:-1.6s}.b3{animation-delay:-3.2s}
+.rip{position:absolute;left:50%;top:50%;width:132px;height:132px;margin:-66px 0 0 -66px;border-radius:50%;border:1.5px solid rgba(255,255,255,.55);animation:ripple 2.6s ease-out infinite}
+.rp2{animation-delay:1.3s}
+.track{overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.track::-webkit-scrollbar{display:none}
+.track>*{scroll-snap-align:start;scroll-snap-stop:always}
+.dot{transition:width .4s cubic-bezier(.2,.7,.2,1),background-color .4s}
+.tap{transition:transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .3s,background-color .3s}
+.tap:active{transform:scale(.97)}
+.cta{transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
+.cta:hover{transform:translateY(-2px);box-shadow:0 16px 30px -14px rgba(17,22,20,.6)}
+.cta:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F6F6F3; font-family: 'Hanken Grotesk', sans-serif; color: #111614">
+
+  <div class="rise d1" style="position: absolute; top: 56px; left: 24px; right: 24px; height: 44px; display: flex; align-items: center; justify-content: space-between; z-index: 2">
+    <div style="display: flex; align-items: center; gap: 8px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F4C42" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"></circle><path d="M15.5 8.5l-2 5-5 2 2-5z"></path></svg>
+      <span style="font-family: 'Instrument Serif', serif; font-size: 19px">Pune Explorer</span>
+    </div>
+    <a href="Permissions.dc.html" style="height: 44px; display: flex; align-items: center; padding: 0 4px; font-size: 14px; font-weight: 600; color: #5E6763; text-decoration: none">Skip</a>
+  </div>
+
+  <div class="track" ref="{{trackRef}}" onScroll="{{onSlide}}" style="position: absolute; top: 112px; left: 0; width: 390px; height: 560px; display: flex">
+
+    <section aria-label="Discover" style="flex: 0 0 390px; box-sizing: border-box; padding: 0 24px; display: flex; flex-direction: column; gap: 26px">
+      <div style="height: 380px; border-radius: 32px; background: #0F4C42; position: relative; overflow: hidden">
+        <svg width="360" height="360" viewBox="0 0 360 360" aria-hidden="true" style="position: absolute; right: -150px; bottom: -150px; opacity: 0.14"><circle cx="180" cy="180" r="80" fill="none" stroke="#F6F6F3"></circle><circle cx="180" cy="180" r="130" fill="none" stroke="#F6F6F3"></circle><circle cx="180" cy="180" r="175" fill="none" stroke="#F6F6F3"></circle></svg>
+        <div class="bob" style="position: absolute; left: 24px; top: 40px">
+          <div style="transform: rotate(-4deg); width: 228px; display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 18px; background: #FFFFFF; box-shadow: 0 18px 30px -18px rgba(0,0,0,0.5)">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background: #1B2220"></div>
+            <div><div style="font-family: 'Instrument Serif', serif; font-size: 18px; line-height: 1.1">Shaniwar Wada</div><div style="font-size: 12px; color: #5E6763">Heritage · 2.1 km</div></div>
+          </div>
+        </div>
+        <div class="bob b2" style="position: absolute; left: 86px; top: 128px">
+          <div style="transform: rotate(3deg); width: 228px; display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 18px; background: #FFFFFF; box-shadow: 0 18px 30px -18px rgba(0,0,0,0.5)">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background: #26303B"></div>
+            <div><div style="font-family: 'Instrument Serif', serif; font-size: 18px; line-height: 1.1">Pataleshwar Caves</div><div style="font-size: 12px; color: #5E6763">Temple · 3.4 km</div></div>
+          </div>
+        </div>
+        <div class="bob b3" style="position: absolute; left: 36px; top: 216px">
+          <div style="transform: rotate(-2deg); width: 228px; display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 18px; background: #FFFFFF; box-shadow: 0 18px 30px -18px rgba(0,0,0,0.5)">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background: #4A3426"></div>
+            <div><div style="font-family: 'Instrument Serif', serif; font-size: 18px; line-height: 1.1">Sinhagad Fort</div><div style="font-size: 12px; color: #5E6763">Fort · trek</div></div>
+          </div>
+        </div>
+        <div style="position: absolute; left: 22px; right: 22px; bottom: 22px; display: flex; flex-wrap: wrap; gap: 6px">
+          <span style="padding: 5px 11px; border-radius: 14px; background: #F6F6F3; color: #0F4C42; font-size: 12.5px; font-weight: 600">English</span>
+          <span style="padding: 3px 11px; border-radius: 14px; border: 1px solid rgba(246,246,243,0.4); color: #F6F6F3; font-family: 'Mukta', sans-serif; font-size: 14px">मराठी</span>
+          <span style="padding: 3px 11px; border-radius: 14px; border: 1px solid rgba(246,246,243,0.4); color: #F6F6F3; font-family: 'Mukta', sans-serif; font-size: 14px">हिन्दी</span>
+          <span style="padding: 3px 11px; border-radius: 14px; border: 1px solid rgba(246,246,243,0.4); color: #F6F6F3; font-family: 'Mukta Vaani', sans-serif; font-size: 14px">ગુજરાતી</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="font-size: 11.5px; font-weight: 600; letter-spacing: 0.16em; color: #0F4C42">01 · DISCOVER</div>
+        <h2 style="margin: 0; font-family: 'Instrument Serif', serif; font-size: 40px; font-weight: 400; line-height: 1">Discover <span style="font-style: italic; color: #0F4C42">Pune</span></h2>
+        <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #4A5451">Forts, temples, food and the old peths, curated and in your own language.</p>
+      </div>
+    </section>
+
+    <section aria-label="Plan" style="flex: 0 0 390px; box-sizing: border-box; padding: 0 24px; display: flex; flex-direction: column; gap: 26px">
+      <div style="height: 380px; border-radius: 32px; background: #26303B; position: relative; overflow: hidden">
+        <div class="bob" style="position: absolute; left: 28px; right: 28px; top: 44px">
+          <div style="background: #FFFFFF; border-radius: 22px; padding: 18px 18px 8px; box-shadow: 0 22px 40px -22px rgba(0,0,0,0.6)">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 10px">
+              <div style="font-family: 'Instrument Serif', serif; font-size: 22px">Saturday</div>
+              <div style="font-size: 12px; font-weight: 700; color: #8A6420">+150 XP</div>
+            </div>
+            <div style="display: flex; gap: 12px">
+              <div style="display: flex; flex-direction: column; align-items: center; width: 16px; padding-top: 4px">
+                <span style="width: 14px; height: 14px; border-radius: 7px; background: #0F4C42"></span><span style="flex: 1; width: 1px; background: #D5DAD6"></span>
+              </div>
+              <div style="flex: 1; padding-bottom: 12px"><div style="font-size: 11px; letter-spacing: 0.12em; color: #5E6763; font-weight: 600">9:30 AM</div><div style="font-size: 15px; font-weight: 600">Shaniwar Wada</div></div>
+            </div>
+            <div style="display: flex; gap: 12px">
+              <div style="display: flex; flex-direction: column; align-items: center; width: 16px; padding-top: 4px">
+                <span style="width: 14px; height: 14px; border-radius: 7px; border: 2px solid #0F4C42; box-sizing: border-box"></span><span style="flex: 1; width: 1px; background: #D5DAD6"></span>
+              </div>
+              <div style="flex: 1; padding-bottom: 12px"><div style="font-size: 11px; letter-spacing: 0.12em; color: #5E6763; font-weight: 600">11:30 AM</div><div style="font-size: 15px; font-weight: 600">Dagdusheth Ganpati</div></div>
+            </div>
+            <div style="display: flex; gap: 12px">
+              <div style="display: flex; flex-direction: column; align-items: center; width: 16px; padding-top: 4px">
+                <span style="width: 14px; height: 14px; border-radius: 7px; border: 2px solid #C27A1E; box-sizing: border-box"></span>
+              </div>
+              <div style="flex: 1; padding-bottom: 12px"><div style="font-size: 11px; letter-spacing: 0.12em; color: #5E6763; font-weight: 600">3:00 PM</div><div style="font-size: 15px; font-weight: 600">Sinhagad Fort</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="bob b2" style="position: absolute; left: 28px; bottom: 30px; display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 16px; background: #F6F6F3; font-size: 13px; font-weight: 600; color: #111614; box-shadow: 0 14px 24px -14px rgba(0,0,0,0.6)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F4C42" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6 4 4 6-8"></path><path d="M15 7h5v5"></path></svg>Stops ordered for you</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="font-size: 11.5px; font-weight: 600; letter-spacing: 0.16em; color: #0F4C42">02 · PLAN</div>
+        <h2 style="margin: 0; font-family: 'Instrument Serif', serif; font-size: 40px; font-weight: 400; line-height: 1">Plan <span style="font-style: italic; color: #0F4C42">smarter</span> days</h2>
+        <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #4A5451">Add the places you like. We order the stops, map the route and you earn XP at every one.</p>
+      </div>
+    </section>
+
+    <section aria-label="Stay safe" style="flex: 0 0 390px; box-sizing: border-box; padding: 0 24px; display: flex; flex-direction: column; gap: 26px">
+      <div style="height: 380px; border-radius: 32px; background: #8F1D12; position: relative; overflow: hidden">
+        <div style="position: absolute; left: 50%; top: 46%; width: 0; height: 0">
+          <span class="rip"></span><span class="rip rp2"></span>
+          <div style="position: absolute; left: -54px; top: -54px; width: 108px; height: 108px; border-radius: 54px; background: #FFFFFF; color: #8F1D12; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; letter-spacing: 0.1em; box-shadow: 0 20px 40px -16px rgba(0,0,0,0.5)">SOS</div>
+        </div>
+        <div class="bob" style="position: absolute; left: 20px; top: 30px; display: flex; align-items: center; gap: 8px; padding: 9px 13px; border-radius: 14px; background: #FFFFFF; font-size: 12.5px; font-weight: 600; box-shadow: 0 14px 24px -14px rgba(0,0,0,0.6)">
+          <span style="width: 8px; height: 8px; border-radius: 4px; background: #C8321C"></span>KEM Hospital · 1.2 km</div>
+        <div class="bob b2" style="position: absolute; right: 18px; top: 248px; display: flex; align-items: center; gap: 8px; padding: 9px 13px; border-radius: 14px; background: #FFFFFF; font-size: 12.5px; font-weight: 600; box-shadow: 0 14px 24px -14px rgba(0,0,0,0.6)">
+          <span style="width: 8px; height: 8px; border-radius: 4px; background: #2FA58A"></span>Live location shared</div>
+        <div class="bob b3" style="position: absolute; left: 24px; bottom: 26px; display: flex; align-items: center; gap: 8px; padding: 9px 13px; border-radius: 14px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.35); color: #FFFFFF; font-size: 12.5px; font-weight: 600">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"></path></svg>Works offline</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="font-size: 11.5px; font-weight: 600; letter-spacing: 0.16em; color: #A3281A">03 · STAY SAFE</div>
+        <h2 style="margin: 0; font-family: 'Instrument Serif', serif; font-size: 40px; font-weight: 400; line-height: 1">Help is always <span style="font-style: italic; color: #A3281A">near</span></h2>
+        <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #4A5451">Shake your phone or tap SOS. We call 112, share your live location and show the nearest hospital, even offline.</p>
+      </div>
+    </section>
+  </div>
+
+  <div style="position: absolute; left: 24px; right: 24px; bottom: 36px; display: flex; flex-direction: column; gap: 18px; align-items: center">
+    <div aria-hidden="true" style="display: flex; gap: 6px">
+      <sc-for list="{{dots}}" as="d" hint-placeholder-count="3">
+        <span class="dot" style="width: {{d.w}}; height: 6px; border-radius: 3px; background: {{d.bg}}"></span>
+      </sc-for>
+    </div>
+    <sc-if value="{{notLast}}" hint-placeholder-val="{{ true }}">
+      <button class="tap cta" onClick="{{next}}" style="width: 100%; height: 56px; border-radius: 28px; border: none; background: #111614; color: #F6F6F3; font-family: 'Hanken Grotesk', sans-serif; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer">Next
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
+    </sc-if>
+    <sc-if value="{{isLast}}" hint-placeholder-val="{{ false }}">
+      <a class="cta" href="Permissions.dc.html" style="width: 100%; height: 56px; border-radius: 28px; background: #0F4C42; color: #F6F6F3; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; text-decoration: none">Get started</a>
+    </sc-if>
+    <div style="font-size: 13.5px; color: #5E6763">Already have an account? <a href="Login.dc.html" style="font-weight: 600; text-decoration: none">Log in</a></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { i: 0 };
+  }
+  renderVals() {
+    const i = this.state.i;
+    const dots = [0, 1, 2].map((k) => ({
+      w: k === i ? '22px' : '6px',
+      bg: k === i ? (i === 2 ? '#A3281A' : '#111614') : '#C3CAC6'
+    }));
+    return {
+      dots,
+      isLast: i === 2,
+      notLast: i !== 2,
+      trackRef: (el) => { this.track = el; },
+      onSlide: (e) => {
+        const n = Math.max(0, Math.min(2, Math.round(e.currentTarget.scrollLeft / 390)));
+        if (n !== this.state.i) this.setState({ i: n });
+      },
+      next: () => {
+        const n = Math.min(2, i + 1);
+        if (this.track && this.track.scrollTo) {
+          this.track.scrollTo({ left: n * 390, behavior: 'smooth' });
+        } else {
+          this.setState({ i: n });
+        }
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

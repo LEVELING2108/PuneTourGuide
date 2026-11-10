@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer (Deccan) — Safety permissions</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&amp;family=Yatra+One&amp;family=Mukta:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#7A1F4E}a:hover{color:#5C1239}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.7)}60%{transform:scale(1.1)}100%{transform:none}}
+.rise{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.05s}.d2{animation-delay:.12s}.d3{animation-delay:.2s}.d4{animation-delay:.28s}.d5{animation-delay:.36s}.d6{animation-delay:.44s}
+.card{transition:border-color .35s,background-color .35s}
+.tap{transition:transform .2s cubic-bezier(.2,.7,.2,1),background-color .3s,color .3s,border-color .3s}
+.tap:active{transform:scale(.96)}
+.ok{animation:pop .4s cubic-bezier(.2,.7,.2,1)}
+.cta{transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
+.cta:hover{transform:translateY(-2px);box-shadow:0 16px 30px -14px rgba(122,31,78,.7)}
+.cta:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F3EADB; font-family: 'Mukta', sans-serif; color: #231C17; padding: 64px 24px 32px; display: flex; flex-direction: column; gap: 22px">
+  <svg width="390" height="10" viewBox="0 0 390 10" aria-hidden="true" style="position: absolute; top: 0; left: 0; z-index: 6; pointer-events: none"><defs><pattern id="zz" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#C59A3A"></rect><path d="M0 10 L5 2 L10 10 Z" fill="#5C1239"></path></pattern></defs><rect width="390" height="10" fill="url(#zz)"></rect></svg>
+
+  <div class="rise d1" style="display: flex; flex-direction: column; gap: 10px">
+    <div style="font-size: 11.5px; font-weight: 600; letter-spacing: 0.16em; color: #6B5D50">BEFORE YOU START</div>
+    <div style="display: flex; flex-direction: column"><div style="font-family: 'Yatra One', sans-serif; font-size: 19px; line-height: 1.25; color: #A4462B">सुरक्षा चालू करा</div><h1 style="margin: 0; font-family: 'DM Serif Display', serif; font-size: 44px; font-weight: 400; line-height: 0.98">Turn on <span style="font-style: italic; color: #7A1F4E">safety</span></h1></div>
+    <p style="margin: 0; font-size: 14.5px; line-height: 1.5; color: #4A3D33">Two permissions make SOS work instantly, even before you have an account. Your phone will ask you to confirm each.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <sc-for list="{{perms}}" as="p" hint-placeholder-count="3">
+      <div class="card rise {{p.delay}}" style="border-radius: 20px; border: 1.5px dashed {{p.bd}}; background: {{p.bg}}; padding: 16px; display: flex; gap: 14px; align-items: flex-start">
+        <div style="width: 42px; height: 42px; border-radius: 21px; background: #F5E6EE; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+          <sc-if value="{{p.isLoc}}" hint-placeholder-val="{{ false }}">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#7A1F4E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>
+          </sc-if>
+          <sc-if value="{{p.isMotion}}" hint-placeholder-val="{{ false }}">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#7A1F4E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="18" rx="2"></rect><path d="M3 8l1.5 1.5L3 11M21 8l-1.5 1.5L21 11"></path></svg>
+          </sc-if>
+          <sc-if value="{{p.isNotify}}" hint-placeholder-val="{{ false }}">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#7A1F4E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"></path><path d="M10 21h4"></path></svg>
+          </sc-if>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 3px">
+          <div style="font-size: 15px; font-weight: 600">{{p.title}}</div>
+          <div style="font-size: 12.5px; line-height: 1.45; color: #6B5D50">{{p.why}}</div>
+        </div>
+        <sc-if value="{{p.pending}}" hint-placeholder-val="{{ true }}">
+          <button class="tap" onClick="{{p.allow}}" style="height: 36px; padding: 0 14px; border-radius: 18px; border: none; background: #231C17; color: #F3EADB; font-family: 'Mukta', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0">Allow</button>
+        </sc-if>
+        <sc-if value="{{p.granted}}" hint-placeholder-val="{{ false }}">
+          <span class="ok" aria-label="Allowed" style="width: 36px; height: 36px; border-radius: 18px; background: #7A1F4E; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F3EADB" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></span>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+
+  <div class="rise d5" style="display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.45; color: #6B5D50">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B5D50" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+    <span>Your location is only shared when you start an SOS or turn on trip sharing. You can change these any time in Profile.</span>
+  </div>
+
+  <div class="rise d6" style="margin-top: auto; display: flex; flex-direction: column; gap: 12px; align-items: center">
+    <a class="cta" href="DeccanSignUp.dc.html" style="width: 100%; height: 56px; border-radius: 28px; background: #7A1F4E; color: #F3EADB; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; text-decoration: none">{{ctaLabel}}</a>
+    <div style="display: flex; gap: 18px; font-size: 13.5px">
+      <a href="DeccanSignUp.dc.html" style="color: #6B5D50; text-decoration: none">Not now</a>
+      <span style="color: #CDBDA3">·</span>
+      <span style="color: #6B5D50">Have an account? <a href="DeccanLogin.dc.html" style="font-weight: 600; text-decoration: none">Log in</a></span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { loc: false, motion: false, notify: false };
+  }
+  renderVals() {
+    const s = this.state;
+    const defs = [
+      { key: 'loc', title: 'Location', why: 'Finds the nearest hospital and police, and sends your exact spot during an SOS.', delay: 'd2' },
+      { key: 'motion', title: 'Motion', why: 'Lets a hard shake start the SOS countdown when you can’t reach the screen.', delay: 'd3' }
+    ];
+    const perms = defs.map((d) => {
+      const on = !!s[d.key];
+      return {
+        ...d,
+        isLoc: d.key === 'loc',
+        isMotion: d.key === 'motion',
+        isNotify: d.key === 'notify',
+        pending: !on,
+        granted: on,
+        bd: on ? '#E3B9CE' : '#E2D4BE',
+        bg: on ? '#FAF0F4' : '#FFFBF3',
+        allow: () => this.setState({ [d.key]: true })
+      };
+    });
+    const count = ['loc', 'motion'].filter((k) => s[k]).length;
+    return {
+      perms,
+      ctaLabel: count === 2 ? 'All set · continue' : 'Continue'
+    };
+  }
+}
+</script>
+</body>
+</html>

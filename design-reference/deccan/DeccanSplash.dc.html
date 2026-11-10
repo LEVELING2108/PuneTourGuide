@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer (Deccan) — Splash</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&amp;family=Yatra+One&amp;family=Mukta:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F3EADB}a:hover{color:#FFFBF3}
+@keyframes draw{from{stroke-dashoffset:70}to{stroke-dashoffset:0}}
+@keyframes needle{0%{transform:rotate(-120deg);opacity:0}60%{transform:rotate(14deg);opacity:1}80%{transform:rotate(-6deg)}100%{transform:rotate(0)}}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes ring{from{transform:scale(.6);opacity:0}40%{opacity:.25}to{transform:scale(1.6);opacity:0}}
+@keyframes breathe{50%{opacity:.45}}
+.circle{stroke-dasharray:70;animation:draw 1.2s cubic-bezier(.4,.1,.2,1) .2s both}
+.needle{transform-origin:12px 12px;animation:needle 1.3s cubic-bezier(.3,.8,.2,1) .7s both}
+.rise{animation:rise .8s cubic-bezier(.2,.7,.2,1) both}
+.r1{animation-delay:1.2s}.r2{animation-delay:1.45s}.r3{animation-delay:2.2s}
+.wave{position:absolute;left:50%;top:50%;width:240px;height:240px;margin:-120px 0 0 -120px;border-radius:50%;border:1px solid #F3EADB;animation:ring 3.2s ease-out 1s infinite}
+.w2{animation-delay:2.6s}
+.hint{animation:rise .8s ease 2.2s both,breathe 2.4s ease-in-out 3s infinite}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<a href="DeccanIntro.dc.html" aria-label="Start" style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #7A1F4E; font-family: 'Mukta', sans-serif; color: #F3EADB; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; text-decoration: none">
+  <div style="position: absolute; left: 0; right: 0; top: 0; bottom: 0" aria-hidden="true">
+    <span class="wave"></span><span class="wave w2"></span>
+  </div>
+  <svg width="88" height="88" viewBox="0 0 24 24" fill="none" stroke="#F3EADB" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" style="position: relative">
+    <circle class="circle" cx="12" cy="12" r="10"></circle>
+    <g class="needle"><path d="M15.5 8.5l-2 5-5 2 2-5z" fill="#F3EADB" fill-opacity="0.15"></path></g>
+  </svg>
+  <div class="rise r1" style="font-family: 'DM Serif Display', serif; font-size: 44px; line-height: 1; position: relative">Pune <span style="font-style: italic; color: #F2C9DC">Explorer</span></div>
+  <div class="rise r2" style="font-family: 'Yatra One', sans-serif; font-size: 24px; color: #E2B95B; position: relative; margin-top: -14px">पुणे एक्सप्लोरर</div>
+  <div class="rise r2" style="font-size: 14px; letter-spacing: 0.04em; color: #F2D5E3; position: relative">Explore boldly. Help is always near.</div>
+  <svg width="390" height="120" viewBox="0 0 390 120" aria-hidden="true" style="position: absolute; left: 0; bottom: 0">
+    <path d="M0 80 Q70 40 140 66 T280 52 T390 62 V120 H0 Z" fill="#6A1A44"></path>
+    <path d="M0 120 V86 H30 V72 a14 14 0 0 1 28 0 V86 H110 V78 H118 V72 H126 V78 H134 V72 H142 V78 H150 V86 H170 V62 a22 22 0 0 1 44 0 V86 H260 V74 a12 12 0 0 1 24 0 V86 H330 V68 a16 16 0 0 1 32 0 V86 H390 V120 Z" fill="#4E0F30"></path>
+    <path d="M182 120 V102 a10 10 0 0 1 20 0 V120 Z" fill="#7A1F4E"></path>
+  </svg>
+  <div class="rise r1" style="position: absolute; right: 64px; top: 150px; width: 64px; height: 64px; border-radius: 32px; background: #E2B95B; opacity: 0.9"></div>
+  <svg width="390" height="10" viewBox="0 0 390 10" aria-hidden="true" style="position: absolute; top: 0; left: 0"><defs><pattern id="zs" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#C59A3A"></rect><path d="M0 10 L5 2 L10 10 Z" fill="#5C1239"></path></pattern></defs><rect width="390" height="10" fill="url(#zs)"></rect></svg>
+  <div class="hint" style="position: absolute; bottom: 140px; font-size: 12px; letter-spacing: 0.16em; color: #F2C9DC">TAP TO BEGIN</div>
+</a>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

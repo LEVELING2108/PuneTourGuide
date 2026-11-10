@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer (Deccan) — Sign out</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&amp;family=Yatra+One&amp;family=Mukta:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#7A1F4E}a:hover{color:#5C1239}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+.scrim{animation:fade .5s ease both}
+.up{animation:up .6s cubic-bezier(.2,.8,.2,1) .1s both}
+.tap{transition:transform .2s cubic-bezier(.2,.7,.2,1),background-color .3s}
+.tap:active{transform:scale(.97)}
+.danger:hover{background-color:#8E2014}
+.ghost:hover{background-color:#EFE4D2}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F3EADB; font-family: 'Mukta', sans-serif; color: #231C17">
+  <dc-import name="DeccanSettings" hint-size="390px,844px"></dc-import>
+
+  <div class="scrim" style="position: absolute; inset: 0; background: rgba(35,28,23,0.5)"></div>
+
+  <div class="up" role="dialog" aria-label="Sign out" style="position: absolute; left: 0; right: 0; bottom: 0; background: #FFFBF3; border-radius: 30px 30px 0 0; border-top: 3px solid #C59A3A; padding: 12px 24px 36px; display: flex; flex-direction: column; gap: 16px">
+    <div style="width: 36px; height: 4px; border-radius: 2px; background: #D8C6A6; align-self: center"></div>
+    <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 6px">
+      <div style="display: flex; flex-direction: column"><div style="font-family: 'Yatra One', sans-serif; font-size: 16px; line-height: 1.25; color: #A4462B">बाहेर पडायचं?</div><h2 style="margin: 0; font-family: 'DM Serif Display', serif; font-size: 32px; font-weight: 400; line-height: 1">Sign out?</h2></div>
+      <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #6B5D50">Your plans and XP are saved to your account.</p>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: #F5E6EE">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7A1F4E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"></path><path d="M9 12l2 2 4-4"></path></svg>
+      <div style="font-size: 13px; line-height: 1.45; color: #4A1530">SOS still works without an account. Emergency contacts, medical info and offline packs stay on this phone.</div>
+    </div>
+    <a class="tap danger" href="DeccanLogin.dc.html" style="height: 56px; border-radius: 28px; background: #A3281A; color: #FFFBF3; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; text-decoration: none">Sign out</a>
+    <a class="tap ghost" href="DeccanSettings.dc.html" style="height: 52px; border-radius: 26px; border: 1px solid #D8C6A6; color: #231C17; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; text-decoration: none">Cancel</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

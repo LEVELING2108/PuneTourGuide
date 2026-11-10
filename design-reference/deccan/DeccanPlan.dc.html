@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer — Day plan (Deccan theme)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&amp;family=Yatra+One&amp;family=Mukta:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#7A1F4E}a:hover{color:#5C1239}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes stamp{0%{opacity:0;transform:rotate(-14deg) scale(1.8)}60%{opacity:.9;transform:rotate(-14deg) scale(.92)}100%{opacity:.9;transform:rotate(-14deg) scale(1)}}
+.rise{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.05s}.d2{animation-delay:.12s}.d3{animation-delay:.19s}.d4{animation-delay:.26s}.d5{animation-delay:.33s}.d6{animation-delay:.4s}
+.stamp{animation:stamp .5s cubic-bezier(.2,.7,.2,1) both}
+.tap{transition:transform .2s cubic-bezier(.2,.7,.2,1),background-color .3s,color .3s}
+.tap:active{transform:scale(.97)}
+.ticket{transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
+.ticket:hover{transform:translateY(-2px);box-shadow:0 16px 28px -18px rgba(35,28,23,.5)}
+.seg{transition:transform .45s cubic-bezier(.3,.8,.2,1)}
+.segtxt{transition:color .35s}
+.knob{transition:left .35s cubic-bezier(.3,.8,.2,1)}
+.track{transition:background-color .35s}
+.navi:hover{color:#F3EADB}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F3EADB; font-family: 'Mukta', sans-serif; color: #231C17">
+  <div style="padding: 54px 22px 0; display: flex; flex-direction: column; gap: 16px">
+
+    <div class="rise d1" style="display: flex; justify-content: space-between; align-items: flex-end">
+      <div>
+        <div style="font-family: 'Yatra One', sans-serif; font-size: 20px; color: #A4462B; line-height: 1.2">आजचा प्रवास</div>
+        <h1 style="margin: 0; font-family: 'DM Serif Display', serif; font-size: 38px; font-weight: 400; line-height: 1">{{dayName}} <span style="font-style: italic; color: #7A1F4E">journey</span></h1>
+      </div>
+      <div style="text-align: right"><div style="font-family: 'DM Serif Display', serif; font-size: 22px; color: #8A6420">{{xp}}</div><div style="font-size: 11px; letter-spacing: 0.14em; color: #6B5D50">XP TODAY</div></div>
+    </div>
+
+    <div class="rise d2" style="position: relative; height: 44px; border-radius: 22px; background: #E7DAC4; padding: 4px; box-sizing: border-box; display: flex">
+      <div class="seg" style="position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: 36px; border-radius: 18px; background: #231C17; transform: translateX({{segX}})"></div>
+      <button class="segtxt" onClick="{{pickDay1}}" style="position: relative; flex: 1; border: none; background: transparent; font-family: 'Mukta', sans-serif; font-size: 14.5px; font-weight: 600; color: {{c1}}; cursor: pointer">Day 1 · Sat</button>
+      <button class="segtxt" onClick="{{pickDay2}}" style="position: relative; flex: 1; border: none; background: transparent; font-family: 'Mukta', sans-serif; font-size: 14.5px; font-weight: 600; color: {{c2}}; cursor: pointer">Day 2 · Sun</button>
+    </div>
+
+    <div class="rise d3" style="display: flex; flex-direction: column; gap: 12px">
+      <sc-for list="{{stops}}" as="s" hint-placeholder-count="3">
+        <div class="ticket" style="position: relative; height: 96px; display: flex; border-radius: 16px; overflow: hidden; background: #FFFBF3; border: 1px solid #E2D4BE">
+          <div style="width: 84px; background: {{s.tone}}; color: #FFFBF3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px">
+            <div style="font-size: 10px; letter-spacing: 0.16em; opacity: 0.85">STOP {{s.no}}</div>
+            <div style="font-family: 'DM Serif Display', serif; font-size: 24px; line-height: 1">{{s.time}}</div>
+            <div style="font-size: 11px; opacity: 0.85">{{s.ampm}}</div>
+          </div>
+          <div style="width: 0; border-left: 2px dashed #D8C6A6"></div>
+          <div style="flex: 1; min-width: 0; padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; gap: 2px">
+            <div style="font-family: 'DM Serif Display', serif; font-size: 19px; line-height: 1.1">{{s.name}}</div>
+            <div style="font-size: 13px; color: {{s.helpColor}}">{{s.help}}</div>
+            <div style="font-size: 12.5px; font-weight: 600; color: #8A6420">+{{s.xp}} XP</div>
+          </div>
+          <button class="tap" onClick="{{s.toggle}}" aria-label="Mark visited" aria-pressed="{{s.pressed}}" style="align-self: center; margin-right: 12px; width: 40px; height: 40px; border-radius: 20px; border: 1.5px solid {{s.ring}}; background: {{s.fill}}; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{s.tick}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></button>
+          <span style="position: absolute; left: 76px; top: -9px; width: 18px; height: 18px; border-radius: 9px; background: #F3EADB; border: 1px solid #E2D4BE; box-sizing: border-box"></span>
+          <span style="position: absolute; left: 76px; bottom: -9px; width: 18px; height: 18px; border-radius: 9px; background: #F3EADB; border: 1px solid #E2D4BE; box-sizing: border-box"></span>
+          <sc-if value="{{s.done}}" hint-placeholder-val="{{ false }}">
+            <div class="stamp" aria-hidden="true" style="position: absolute; right: 60px; top: 18px; width: 64px; height: 64px; border-radius: 32px; border: 2px solid #7A1F4E; color: #7A1F4E; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9.5px; font-weight: 700; letter-spacing: 0.12em; line-height: 1.2; pointer-events: none">
+              <span>PUNE</span><span style="font-family: 'Yatra One', sans-serif; font-size: 13px; letter-spacing: 0">पाहिले</span><span>VISITED</span></div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <div class="rise d4" style="background: #231C17; color: #F3EADB; border-radius: 18px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; border-top: 3px solid #C59A3A">
+      <div style="flex: 1">
+        <div style="font-size: 15px; font-weight: 600">Share live trip</div>
+        <div style="font-size: 13px; color: #B5A795">{{shareText}}</div>
+      </div>
+      <button onClick="{{toggleShare}}" aria-label="Share live trip" aria-pressed="{{sharePressed}}" style="position: relative; width: 52px; height: 32px; border: none; padding: 0; background: transparent; cursor: pointer; flex-shrink: 0">
+        <span class="track" style="position: absolute; inset: 0; border-radius: 16px; background: {{trackBg}}"></span>
+        <span class="knob" style="position: absolute; top: 4px; left: {{knob}}; width: 24px; height: 24px; border-radius: 12px; background: #FFFBF3; box-shadow: 0 2px 6px rgba(0,0,0,0.3)"></span></button>
+    </div>
+  </div>
+
+  <nav class="rise d6" aria-label="Main" style="position: absolute; left: 16px; right: 16px; bottom: 20px; height: 64px; border-radius: 32px; background: #231C17; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; box-sizing: border-box; box-shadow: 0 20px 40px -18px rgba(35,28,23,0.6); border-top: 2px solid #C59A3A">
+    <a class="tap navi" href="DeccanHome.dc.html" aria-label="Home" style="width: 48px; height: 48px; border-radius: 24px; color: #B5A795; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg></a>
+    <a class="tap navi" href="DeccanExplore.dc.html" aria-label="Explore" style="width: 48px; height: 48px; border-radius: 24px; color: #B5A795; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M15.5 8.5l-2 5-5 2 2-5z"></path></svg></a>
+    <a class="tap navi" href="DeccanMap.dc.html" aria-label="Map" style="width: 48px; height: 48px; border-radius: 24px; color: #B5A795; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"></path></svg></a>
+    <a class="tap" href="DeccanPlan.dc.html" style="height: 48px; padding: 0 18px; border-radius: 24px; background: #F3EADB; color: #231C17; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; text-decoration: none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Plan</a>
+    <a class="tap navi" href="DeccanProfile.dc.html" aria-label="Profile" style="width: 48px; height: 48px; border-radius: 24px; color: #B5A795; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { day: 1, done: { 'Shaniwar Wada': true }, sharing: true };
+  }
+  renderVals() {
+    const { day, done, sharing } = this.state;
+    const days = {
+      1: [
+        { time: '9:30', ampm: 'AM', name: 'Shaniwar Wada', help: 'KEM Hospital · 1.2 km', xp: 40, tone: '#7A1F4E' },
+        { time: '11:30', ampm: 'AM', name: 'Dagdusheth Ganpati', help: 'KEM Hospital · 0.9 km', xp: 30, tone: '#A4462B' },
+        { time: '3:00', ampm: 'PM', name: 'Sinhagad Fort', help: 'Weak signal · help saved offline', xp: 80, tone: '#0E5B5E', warn: true }
+      ],
+      2: [
+        { time: '10:00', ampm: 'AM', name: 'Aga Khan Palace', help: 'Ruby Hall Clinic · 4 km', xp: 40, tone: '#0E5B5E' },
+        { time: '1:00', ampm: 'PM', name: 'Pataleshwar Caves', help: 'Hospital · 1.6 km', xp: 30, tone: '#A4462B' },
+        { time: '5:30', ampm: 'PM', name: 'Parvati Hill', help: 'Hospital · 2 km', xp: 30, tone: '#7A1F4E' }
+      ]
+    };
+    let xp = 0;
+    const stops = days[day].map((s, i) => {
+      const d = !!done[s.name];
+      if (d) xp += s.xp;
+      return {
+        ...s,
+        no: '0' + (i + 1),
+        done: d,
+        pressed: d ? 'true' : 'false',
+        helpColor: s.warn ? '#8A4A12' : '#6B5D50',
+        ring: d ? '#7A1F4E' : '#CDB894',
+        fill: d ? '#7A1F4E' : '#FFFBF3',
+        tick: d ? '#FFFBF3' : '#CDB894',
+        toggle: () => this.setState({ done: { ...this.state.done, [s.name]: !d } })
+      };
+    });
+    return {
+      stops,
+      xp: '+' + xp,
+      dayName: day === 1 ? 'Saturday' : 'Sunday',
+      segX: day === 1 ? '0%' : '100%',
+      c1: day === 1 ? '#F3EADB' : '#6B5D50',
+      c2: day === 2 ? '#F3EADB' : '#6B5D50',
+      pickDay1: () => this.setState({ day: 1 }),
+      pickDay2: () => this.setState({ day: 2 }),
+      shareText: sharing ? 'Aai and Aman can follow your route' : 'Off · nobody can see your location',
+      sharePressed: sharing ? 'true' : 'false',
+      trackBg: sharing ? '#C59A3A' : '#4A3F37',
+      knob: sharing ? '24px' : '4px',
+      toggleShare: () => this.setState({ sharing: !sharing })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+# Caddy gets and renews the HTTPS certificates automatically once the DNS points at this server.
+#
+#   https://DOMAIN/            landing page when LANDING_HOST is set (else the web app), Tour API (/api/...)
+#   https://app.DOMAIN/        web app + Tour API (step 24; needs an "app" DNS record)
+#   https://<either>/safety/   safety service, incl. WebSockets
+# Both hosts go to the same app instances; the app decides by host what to show.
+{
+	email {$ACME_EMAIL}
+}
+
+(site) {
+	encode zstd gzip
+
+	# Safety service (live tracking, help fallback). The prefix is stripped; WebSockets pass through.
+	handle_path /safety/* {
+		reverse_proxy safety:8000 {
+			health_uri /health
+		}
+	}
+
+	handle {
+		reverse_proxy app:3001 {
+			# Spread over every app replica; skip one that is starting or stuck
+			lb_policy round_robin
+			health_uri /api/v1/health/ready
+			health_interval 10s
+		}
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}
+
+{$DOMAIN} {
+	import site
+}
+
+app.{$DOMAIN} {
+	import site
+}
+
+# Old hostnames (www.) forward to the main one
+www.{$DOMAIN} {
+	redir https://{$DOMAIN}{uri} permanent
+}

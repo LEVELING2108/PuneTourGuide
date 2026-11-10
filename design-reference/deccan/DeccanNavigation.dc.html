@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer (Deccan) — Directions</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&amp;family=Yatra+One&amp;family=Mukta:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#7A1F4E}a:hover{color:#5C1239}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes down{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
+@keyframes sheet{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
+@keyframes draw{from{stroke-dashoffset:600}to{stroke-dashoffset:0}}
+@keyframes halo{from{transform:scale(1);opacity:.5}to{transform:scale(2.6);opacity:0}}
+@keyframes pulse{from{transform:scale(1);opacity:.55}to{transform:scale(1.7);opacity:0}}
+.down{animation:down .6s cubic-bezier(.2,.7,.2,1) .15s both}
+.sheet{animation:sheet .7s cubic-bezier(.2,.7,.2,1) .2s both}
+.draw{stroke-dasharray:600;animation:draw 1.6s cubic-bezier(.4,.1,.2,1) .2s both}
+.me::after{content:"";position:absolute;inset:-4px;border-radius:50%;background:#2F6FD6;animation:halo 2.4s ease-out infinite;z-index:-1}
+.sos::after{content:"";position:absolute;inset:0;border-radius:inherit;border:1.5px solid #C8321C;animation:pulse 2.6s ease-out infinite}
+.tap{transition:transform .2s cubic-bezier(.2,.7,.2,1),background-color .3s,color .3s,border-color .3s}
+.tap:active{transform:scale(.96)}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #EDE3D0; font-family: 'Mukta', sans-serif; color: #231C17">
+  <svg width="390" height="10" viewBox="0 0 390 10" aria-hidden="true" style="position: absolute; top: 0; left: 0; z-index: 6; pointer-events: none"><defs><pattern id="zz" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#C59A3A"></rect><path d="M0 10 L5 2 L10 10 Z" fill="#5C1239"></path></pattern></defs><rect width="390" height="10" fill="url(#zz)"></rect></svg>
+
+  <svg width="390" height="844" viewBox="0 0 390 844" style="position: absolute; inset: 0" aria-hidden="true">
+    <rect width="390" height="844" fill="#EDE3D0"></rect>
+    <rect x="230" y="250" width="120" height="80" rx="18" fill="#DDE5DA"></rect>
+    <path d="M0 470 L390 430" stroke="#FFFBF3" stroke-width="14"></path>
+    <path d="M150 0 L200 844" stroke="#FFFBF3" stroke-width="14"></path>
+    <path d="M0 300 L390 330" stroke="#FFFBF3" stroke-width="8"></path>
+    <path d="M300 0 L270 844" stroke="#FFFBF3" stroke-width="8"></path>
+    <path d="M60 0 L90 844" stroke="#FFFBF3" stroke-width="5"></path>
+    <path d="M190 620 L180 452 L84 462 L72 300" stroke="#7A1F4E" stroke-opacity="0.18" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+    <path class="draw" d="M190 620 L180 452 L84 462 L72 300" stroke="#7A1F4E" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+  </svg>
+
+  <div style="position: absolute; left: 58px; top: 268px; display: flex; flex-direction: column; align-items: center">
+    <div style="padding: 6px 12px; border-radius: 14px; background: #7A1F4E; color: #F3EADB; font-family: 'DM Serif Display', serif; font-size: 16px; white-space: nowrap">Dagdusheth</div>
+    <div style="width: 1.5px; height: 10px; background: #7A1F4E"></div>
+  </div>
+  <div class="me" style="position: absolute; left: 178px; top: 606px; width: 24px; height: 24px; border-radius: 12px; background: #2F6FD6; border: 4px solid #FFFBF3; box-sizing: border-box; box-shadow: 0 4px 10px rgba(35,28,23,0.3); z-index: 1"></div>
+
+  <div class="down" style="position: absolute; top: 56px; left: 16px; right: 16px; background: #231C17; color: #F3EADB; border-radius: 24px; border-bottom: 3px solid #C59A3A; padding: 16px 18px; display: flex; gap: 16px; align-items: center; box-shadow: 0 20px 40px -20px rgba(35,28,23,0.7)">
+    <div style="width: 52px; height: 52px; border-radius: 16px; background: #7A1F4E; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F3EADB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V12a4 4 0 0 0-4-4H5"></path><path d="M9 4L5 8l4 4"></path></svg>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+      <div style="font-family: 'DM Serif Display', serif; font-size: 30px; line-height: 1">{{nextDist}}</div>
+      <div style="font-size: 14px; color: #E3D6C4">Turn left onto Laxmi Road · <span style="font-family: 'Yatra One', sans-serif; color: #E2B95B">लक्ष्मी रस्ता</span></div>
+    </div>
+  </div>
+  <div class="down" style="position: absolute; top: 152px; left: 30px; padding: 8px 14px; border-radius: 0 0 16px 16px; background: #3A302A; color: #E3D6C4; font-size: 12.5px">Then right in 160 m</div>
+
+  <button class="tap" aria-label="Re-centre map" style="position: absolute; right: 20px; top: 470px; width: 48px; height: 48px; border-radius: 24px; border: none; background: #FFFBF3; box-shadow: 0 10px 24px -12px rgba(35,28,23,0.5); display: flex; align-items: center; justify-content: center; cursor: pointer">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#231C17" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path></svg></button>
+
+  <div class="sheet" style="position: absolute; left: 0; right: 0; bottom: 0; background: #FFFBF3; border-radius: 30px 30px 0 0; border-top: 3px solid #C59A3A; box-shadow: 0 -20px 40px -24px rgba(35,28,23,0.35); padding: 12px 24px 32px; display: flex; flex-direction: column; gap: 16px">
+    <div style="width: 36px; height: 4px; border-radius: 2px; background: #D8C6A6; align-self: center"></div>
+    <div style="display: flex; justify-content: space-between; align-items: flex-end">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <div style="font-family: 'DM Serif Display', serif; font-size: 34px; line-height: 1">{{eta}}</div>
+        <div style="font-size: 13px; color: #6B5D50">{{meta}}</div>
+      </div>
+      <div style="display: flex; gap: 6px">
+        <sc-for list="{{modes}}" as="m" hint-placeholder-count="2">
+          <button class="tap" onClick="{{m.pick}}" aria-pressed="{{m.pressed}}" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid {{m.bd}}; background: {{m.bg}}; color: {{m.fg}}; font-family: 'Mukta', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer">{{m.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: #FAF0F4; font-size: 12.5px; color: #4A1530">
+      <span style="width: 7px; height: 7px; border-radius: 4px; background: #2FA58A; flex-shrink: 0"></span>
+      Aai and Aman can see your trip · KEM Hospital 0.9 km from here</div>
+    <div style="display: flex; gap: 10px">
+      <a class="tap sos" href="DeccanSOS.dc.html" aria-label="Emergency SOS" style="position: relative; width: 56px; height: 56px; border-radius: 28px; background: #C8321C; color: #FFFBF3; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700; letter-spacing: 0.08em; text-decoration: none; flex-shrink: 0">SOS</a>
+      <a class="tap" href="DeccanPlan.dc.html" style="flex: 1; height: 56px; border-radius: 28px; background: #231C17; color: #F3EADB; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; text-decoration: none">End directions</a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { mode: 'Walk' };
+  }
+  renderVals() {
+    const mode = this.state.mode;
+    const modes = ['Walk', 'Auto'].map((label) => {
+      const on = label === mode;
+      return { label, pressed: on ? 'true' : 'false', bg: on ? '#231C17' : '#FFFBF3', fg: on ? '#F3EADB' : '#231C17', bd: on ? '#231C17' : '#DCCDB6', pick: () => this.setState({ mode: label }) };
+    });
+    const walk = mode === 'Walk';
+    return {
+      modes,
+      eta: walk ? '8 min' : '4 min',
+      meta: walk ? '650 m · arrive 11:22 · Dagdusheth Ganpati' : '1.1 km by road · arrive 11:18 · Dagdusheth Ganpati',
+      nextDist: walk ? '200 m' : '350 m'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pune Explorer — Place detail</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Mukta:wght@500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0F4C42}a:hover{color:#0A3730}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes zoom{from{transform:scale(1.08)}to{transform:scale(1)}}
+.rise{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.zoom{animation:zoom 1.4s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.05s}.d2{animation-delay:.12s}.d3{animation-delay:.19s}.d4{animation-delay:.26s}.d5{animation-delay:.33s}.d6{animation-delay:.4s}
+.tap{transition:transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .3s,background-color .3s,color .3s}
+.tap:active{transform:scale(.96)}
+.cta{transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
+.cta:hover{transform:translateY(-2px);box-shadow:0 16px 30px -14px rgba(15,76,66,.7)}
+.cta:active{transform:scale(.97)}
+.ghost{transition:background-color .3s,transform .25s cubic-bezier(.2,.7,.2,1)}
+.ghost:hover{background-color:#FFFFFF}
+.ghost:active{transform:scale(.97)}
+@keyframes toast{0%{opacity:0;transform:translateY(-8px)}12%{opacity:1;transform:none}85%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-4px)}}
+.toast{animation:toast 2.4s ease both}
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F6F6F3; font-family: 'Hanken Grotesk', sans-serif; color: #111614">
+
+  <div style="height: 400px; position: relative; overflow: hidden; background: #0F4C42">
+    <div class="zoom" style="position: absolute; inset: 0; background: #0F4C42; display: flex; align-items: center; justify-content: center">
+      <svg width="420" height="420" viewBox="0 0 420 420" aria-hidden="true" style="position: absolute; right: -120px; top: -80px; opacity: 0.16"><circle cx="210" cy="210" r="90" fill="none" stroke="#F6F6F3"></circle><circle cx="210" cy="210" r="140" fill="none" stroke="#F6F6F3"></circle><circle cx="210" cy="210" r="190" fill="none" stroke="#F6F6F3"></circle></svg>
+      <div style="font-size: 12px; letter-spacing: 0.14em; color: #A9CFC6; border: 1px dashed #5F8F86; border-radius: 12px; padding: 8px 14px; margin-top: -40px">PLACE PHOTO</div>
+    </div>
+    <a class="tap" href="Explore.dc.html" aria-label="Back" style="position: absolute; top: 56px; left: 20px; width: 44px; height: 44px; border-radius: 22px; background: rgba(246,246,243,0.16); border: 1px solid rgba(246,246,243,0.3); display: flex; align-items: center; justify-content: center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F6F6F3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a>
+    <button class="tap" onClick="{{toggleSave}}" aria-label="{{saveLabel}}" aria-pressed="{{savePressed}}" style="position: absolute; top: 56px; right: 20px; width: 44px; height: 44px; border-radius: 22px; background: {{saveBg}}; border: 1px solid rgba(246,246,243,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="{{saveFill}}" stroke="{{saveStroke}}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"></path></svg></button>
+    <sc-if value="{{showToast}}" hint-placeholder-val="{{ false }}">
+      <div class="toast" role="status" style="position: absolute; top: 112px; right: 20px; padding: 10px 14px; border-radius: 14px; background: #F6F6F3; color: #111614; font-size: 13px; font-weight: 600; box-shadow: 0 14px 28px -14px rgba(0,0,0,0.5)">{{toastText}}</div>
+    </sc-if>
+    <div class="rise d2" style="position: absolute; left: 24px; right: 24px; bottom: 44px; color: #F6F6F3; display: flex; flex-direction: column; gap: 6px">
+      <div style="font-size: 11.5px; font-weight: 600; letter-spacing: 0.16em; color: #A9CFC6">HERITAGE · KALYANI NAGAR</div>
+      <h1 style="margin: 0; font-family: 'Instrument Serif', serif; font-size: 48px; font-weight: 400; line-height: 0.95">Aga Khan<br><span style="font-style: italic">Palace</span></h1>
+      <div style="font-family: 'Mukta', sans-serif; font-size: 15px; color: #CFE3DE">आगा खान पॅलेस</div>
+    </div>
+  </div>
+
+  <div style="position: absolute; top: 372px; left: 0; right: 0; bottom: 0; background: #F6F6F3; border-radius: 30px 30px 0 0; padding: 28px 24px 0; display: flex; flex-direction: column; gap: 20px">
+    <p class="rise d3" style="margin: 0; font-size: 15px; line-height: 1.55; color: #2C3431">Built in 1892, the palace held Mahatma Gandhi and Kasturba Gandhi during the Quit India movement. Kasturba's memorial stands in the gardens.</p>
+
+    <div class="rise d4" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid #E4E6E2; border-bottom: 1px solid #E4E6E2">
+      <div style="padding: 14px 0; display: flex; flex-direction: column; gap: 4px">
+        <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #5E6763">OPEN</div>
+        <div style="font-family: 'Instrument Serif', serif; font-size: 21px">[HOURS]</div></div>
+      <div style="padding: 14px 0 14px 14px; border-left: 1px solid #E4E6E2; display: flex; flex-direction: column; gap: 4px">
+        <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #5E6763">ENTRY</div>
+        <div style="font-family: 'Instrument Serif', serif; font-size: 21px">[FEE]</div></div>
+      <div style="padding: 14px 0 14px 14px; border-left: 1px solid #E4E6E2; display: flex; flex-direction: column; gap: 4px">
+        <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #5E6763">VISIT</div>
+        <div style="font-family: 'Instrument Serif', serif; font-size: 21px">1.5 hr</div></div>
+    </div>
+
+    <a class="rise d5 tap" href="Map.dc.html" style="display: flex; align-items: center; gap: 14px; text-decoration: none; color: #111614">
+      <div style="width: 40px; height: 40px; border-radius: 20px; border: 1px solid #EFC9C1; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8321C" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+        <div style="font-size: 12px; color: #5E6763">Nearest hospital</div>
+        <div style="font-size: 14.5px; font-weight: 600">Ruby Hall Clinic · 4 km</div>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5E6763" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+    </a>
+
+    <div class="rise d6" style="display: flex; gap: 10px; margin-top: auto; padding-bottom: 32px">
+      <a class="ghost" href="Navigation.dc.html" style="flex: 1; height: 56px; border-radius: 28px; border: 1px solid #C9D0CC; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 600; color: #111614; text-decoration: none">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-8-8 18-2-8z"></path></svg>Directions</a>
+      <a class="cta" href="Plan.dc.html" style="flex: 1.4; height: 56px; border-radius: 28px; background: #0F4C42; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 600; color: #F6F6F3; text-decoration: none">
+        Add to plan <span style="font-size: 12.5px; color: #A9CFC6">+40 XP</span></a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { saved: false, toast: 0 };
+  }
+  componentWillUnmount() { clearTimeout(this.t); }
+  renderVals() {
+    const saved = this.state.saved;
+    return {
+      saveLabel: saved ? 'Remove from saved' : 'Save place',
+      savePressed: saved ? 'true' : 'false',
+      saveBg: saved ? '#F6F6F3' : 'rgba(246,246,243,0.16)',
+      saveFill: saved ? '#0F4C42' : 'none',
+      saveStroke: saved ? '#0F4C42' : '#F6F6F3',
+      showToast: this.state.toast > 0,
+      toastText: saved ? 'Saved to your places' : 'Removed from saved',
+      toggleSave: () => {
+        clearTimeout(this.t);
+        this.setState({ saved: !saved, toast: 0 });
+        setTimeout(() => this.setState({ toast: Date.now() }), 20);
+        this.t = setTimeout(() => this.setState({ toast: 0 }), 2500);
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
