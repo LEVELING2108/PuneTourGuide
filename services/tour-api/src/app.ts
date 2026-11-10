@@ -18,6 +18,7 @@ import v1 from './v1';
 import { apiLimit } from './middleware/limits';
 import { httpLogger } from './lib/logger';
 import { landingSite } from './lib/landingSite';
+import { forbidden } from './lib/errors';
 
 const app = express();
 
@@ -85,18 +86,15 @@ const allowedOrigins = env.CORS_ORIGINS
   ? env.CORS_ORIGINS.split(',').map((o) => o.trim())
   : ['http://localhost:5050', 'http://127.0.0.1:5050', 'http://localhost:5173', 'http://127.0.0.1:5173'];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin) || !env.isProd) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Origin ${origin} not allowed by CORS`));
-      }
-    },
-    credentials: true,
-  })
-);
+/**
+ * Browser calls from other sites are refused in production. Any site or bot can send a foreign
+ * Origin, so it is a 403, not a server error (no Sentry alert for something outsiders control).
+ */
+export const corsOrigin =
+  (allowed: string[], strict: boolean) => (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) =>
+    !origin || allowed.includes(origin) || !strict ? callback(null, true) : callback(forbidden('ORIGIN_NOT_ALLOWED', 'This site may not call the API'));
+
+app.use(cors({ origin: corsOrigin(allowedOrigins, env.isProd), credentials: true }));
 
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
