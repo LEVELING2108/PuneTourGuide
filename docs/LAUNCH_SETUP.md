@@ -115,7 +115,12 @@ Postgres + PostGIS runs on the same server in Docker (no separate database servi
      - Then delete `pune-deploy` from your computer, or keep it in a password manager. Never share it.
    - **How it runs:** the Release workflow builds the images, then writes the exact version into `/opt/pune-explorer/.env.release` and runs `docker compose --env-file .env.production --env-file .env.release pull && up -d`, then waits for `/api/v1/health/ready`. Red run = the last 50 app log lines are in the run.
    - **If the fingerprint is refused** ("ssh: handshake failed"), the server offered a different key type: use `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` instead.
-   - **Roll back:** GitHub → *Actions → Release* → open an older green run → *Re-run all jobs*. It redeploys that exact version.
+   - **Roll back:** GitHub → *Actions → Release* → open an older green run → *Re-run all jobs*. It redeploys that exact version (a re-run skips the branch check below, on purpose).
+   - **Branches:** work goes into `research` through PRs; `main` only takes `research`, by a PR merged with *Create a merge commit*. Both deploy to this one server, so the Release run's first job (`guard`) stops a deploy whose branch lacks changes the other branch has (for example a fix committed straight to `main`): merge the other branch in first. CI's `main-from-research` check fails any PR into `main` from another branch.
+   - **GitHub rules (once):** *Settings → Rules → Rulesets → New branch ruleset*:
+     - `main`: Enforcement *Active*; target branch `main`; turn on *Restrict deletions*, *Block force pushes*, *Require a pull request before merging* (Allowed merge methods: *Merge* only) and *Require status checks to pass* with `main-from-research`, `node`, `safety`, `image`.
+     - `research`: target `research`; *Restrict deletions*, *Block force pushes*, *Require a pull request before merging*, *Require status checks to pass* with `node`, `safety`, `image`.
+     - Leave *Bypass list* empty unless you need an emergency fix; the checks above are what keep the live server consistent.
    - **By hand** (e.g. GitHub is down): `cd /opt/pune-explorer && docker compose --env-file .env.production --env-file .env.release pull && docker compose --env-file .env.production --env-file .env.release up -d`. Leaving out `--env-file .env.release` runs the newest `research` (or `latest`) images instead.
 2. **Uptime alerts:** a free [UptimeRobot](https://uptimerobot.com) monitor on `https://your-domain/api/v1/health/ready`, alerting your email or phone (step 21).
 - **Check:** push any small change; within about 10 minutes the *Release* run is green and the site shows it.

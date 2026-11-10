@@ -24,7 +24,37 @@ env:
   SAFETY_IMAGE: ghcr.io/${{ github.repository_owner }}/pune-explorer-safety
 
 jobs:
+  # main and research deploy to the same server, so the last deploy wins. Refuse to deploy a branch
+  # that lacks changes the other branch has: the live server would silently lose them
+  # (CLAUDE.md, "Branches and deploys"). Compares content, so research -> main merge commits are fine.
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: This branch has everything the other one has
+        run: |
+          other=$([ "$GITHUB_REF_NAME" = main ] && echo research || echo main)
+          # Rolling back = re-running an older green run, which is older on purpose (LAUNCH_SETUP Part 7)
+          if [ "$GITHUB_RUN_ATTEMPT" != 1 ]; then
+            echo "::warning::Re-run (rollback): not comparing with $other. This deploys an older version on purpose."
+            exit 0
+          fi
+          git fetch --no-tags --quiet origin "$other"
+          if ! out=$(git merge-tree --write-tree "origin/$other" HEAD); then
+            echo "::error::$other and $GITHUB_REF_NAME conflict. Merge $other into $GITHUB_REF_NAME first, then deploy."
+            exit 1
+          fi
+          # merge-tree prints the merged tree id on its first line
+          if [ "$(printf '%s\n' "$out" | head -n 1)" != "$(git rev-parse 'HEAD^{tree}')" ]; then
+            echo "::error::$other has changes $GITHUB_REF_NAME doesn't. Merge $other into $GITHUB_REF_NAME first, so this deploy doesn't remove them from the live server."
+            exit 1
+          fi
+          echo "$GITHUB_REF_NAME has everything in $other"
+
   images:
+    needs: guard
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
