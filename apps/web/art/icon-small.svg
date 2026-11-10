@@ -1,0 +1,67 @@
+<!-- Pune Explorer app icon: Shaniwar Wada (Delhi Darwaza) with the bhagwa, Gilded night.
+     Source for every icon size: npm run icons -w apps/web. Simplified drawing for 16-32 px (browser tab). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<defs>
+<radialGradient id="bg" cx="50%" cy="46%" r="70%">
+<stop offset="0" stop-color="#3A2A18"/>
+<stop offset=".55" stop-color="#17120D"/>
+<stop offset="1" stop-color="#0B0A09"/>
+</radialGradient>
+<radialGradient id="sun" cx="50%" cy="50%" r="50%">
+<stop offset="0" stop-color="#FFB547" stop-opacity=".55"/>
+<stop offset=".6" stop-color="#E8862A" stop-opacity=".16"/>
+<stop offset="1" stop-color="#E8862A" stop-opacity="0"/>
+</radialGradient>
+<linearGradient id="gateFill" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#FFE48A"/>
+<stop offset=".45" stop-color="#F2C14E"/>
+<stop offset="1" stop-color="#B9822A"/>
+</linearGradient>
+<linearGradient id="doorFill" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#2A1A0E"/>
+<stop offset="1" stop-color="#120B06"/>
+</linearGradient>
+<linearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#FFF3C4"/>
+<stop offset="1" stop-color="#FFB13B"/>
+</linearGradient>
+<linearGradient id="flagFill" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#FFA552"/>
+<stop offset="1" stop-color="#F0602A"/>
+</linearGradient>
+</defs>
+<g id="bg">
+<rect width="1024" height="1024" fill="url(#bg)"/>
+<circle cx="512" cy="500" r="430" fill="url(#sun)"/>
+</g>
+<g id="fg">
+<g transform="translate(512 520) scale(0.95) translate(-512 -520)">
+<g fill="url(#gateFill)">
+<path d="M222 792 L232 548 L378 548 L382 792 Z"/>
+<path d="M642 792 L646 548 L792 548 L802 792 Z"/>
+<path d="M234 550 v-22 a14 14 0 0 1 28 0 v22 z"/>
+<path d="M272 550 v-22 a14 14 0 0 1 28 0 v22 z"/>
+<path d="M310 550 v-22 a14 14 0 0 1 28 0 v22 z"/>
+<path d="M348 550 v-22 a14 14 0 0 1 28 0 v22 z"/>
+<path d="M648 550 v-22 a14 14 0 0 1 28 0 v22 z"/>
+<path d="M686 550 v-22 a14 14 0 0 1 28 0 v22 z"/>
+<path d="M724 550 v-22 a14 14 0 0 1 28 0 v22 z"/>
+<path d="M762 550 v-22 a14 14 0 0 1 28 0 v22 z"/>
+<rect x="394" y="452" width="236" height="340"/>
+<rect x="380" y="438" width="264" height="20"/>
+<rect x="420" y="372" width="184" height="72"/>
+<rect x="404" y="356" width="216" height="20"/>
+<rect x="208" y="790" width="608" height="18"/>
+<rect x="190" y="806" width="644" height="22"/>
+</g>
+<path d="M462 792 V646 Q462 578 512 540 Q562 578 562 646 V792 Z" fill="url(#doorFill)"/>
+<g fill="url(#glow)">
+<path d="M440 436 v-30 q0 -16 15 -16 q15 0 15 16 v30 z"/>
+<path d="M497 436 v-30 q0 -16 15 -16 q15 0 15 16 v30 z"/>
+<path d="M554 436 v-30 q0 -16 15 -16 q15 0 15 16 v30 z"/>
+</g>
+<rect x="508" y="176" width="10" height="182" fill="url(#gateFill)"/>
+<path d="M518 190 L712 232 L612 264 L712 300 L518 340 Z" fill="url(#flagFill)"/>
+</g>
+</g>
+</svg>
