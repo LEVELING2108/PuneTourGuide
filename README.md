@@ -181,7 +181,7 @@ These ports avoid the usual ones (5432, 6379, 8000), so a PostgreSQL installed o
 A huge **thank you** to everyone who has given their time, knowledge and code to **Pune Explorer**.
 
 * **[Sourav Suman (@LEVELING2108)](https://github.com/LEVELING2108)**: project creator and maintainer. Architecture, the Tour API and safety integration, SOS and trip mode, deployment and security.
-* **Aman Kumar**: team member on Pune Explorer.
+* **[Aman Kumar (@kmr26-aman)](https://github.com/kmr26-aman)**: team member on Pune Explorer.
 * **[Sanika Darekar (@sanikadarekar)](https://github.com/sanikadarekar)**: the multi-container Docker Compose setup (PostgreSQL + PostGIS and Redis), the developer-first [`CONTRIBUTING.md`](./CONTRIBUTING.md), backend schema and API specifications, and the root environment configuration.
 
 Contributions are welcome: bug reports, Marathi, Hindi or Gujarati reviews of the translations, hidden gems of Pune, or code. Start with the **[Contribution Guidelines](./CONTRIBUTING.md)**.
