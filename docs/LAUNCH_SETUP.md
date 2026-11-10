@@ -444,6 +444,25 @@ One server with Docker serves the app and API from one domain and keeps SOS work
 
 ---
 
+### ☐ 24. Landing page on the main address, app on `app.` (host split)
+**Needed by:** the landing page at `https://DOMAIN/` (`apps/landing`, shipped inside the app image). The app moves to `https://app.DOMAIN/`; `/api` and `/safety` keep working on both addresses.
+**How it works:** with `LANDING_HOST=DOMAIN`, the app shows the landing page on that host and sends every other page there (texted `/track/…` links, reset emails, bookmarks) with a permanent redirect to the same path on `APP_URL`. Phones that installed the app from `DOMAIN` get the **bridge** (`apps/landing/sw.js`): it replaces the old app's cached copy with an offline page that still calls 112 and texts the emergency contacts saved on that phone; online, their icon opens the landing, which forwards them to `app.DOMAIN/?install=1` to install again. **Undo:** remove `LANDING_HOST` and set `APP_URL` back, then `docker compose … up -d app`.
+- **Phase A, app also on `app.` (nothing changes for users):**
+  1. DNS: an `A` record `app` → the server's IP. Check: `nslookup app.DOMAIN` shows the IP.
+  2. Google Cloud → APIs & Services → Credentials: OAuth client → *Authorized JavaScript origins* add `https://app.DOMAIN`. Maps **browser** key → *Website restrictions* add `https://app.DOMAIN/*`. MapTiler key → *Allowed HTTP origins* add `app.DOMAIN`.
+  3. Server: `cd /opt/pune-explorer && sudo cp Caddyfile Caddyfile.bak && sudo curl -fsSL https://raw.githubusercontent.com/LEVELING2108/PuneTourGuide/research/deploy/Caddyfile -o Caddyfile && docker compose --env-file .env.production --env-file .env.release restart caddy`
+  4. `.env.production`: `CORS_ORIGINS=https://DOMAIN,https://app.DOMAIN` (the API refuses browser requests from any address not listed, even its own), then `docker compose --env-file .env.production --env-file .env.release up -d app`.
+  5. Verify: `https://app.DOMAIN/` opens the app with a valid certificate; map tiles load; you can sign in (password and Google) and save a contact there.
+- **Phase B, the switch (at night):**
+  1. `.env.production`: `LANDING_HOST=DOMAIN` and `APP_URL=https://app.DOMAIN` (texts and reset emails now link to `app.`).
+  2. `docker compose --env-file .env.production --env-file .env.release up -d app`
+- **Verify after the switch, in this order:**
+  - On `app.DOMAIN`, logged out and in flight mode: SOS opens and dials 112. Logged in once online, then offline: SOS texts the contacts.
+  - On a phone that had the app installed from `DOMAIN`: online, the icon opens the landing and goes on to `app.DOMAIN/?install=1` with "Install Pune Explorer again"; offline, it shows *Emergency* with *Call 112* and *Text my contacts*.
+  - `https://DOMAIN/track/<an old id>` and `https://DOMAIN/privacy` move to `app.DOMAIN`; a new trip share or SOS text links to `app.DOMAIN/track/…`; a password-reset email links to `app.DOMAIN/reset`.
+  - Landing waitlist form: "You're on the list".
+- **Tell testers:** open the app once online, install it again from the prompt, sign in again, then remove the old icon.
+
 ## 4. Settings not used yet
 `CLOUDINARY_URL` (avatars are stored in Postgres instead), `WEATHER_API_KEY` and `GEMINI_API_KEY` (left over from the old app) can stay empty.
 

@@ -17,6 +17,7 @@ import { errorHandler } from './middleware/errorHandler';
 import v1 from './v1';
 import { apiLimit } from './middleware/limits';
 import { httpLogger } from './lib/logger';
+import { landingSite } from './lib/landingSite';
 
 const app = express();
 
@@ -102,6 +103,12 @@ app.use(cookieParser());
 
 // Request log: id, method, path and status only. Bodies can hold passwords, OTPs or medical data.
 app.use(httpLogger);
+
+// Landing page on its own host; old app links there move to the app host (docs/LAUNCH_SETUP.md step 24)
+const landingDir = path.resolve(__dirname, '../../../apps/landing');
+if (env.LANDING_HOST && fs.existsSync(landingDir)) {
+  app.use(landingSite({ host: env.LANDING_HOST, appUrl: env.APP_URL, dir: landingDir }));
+}
 
 // Rate limiting. The old app's tight per-IP ceiling covers only its own routes: on /api/v1 it
 // would throttle everyone sharing a carrier IP (CGNAT). /api/v1 has its own limits.

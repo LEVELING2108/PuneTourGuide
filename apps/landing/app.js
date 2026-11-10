@@ -2,6 +2,14 @@
 (function () {
   'use strict';
 
+  // Opened from a home-screen icon installed from this address before the app moved to
+  // app.puneexplorer.dev: go to the app, which offers to install it again from its new address.
+  var installed = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  if (installed) {
+    location.replace('https://app.puneexplorer.dev/?install=1');
+    return;
+  }
+
   // Deccan / Classic switch: swaps the phone image, its alt text and the paragraph.
   var LOOKS = {
     deccan: { src: '/img/screens/home.jpg', height: 1298, alt: 'Home screen in the Deccan theme', text: 'Deccan uses Paithani plum, haldi gold and Marathi labels, taken from Pune’s wadas and the Sahyadri forts.' },
