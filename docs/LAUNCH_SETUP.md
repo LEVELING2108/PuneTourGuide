@@ -469,7 +469,7 @@ One server with Docker serves the app and API from one domain and keeps SOS work
 - **Tell testers:** open the app once online, install it again from the prompt, sign in again, then remove the old icon.
 
 ## 4. Settings not used yet
-`CLOUDINARY_URL` (avatars are stored in Postgres instead), `WEATHER_API_KEY` and `GEMINI_API_KEY` (left over from the old app) can stay empty.
+`CLOUDINARY_URL` (avatars are stored in Postgres instead) can stay empty. `WEATHER_API_KEY` and `GEMINI_API_KEY` belonged to the pre-2.0 API and are no longer read; remove them from `.env.production` if they are there.
 
 ## 5. Notes for your proxy and security headers
 - If the safety service runs on a **different domain** from the app, set `SAFETY_PUBLIC_URL` (Tour API, for the Content-Security-Policy) and `VITE_SAFETY_URL` (web build) to its address. It must support WebSockets.

@@ -17,8 +17,6 @@ export function verifyAccessToken(token: string): AccessPayload | null {
       const sub = Number((decoded as jwt.JwtPayload).sub);
       return Number.isInteger(sub) ? { sub } : null;
     }
-    // Legacy tokens: { id, email }
-    if (typeof decoded === 'object' && decoded && 'id' in decoded) return { sub: Number((decoded as any).id) };
     return null;
   } catch {
     return null;
