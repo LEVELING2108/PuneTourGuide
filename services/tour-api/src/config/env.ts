@@ -47,8 +47,6 @@ const EnvSchema = z.object({
   EMAIL_FROM: z.string().default('Pune Explorer <no-reply@pune-explorer.app>'),
   CLOUDINARY_URL: z.string().optional(),
   MEDICAL_ENC_KEY: prodRequired(z.string().regex(/^[0-9a-f]{64}$/i, 'MEDICAL_ENC_KEY must be 32 bytes hex')),
-  WEATHER_API_KEY: z.string().optional(),
-  GEMINI_API_KEY: z.string().optional(),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).optional(),
   SENTRY_DSN: z.string().url().optional().or(z.literal('')),
   // Healthchecks.io ping URL for the nightly cleanup job (optional): emails you when a night fails or is missed
