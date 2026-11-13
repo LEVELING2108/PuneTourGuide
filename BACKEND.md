@@ -3,7 +3,7 @@
 ## Implemented Stack
 
 ### Runtime & Framework
-- Runtime: **Node.js 20**
+- Runtime: **Node.js 22**
 - Framework: **Express.js**
 - Language: **TypeScript**
 
@@ -11,7 +11,7 @@
 - Relational DB: **PostgreSQL**
 - ORM: **Prisma**
 - Geolocation: **PostGIS** extension for nearby calculations
-- Cache Store: **Redis** (used for endpoint output caching and OSM discovery throttling)
+- Cache Store: **Redis** (shared rate limits, caches, cooldowns and the SMS queue across every API instance)
 
 ### Authentication & Routing
 - Security: **JWT + bcryptjs** password hashing
@@ -22,79 +22,48 @@
 ## Project Structure
 
 ```
-backend/
+services/tour-api/
 ├── prisma/
-│   ├── schema.prisma       # Active database schema
-│   └── migrations/         # PostgreSQL schema migration scripts
+│   ├── schema.prisma       # Database schema
+│   └── migrations/         # One migration per schema change
 ├── src/
-│   ├── middleware/
-│   │   └── auth.ts         # JWT bearer token verification
-│   ├── routes/
-│   │   ├── userRoutes.ts   # /api/user routes
-│   │   ├── placeRoutes.ts  # /api/places routes
-│   │   └── itineraryRoutes.ts # /api/itinerary routes
-│   ├── controllers/
-│   │   ├── userController.ts  # Registration, login, profile stats
-│   │   ├── placeController.ts # Nearby places, bookmark saves
-│   │   └── itineraryController.ts # Stops, completions, OSRM TSP optimizer
-│   ├── services/
-│   │   ├── cacheService.ts    # Redis client connection and cache utility
-│   │   └── overpassService.ts # OSM Overpass API caller + Redis cooldown throttling
-│   └── app.ts              # Express initialization
-├── .env
-├── package.json
-└── tsconfig.json
+│   ├── v1/                 # The API, one folder per area: *.routes.ts → *.service.ts → *.repository.ts
+│   ├── middleware/         # requireAuth, validate (Zod), limits (rate limits on Redis), errorHandler
+│   ├── clients/            # Outside services: SMS, email, Google Places, OSRM, Nominatim, Overpass, weather
+│   ├── lib/                # Tokens, logger, errors, landing-page host, Sentry
+│   ├── scripts/            # Nightly jobs and one-off tools (refresh-help, cleanup, waitlist-export)
+│   ├── app.ts              # Express app: security headers, CORS, landing host, /api/v1
+│   ├── server.ts           # HTTP server (graceful shutdown)
+│   └── worker.ts           # SMS queue worker
+└── test/                   # Vitest + supertest against a real PostGIS test database
 ```
 
 ---
 
-## Active API Endpoints
+## API (`/api/v1`)
 
-All protected endpoints require an `Authorization` header containing `Bearer <JWT_TOKEN>`.
+Every response is `{ data, meta? }` or `{ error: { code, message } }`. Protected endpoints take
+`Authorization: Bearer <access token>` (15 minutes; renewed through the httpOnly refresh cookie at
+`/auth/refresh`). Full behaviour per screen: [design-reference/FEATURES.md](./design-reference/FEATURES.md).
 
-### 🔑 Authentication (`/api/user`)
-- `POST   /api/user/register`  
-  Registers a new user, hashes password, awards +150 sign-up XP, and pre-seeds standard Day 1 & Day 2 travel itineraries.
-- `POST   /api/user/login`  
-  Verifies credentials, returning user profile details and JWT token.
-- `GET    /api/user/me` (Protected)  
-  Fetches the authenticated user profile.
-- `GET    /api/user/stats` (Protected)  
-  Computes user progress: counts of saved spots, completed stops, levels, and persistent XP.
+| Area | Endpoints |
+| :--- | :--- |
+| Health | `GET /health/live`, `GET /health/ready` (database + Redis) |
+| Accounts | `POST /auth/register`, `/auth/login`, `/auth/otp/send`, `/auth/otp/verify`, `/auth/google`, `/auth/password/forgot`, `/auth/password/reset`, `/auth/refresh`, `/auth/logout` |
+| Profile | `GET/PATCH/DELETE /users/me`, `POST/DELETE /users/me/avatar`, `GET /users/me/stamps`, `GET /users/me/stats` |
+| Places | `GET /places` (search, category and filters), `/places/count`, `/places/categories`, `/places/:id`, `/places/:id/nearby`; `POST /places/:id/visit`; `PUT/DELETE /places/:id/save` |
+| Google data | `GET /google/places/:id`, `/google/places/:id/nearby`, `/google/spots/:googleId`, `/google/photo`; `POST /google/spots/:googleId/visit` |
+| Routes | `GET /routes` (curated routes) |
+| Plan & trip mode | `GET /itinerary`; `POST/PATCH/DELETE /itinerary/stops…`; `POST /itinerary/optimize`, `/itinerary/from-route/:id`, `/itinerary/days/:id/start`; `GET /itinerary/run`; `POST /itinerary/runs/:id/skip`, `/itinerary/runs/:id/end` |
+| Help | `GET /help` (hospitals, police, fire near a point) |
+| SOS & live trips | `POST /sos/alert`, `/sos/cancel`; `GET/POST /share-trip`, `GET /share-trip/:sessionId/delivery`, `DELETE /share-trip/:sessionId` |
+| Contacts & medical | `/contacts` (list, add, edit, delete, test alert), `/medical` (get, save, delete) |
+| Maps | `GET /directions`, `GET /geocode`, `GET /weather`, `/offline-packs` |
+| Waitlist | `POST /waitlist` (landing page) |
 
-### 🏰 Places (`/api/places`)
-- `GET    /api/places`  
-  Fetches spots (supports `?category=Heritage|Temple|Nature|Food|Wellness`, search `?q=`, `?isSaved=true`, `?bbox=south,west,north,east`, and `?live=true`).
-- `GET    /api/places/:id`  
-  Fetches individual tourist details.
-- `PATCH  /api/places/:id/save` (Protected)  
-  Toggles saved/bookmarked state in `UserSavedPlace`. Increments user XP by `+10 XP` on a new bookmark.
-
-### 📅 Itineraries & Stops (`/api/itinerary`)
-- `GET    /api/itinerary` (Protected)  
-  Fetches the authenticated user's itinerary days and stops.
-- `POST   /api/itinerary/stops` (Protected)  
-  Adds a new custom stop to the active day.
-- `PATCH  /api/itinerary/stops/:id` (Protected)  
-  Toggles stop checkbox status. Checking off a stop increments user XP by `+50 XP`.
-- `DELETE /api/itinerary/stops/:id` (Protected)  
-  Deletes the specified itinerary stop.
-- `POST   /api/itinerary/optimize` (Protected)  
-  Solves the Traveling Salesperson Problem (TSP) for active day stops using the OSRM Trip API (starting at the first stop). Updates stop `order` fields in the database.
-- `POST   /api/itinerary/generate` (Protected)  
-  Generates a custom multi-day travel itinerary using Gemini 1.5 Flash (with rating-based fallback) based on duration, pace, accessibility, and category interests.
-- `POST   /api/itinerary/adapt-weather` (Protected)  
-  Analyzes itinerary stops for outdoor attractions (forts, treks, gardens) and swaps them with indoor cultural spots during rainy weather, followed by OSRM sequence re-optimization.
-
-### 🎭 Events (`/api/events`)
-- `GET    /api/events`  
-  Fetches curated Pune cultural events and annual festivals (Ganesh Utsav, Sawai Gandharva, Pune Festival).
-
-### ☀️ Weather (`/api/weather`)
-- `GET    /api/weather`  
-  Fetches live Pune weather and temperature from Open-Meteo API, mapped to 'Sunny' or 'Rainy' conditions.
-- `POST   /api/weather/toggle`  
-  Developer and testing endpoint to toggle weather override in cache.
+The pre-2.0 routes (`/api/places`, `/api/events`, `/api/itinerary`, `/api/user`, `/api/weather`) were
+removed in November 2026: nothing used them, and their login issued 7-day tokens that bypassed
+session revocation. `GET /api/health` remains.
 
 ---
 
@@ -191,6 +160,13 @@ model ItineraryStop {
 
 ---
 
-## Redis Caching & Throttling
-- **Cache Invalidation**: On place updates, the backend invalidates cached JSON listings using standard wildcards (`places:*`).
-- **Discovery Throttling**: Background OSM fetches for queries/categories are throttled using a Redis cooldown key (e.g. `places:discovery:cooldown:cat:<category>`) set for **300 seconds (5 minutes)**. Subsequent requests during cooldown return cache hits, avoiding Overpass rate limits.
+## Redis
+
+Redis is shared by every API instance, so limits and caches hold however many instances run:
+- **Rate limits** (`middleware/limits.ts`): login, OTP, password reset, SOS, test alerts, sign-ups,
+  the waitlist and expensive reads; keys are hashed, so no email or phone number is stored in clear.
+- **Caches**: place lists and details, Google data (with daily call caps), weather.
+- **Cooldowns and counters**: e.g. test alerts per day.
+- **SMS queue** (BullMQ) and live-location fan-out.
+
+If Redis is down, limits fall back to per-instance memory (looser, never blocking SOS).

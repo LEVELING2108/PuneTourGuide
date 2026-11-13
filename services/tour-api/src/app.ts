@@ -7,12 +7,6 @@ import path from 'path';
 import fs from 'fs';
 import { createHash } from 'crypto';
 import { env } from './config/env';
-import placeRoutes from './routes/placeRoutes';
-import eventRoutes from './routes/eventRoutes';
-import itineraryRoutes from './routes/itineraryRoutes';
-import userRoutes from './routes/userRoutes';
-import weatherRoutes from './routes/weatherRoutes';
-import { globalApiLimiter, authLimiter, aiGenerationLimiter } from './middleware/rateLimit';
 import { errorHandler } from './middleware/errorHandler';
 import v1 from './v1';
 import { apiLimit } from './middleware/limits';
@@ -108,22 +102,8 @@ if (env.LANDING_HOST && fs.existsSync(landingDir)) {
   app.use(landingSite({ host: env.LANDING_HOST, appUrl: env.APP_URL, dir: landingDir }));
 }
 
-// Rate limiting. The old app's tight per-IP ceiling covers only its own routes: on /api/v1 it
-// would throttle everyone sharing a carrier IP (CGNAT). /api/v1 has its own limits.
-app.use(['/api/places', '/api/events', '/api/itinerary', '/api/user', '/api/weather'], globalApiLimiter);
-app.use('/api/user/login', authLimiter);
-app.use('/api/user/register', authLimiter);
-app.use('/api/itinerary/generate', aiGenerationLimiter);
-
 // Pune Explorer API
 app.use('/api/v1', apiLimit, v1);
-
-// Legacy routes (kept working until the new screens move to /api/v1)
-app.use('/api/places', placeRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/itinerary', itineraryRoutes);
-app.use('/api/user', userRoutes);
-app.use('/api/weather', weatherRoutes);
 
 app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'Pune Explorer Tour API is running' });
