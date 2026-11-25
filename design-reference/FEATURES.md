@@ -86,7 +86,8 @@ Medical info is sensitive: store encrypted at rest, only return it to the owner,
 | Control | Behaviour | Backend |
 |---|---|---|
 | ✅ Home: अ button | → Language | — |
-| ✅ Home: Next stop card | First not-done stop of today | EXISTS itinerary |
+| ✅ Home: Next stop card | First not-done stop of today; sky follows Pune time and rain (no temperature shown); route line "Stop N of M" | EXISTS itinerary, weather |
+| ✅ Home: status card | Safety (once set up) and, logged in, stamps and XP → Profile | EXISTS `GET /users/me/stamps` |
 | ✅ Home: Collections / stamps | → Explore with category preset | EXISTS places (filter) |
 | ✅ Explore: search | Debounced query | **EXTEND** `GET /api/places?q=` |
 | ✅ Explore: category chips | Filter list | **EXTEND** `?category=` |
