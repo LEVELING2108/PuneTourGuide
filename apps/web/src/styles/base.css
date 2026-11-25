@@ -76,6 +76,19 @@ body {
   outline-offset: 2px;
 }
 
+/* Home collection drawings: smaller on the narrowest phones, clear of the Marathi names */
+.home-art {
+  width: 48px;
+  height: 48px;
+}
+
+@media (max-width: 359px) {
+  .home-art {
+    width: 32px;
+    height: 32px;
+  }
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
