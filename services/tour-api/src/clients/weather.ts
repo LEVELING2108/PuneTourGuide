@@ -13,6 +13,9 @@ const label = (code: number) => {
   return 'Storm';
 };
 
+/** Drizzle, rain, showers and thunderstorms (WMO codes). */
+export const isRain = (code: number) => (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95;
+
 /** Current Pune weather from Open-Meteo (free, no key). */
 export async function puneWeather() {
   const { data } = await axios.get('https://api.open-meteo.com/v1/forecast', {
@@ -24,6 +27,6 @@ export async function puneWeather() {
     tempC: Math.round(Number(data?.current?.temperature_2m)),
     code,
     condition: label(code),
-    isRaining: code >= 51 && code <= 82,
+    isRaining: isRain(code),
   };
 }

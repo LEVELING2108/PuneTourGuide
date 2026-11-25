@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
+import { usersApi } from '../../api/auth';
 import { miscApi } from '../../api/places';
 import type { PlanDay, Stop } from '../../api/itinerary';
 import { Themed } from '../../components/Themed';
 import { useCurrentPosition, type Position } from '../../features/location';
+import { useOffline } from '../../features/offline';
 import { kmText, useCategoryCounts, usePlan } from '../../features/places';
 import { useSafetySummary } from '../../features/safety';
 import { useIsLoggedIn, useUser } from '../../stores/auth';
@@ -13,6 +15,8 @@ import { usePermissionStore } from '../../stores/permissions';
 import { useTheme } from '../../stores/theme';
 import MainView from '../../views/classic/Main.view';
 import DeccanHomeView from '../../views/deccan/DeccanHome.view';
+import type { HomeStatus, RouteDots } from './HomeParts';
+import { useSky } from './sky';
 
 const HELP_WORDS = /\b(hospital|clinic|police|pharmacy|ambulance|doctor)s?\b/i;
 
@@ -57,40 +61,54 @@ export default function HomeScreen() {
   const perms = usePermissionStore();
   const safety = useSafetySummary();
   const explore = useExploreStore();
+  // Weather only draws the sky; the phone already shows the temperature
   const weather = useQuery({ queryKey: ['weather'], queryFn: miscApi.weather, staleTime: 15 * 60_000 });
   const plan = usePlan(loggedIn);
   const counts = useCategoryCounts();
+  const stamps = useQuery({ queryKey: ['stamps'], queryFn: usersApi.stamps, enabled: loggedIn, staleTime: 60_000 });
+  const packs = useOffline((o) => o.saved);
+  const sky = useSky(weather.data?.isRaining);
   const [q, setQ] = useState('');
 
   const ready = perms.location && perms.motion;
   const missing = [!perms.location, !perms.motion].filter(Boolean).length;
-  const weekday = new Intl.DateTimeFormat('en-IN', { weekday: 'long', timeZone: 'Asia/Kolkata' }).format(new Date());
-  const temp = weather.data ? `${weather.data.tempC}°` : '';
   const first = user?.name?.split(' ')[0];
 
   const next = nextStop(plan.data);
   const s = next?.stop;
   const travel = s ? travelText(pos, s) : null;
-  const hospital = s?.place.hospital?.km !== null && s?.place.hospital?.km !== undefined ? `hospital ${kmText(s.place.hospital.km)}` : null;
+  const hospital = s?.place.hospital?.km !== null && s?.place.hospital?.km !== undefined ? `Hospital ${kmText(s.place.hospital.km)}` : null;
   const dayXp = next?.day.stops.filter((x) => x.done).reduce((n, x) => n + x.place.xp, 0) ?? 0;
 
-  let nextKicker = 'START PLANNING';
+  let nextKicker = 'Start planning';
   let nextName = 'Plan your day';
-  let nextMeta = 'Add places from Explore or load a route';
-  let nextCount = '';
+  let nextMeta = ['Add places from Explore', 'or load a route'];
   let nextHref = '/explore';
+  let route: RouteDots = null;
   if (s && next) {
-    nextKicker = `NEXT STOP · ${s.time}`;
+    nextKicker = `Next stop, ${s.time}`;
     nextName = s.place.name;
-    nextMeta = [s.place.area, travel, hospital].filter(Boolean).join(' · ');
-    nextCount = `${next.idx + 1} of ${next.day.stops.length}`;
+    nextMeta = [[s.place.area, travel].filter(Boolean).join(', '), hospital ?? ''].filter(Boolean);
     nextHref = '/plan';
+    route = { done: next.day.stops.map((x) => x.done), current: next.idx };
   } else if (next && next.day.stops.length) {
-    nextKicker = 'DAY COMPLETE';
+    nextKicker = 'Day complete';
     nextName = 'Every stop visited';
-    nextMeta = `+${dayXp} XP today · plan tomorrow`;
+    nextMeta = [`+${dayXp} XP today`, 'Plan tomorrow'];
     nextHref = '/plan';
   }
+
+  const status: HomeStatus = {
+    safety: ready
+      ? { detail: [packs.length ? 'Offline pack' : null, safety.short].filter(Boolean).join(', '), href: theme === 'deccan' ? '/settings' : '/profile' }
+      : null,
+    progress: user
+      ? {
+          title: stamps.data ? `${stamps.data.collected} of ${stamps.data.total} stamps` : user.levelName,
+          detail: user.nextLevelName ? `${user.xpToNext} XP to ${user.nextLevelName}` : 'Top level reached',
+        }
+      : null,
+  };
 
   const goSearch = (text: string) => {
     const t = text.trim();
@@ -100,29 +118,26 @@ export default function HomeScreen() {
   };
 
   const v = {
-    ready,
     notReady: !ready,
-    dateLine: [weekday.toUpperCase(), 'PUNE', temp].filter(Boolean).join(' · '),
     greeting: `नमस्कार, ${first ?? 'traveller'}`,
-    greetingLine: `नमस्कार, ${first ?? 'traveller'} · Pune${temp ? ` ${temp}` : ''}`,
     q,
     onQuery: (e: React.ChangeEvent<HTMLInputElement>) => setQ(e.target.value),
     onSearch: (e: React.KeyboardEvent) => {
       if (e.key === 'Enter') goSearch(q);
     },
+    sky,
     nextKicker,
     nextName,
     nextMeta,
-    nextMetaDeccan: nextMeta,
-    nextCount,
     nextHref,
+    route,
+    status,
     setupText: `${missing === 2 ? '2 steps' : '1 step'} left · location and shake to SOS`,
     stepsLeft: `· ${missing === 2 ? '2 steps' : '1 step'} left`,
-    readyText: safety.summary,
-    readyTextDeccan: `· ${safety.short}`,
     collections: COLLECTIONS.map((c) => {
       const n = counts.data?.[c.count];
       return {
+        count: n,
         countText: n === undefined ? '' : `${n} places`,
         open: () => explore.set({ cat: theme === 'deccan' && c.deccanCat ? c.deccanCat : c.cat, q: '' }),
       };
