@@ -23,8 +23,15 @@ export function DayRoute({ route }: { route: RouteDots }) {
   const { done, current } = route;
   return (
     <div style={{ display: 'flex', alignItems: 'center', fontSize: '14px', color: 'var(--muted)' }}>
+      {done.length > MAX_DOTS && (
+        // Too many stops for dots: one gold bar, filled up to the current stop
+        <div aria-hidden="true" data-route="bar" style={{ position: 'relative', flex: '1', maxWidth: '200px', height: '4px', marginRight: '16px', borderRadius: '2px', background: 'var(--line)' }}>
+          <i style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${(current / (done.length - 1)) * 100}%`, borderRadius: '2px', background: 'var(--gold)' }} />
+          <i style={{ position: 'absolute', top: '-3px', left: `calc(${(current / (done.length - 1)) * 100}% - 5px)`, width: '10px', height: '10px', borderRadius: '50%', background: 'var(--gold)' }} />
+        </div>
+      )}
       {done.length > 1 && done.length <= MAX_DOTS && (
-        <div aria-hidden="true" style={{ display: 'flex', alignItems: 'center' }}>
+        <div aria-hidden="true" data-route="dots" style={{ display: 'flex', alignItems: 'center' }}>
           {done.map((d, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center' }}>
               {i > 0 && <i style={{ width: '24px', height: '2px', background: i <= current ? 'var(--gold)' : 'var(--line)' }} />}
